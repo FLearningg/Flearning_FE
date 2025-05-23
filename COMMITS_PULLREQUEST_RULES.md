@@ -57,14 +57,11 @@
 
 ### ✔ Cấu trúc:
 
-<type>/<screen>-<ui|be>
+<type>/<ID Jira>\_<Screen Name/Screen Short Description> <UI|BE>
 
 ### 📌 Ví dụ:
 
-- `feature/login-ui`
-- `feature/product-detail-be`
-- `bugfix/email-sending-ui`
-- `refactor/api-handler-be`
+- `feature/FLN-42_StudentMessage-UI`
 
 ### 📎 Ghi chú:
 
