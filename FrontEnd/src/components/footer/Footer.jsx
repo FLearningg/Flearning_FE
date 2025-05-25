@@ -7,7 +7,7 @@ import QuickLinkMobile from './QuickLinkMobile';
 
 function Footer() {
     return (
-        <footer className="bg-dark text-light pt-5 pb-5 mt-5">
+        <footer className="bg-dark text-light pt-5 pb-5">
             <div className="container">
                 <div className="row align-items-start">
                     {/* Logo & Social */}
