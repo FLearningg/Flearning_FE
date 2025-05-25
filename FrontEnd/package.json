@@ -20,6 +20,7 @@
     "react-router-dom": "^7.6.0",
     "react-scripts": "5.0.1",
     "styled-components": "^6.1.18",
+    "swiper": "^11.2.8",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -46,7 +47,6 @@
       "last 1 safari version"
     ]
   },
-
   "devDependencies": {
     "css-loader": "^7.1.2",
     "postcss-loader": "^8.1.1",

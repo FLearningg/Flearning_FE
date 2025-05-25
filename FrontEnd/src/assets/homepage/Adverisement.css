@@ -1,0 +1,83 @@
+.img-cut-corner {
+    clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%, 0 100%);
+
+}
+
+.advertisement-text-container {
+    padding-left: 30%;
+    padding-right: 15%;
+}
+
+.advertisement-text {
+    font-size: 3vw;
+    font-weight: 640;
+    line-height: 1.2;
+    margin-bottom: 30px;
+}
+
+
+.btn-create-account button {
+    background-color: #FF6F32;
+    color: white;
+    padding: 10px 20px;
+    border: 2px solid #FF6F32;
+    transition: 0.3s ease;
+}
+
+.btn-create-account button:hover {
+    background-color: unset;
+    color: #FF6F32;
+    border: 2px solid #FF6F32;
+}
+
+/* for tablet */
+.movie-card {
+    position: relative;
+    height: 450px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.movie-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../../../public/images/advertiment.jpg');
+    /* Thay ảnh nền */
+    background-size: cover;
+    background-position: center;
+    /* filter: blur(5px); Làm mờ background */
+    z-index: 1;
+}
+
+.movie-card .content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.3));
+    padding: 20px;
+    color: white;
+    z-index: 2;
+}
+
+.intro-text {
+    margin-top: 20%;
+}
+
+/* end */
+@media screen and (max-width: 1024px) {
+    .desktop-homepage-view {
+        display: none;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .tablet-view {
+        display: none;
+    }
+}

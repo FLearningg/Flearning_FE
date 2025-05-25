@@ -71,8 +71,8 @@ const Card = ({ image, category, price, title, rating, students }) => (
   <div className="card-container">
     <div className="card-image" style={{ backgroundImage: `url(${image})` }} />
     <div className="divider" />
-    <div className="card-body">
-      <div className="row">
+    <div className="card-body custom-card-body">
+      <div className="custom-row">
         <div className="category">{category}</div>
         <div className="price">
           <span className="orange-gradient">{price}</span>
