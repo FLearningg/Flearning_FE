@@ -1,4 +1,4 @@
-import "../../assets/StudentMsg/Sidebar.css";
+import "../../assets/AdminHeaderAndSidebar/Sidebar.css";
 
 export function Sidebar({ open, setOpen }) {
   // Only show overlay on tablet/mobile screens

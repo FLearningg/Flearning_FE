@@ -1,4 +1,4 @@
-import "../../assets/StudentMsg/HeaderMsg.css";
+import "../../assets/AdminHeaderAndSidebar/HeaderMsg.css";
 import { FaBars, FaComments } from "react-icons/fa";
 import React from "react";
 
@@ -31,7 +31,7 @@ export function HeaderMsg({ onHamburgerClick }) {
       </div>
       <div className="header-left">
         <div className="greeting">Good Morning</div>
-        <h1 className="title">Message (3)</h1>
+        <h1 className="title">Message (3)/Dashboard</h1>
       </div>
       <div className="header-right">
         <div className="search-container">
