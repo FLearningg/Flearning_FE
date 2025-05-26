@@ -154,10 +154,6 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
               time="9 m"
             />
           </div>
-
-          <div className="chat-list-footer">
-            © 2021 - Eduguard. Designed by Templatecookie. All rights reserved
-          </div>
         </div>
 
         <div className="chat-content">
@@ -271,14 +267,6 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
               </svg>
             </button>
-          </div>
-
-          <div className="chat-footer">
-            <div className="footer-links">
-              <span>FAQs</span>
-              <span>Privacy Policy</span>
-              <span>Terms & Condition</span>
-            </div>
           </div>
         </div>
       </div>

@@ -1,34 +1,38 @@
-import { useState, useEffect } from "react";
-import { Sidebar } from "./Sidebar";
-import { HeaderMsg } from "./HeaderMsg";
+import React, { useState, useEffect } from "react";
 import { ChatInterface } from "./ChatInterface";
 import "../../assets/StudentMsg/StudentMsgGlobal.css";
+import { FaComments } from "react-icons/fa";
 
 export function StudentMessage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [chatListOpen, setChatListOpen] = useState(false);
   // Responsive: close sidebar on resize if not mobile
-  useEffect(() => {
+  const [isTablet, setIsTablet] = React.useState(false);
+  React.useEffect(() => {
     function handleResize() {
-      if (window.innerWidth > 600) setSidebarOpen(false);
+      setIsTablet(window.innerWidth <= 768 && window.innerHeight <= 683);
     }
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   return (
     <div className="app-container">
-      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
-      <div className="main-content">
-        <HeaderMsg
-          onHamburgerClick={() => setSidebarOpen((v) => !v)}
-          onChatToggle={() => setChatListOpen((v) => !v)}
+      <div className="main-area">
+        {isTablet && (
+          <>
+            <button
+              className="icon-btn chat-btn"
+              onClick={() => setChatListOpen(true)}
+              aria-label="Open chat list"
+            >
+              <FaComments size={24} />
+            </button>
+          </>
+        )}
+        <ChatInterface
+          chatListOpen={chatListOpen}
+          setChatListOpen={setChatListOpen}
         />
-        <div className="main-area">
-          <ChatInterface
-            chatListOpen={chatListOpen}
-            setChatListOpen={setChatListOpen}
-          />
-        </div>
       </div>
     </div>
   );

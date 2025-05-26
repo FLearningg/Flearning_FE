@@ -2,7 +2,7 @@ import "../../assets/StudentMsg/HeaderMsg.css";
 import { FaBars, FaComments } from "react-icons/fa";
 import React from "react";
 
-export function HeaderMsg({ onHamburgerClick, onChatToggle }) {
+export function HeaderMsg({ onHamburgerClick }) {
   // Responsive check for tablet and below
   const [isTablet, setIsTablet] = React.useState(false);
   React.useEffect(() => {
@@ -25,13 +25,6 @@ export function HeaderMsg({ onHamburgerClick, onChatToggle }) {
               aria-label="Open sidebar"
             >
               <FaBars size={24} />
-            </button>
-            <button
-              className="icon-btn chat-btn"
-              onClick={onChatToggle}
-              aria-label="Open chat list"
-            >
-              <FaComments size={24} />
             </button>
           </>
         )}
