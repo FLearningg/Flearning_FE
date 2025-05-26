@@ -1,15 +1,81 @@
 import "../../assets/StudentMsg/Sidebar.css";
 
-export function Sidebar() {
+export function Sidebar({ open, setOpen }) {
+  // Only show overlay on tablet/mobile screens
+  const isMobile =
+    typeof window !== "undefined" &&
+    window.innerWidth <= 768 &&
+    window.innerHeight <= 683;
   return (
-    <div className="sidebar">
-      <div className="sidebar-header">
-        <a href="/" className="logo-link">
-          <div className="logo-icon">
+    <>
+      {isMobile && open && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.2)",
+            zIndex: 999,
+          }}
+        />
+      )}
+      <div
+        className={`sidebar${isMobile && open ? " open" : ""}`}
+        style={isMobile && !open ? { width: 0, minWidth: 0 } : {}}
+      >
+        <div className="sidebar-header">
+          <a href="/" className="logo-link">
+            <div className="logo-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              </svg>
+            </div>
+            <span className="logo-text">F-Learning</span>
+          </a>
+        </div>
+
+        <nav className="sidebar-nav">
+          <ul className="nav-list">
+            <NavItem href="/dashboard" icon="bar-chart" label="Dashboard" />
+            <NavItem
+              href="/create-course"
+              icon="plus-circle"
+              label="Create New Course"
+            />
+            <NavItem href="/my-courses" icon="book" label="My Courses" />
+            <NavItem href="/earning" icon="dollar-sign" label="Earning" />
+            <NavItem
+              href="/message"
+              icon="message-circle"
+              label="Message"
+              active
+              badge="3"
+            />
+            <NavItem href="/settings" icon="settings" label="Settings" />
+          </ul>
+        </nav>
+
+        <div className="sidebar-footer">
+          <button className="sign-out-button">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -17,56 +83,15 @@ export function Sidebar() {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
             </svg>
-          </div>
-          <span className="logo-text">F-Learning</span>
-        </a>
+            <span>Sign-out</span>
+          </button>
+        </div>
       </div>
-
-      <nav className="sidebar-nav">
-        <ul className="nav-list">
-          <NavItem href="/dashboard" icon="bar-chart" label="Dashboard" />
-          <NavItem
-            href="/create-course"
-            icon="plus-circle"
-            label="Create New Course"
-          />
-          <NavItem href="/my-courses" icon="book" label="My Courses" />
-          <NavItem href="/earning" icon="dollar-sign" label="Earning" />
-          <NavItem
-            href="/message"
-            icon="message-circle"
-            label="Message"
-            active
-            badge="3"
-          />
-          <NavItem href="/settings" icon="settings" label="Settings" />
-        </ul>
-      </nav>
-
-      <div className="sidebar-footer">
-        <button className="sign-out-button">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
-          <span>Sign-out</span>
-        </button>
-      </div>
-    </div>
+    </>
   );
 }
 

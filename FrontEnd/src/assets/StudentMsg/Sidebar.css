@@ -45,6 +45,7 @@
 .nav-list {
   padding: 0;
   list-style: none;
+  justify-items: start;
 }
 
 .nav-item {
@@ -143,9 +144,6 @@
     min-width: 64px;
     padding: 0;
   }
-  .logo-text {
-    display: none;
-  }
   .sidebar-header {
     padding: 24px 0 16px 0;
     justify-content: center;
@@ -154,30 +152,33 @@
     justify-content: center;
     padding: 14px 0;
   }
-  .nav-label {
-    display: none;
-  }
   .sidebar-footer {
     padding: 16px 0;
     justify-content: center;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) and (max-height: 683px) {
   .sidebar {
     position: absolute;
     left: 0;
     top: 0;
     z-index: 1000;
     height: 100vh;
-    width: 0;
-    min-width: 0;
-    overflow-x: hidden;
-    transition: width 0.3s;
-    background: rgba(24, 28, 35, 0.98);
-  }
-  .sidebar.open {
     width: 220px;
     min-width: 220px;
+    overflow-x: hidden;
+    background: rgba(24, 28, 35, 0.98);
+    opacity: 0;
+    box-shadow: none;
+    transform: translateX(-100%) scale(0.98);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .sidebar.open {
+    opacity: 1;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.18);
+    transform: translateX(0) scale(1);
   }
 }

@@ -58,15 +58,6 @@ input:focus {
   outline: none;
 }
 
-@media (max-width: 900px) {
-  .main-content {
-    margin-left: 64px;
-  }
-  .app-container {
-    flex-direction: row;
-  }
-}
-
 @media (max-width: 600px) {
   .main-content {
     margin-left: 0;

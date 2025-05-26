@@ -1,10 +1,37 @@
+import React from "react";
 import "../../assets/StudentMsg/ChatInterface.css";
 
-export function ChatInterface() {
+export function ChatInterface({ chatListOpen, setChatListOpen }) {
+  // Helper to detect tablet mode (768x683)
+  const [isTablet, setIsTablet] = React.useState(false);
+  React.useEffect(() => {
+    function handleResize() {
+      setIsTablet(window.innerWidth <= 768 && window.innerHeight <= 683);
+    }
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div className="chat-main-wrapper">
       <div className="chat-container">
-        <div className="chat-list">
+        {isTablet && !chatListOpen && null}
+        <div
+          className={
+            isTablet ? `chat-list${chatListOpen ? " open" : ""}` : "chat-list"
+          }
+          style={isTablet && !chatListOpen ? { display: "none" } : {}}
+        >
+          {isTablet && (
+            <button
+              className="chat-list-toggle"
+              style={{ position: "static", marginBottom: 8 }}
+              onClick={() => setChatListOpen(false)}
+            >
+              Close
+            </button>
+          )}
           <div className="chat-list-header">
             <h2 className="chat-list-title">Chat</h2>
             <button className="compose-button">
