@@ -111,6 +111,7 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 24px;
+  margin-bottom: 24px;
 }
 
 .charts-grid {
@@ -125,6 +126,7 @@ body {
   border: 1px solid #e9eaf0;
   border-radius: 12px;
   overflow: hidden;
+  margin-bottom: 24px;
 }
 
 .ad-card-content {
@@ -204,6 +206,7 @@ body {
   background-color: #111033;
   color: white;
   border: none;
+  margin-bottom: 24px;
 }
 
 .ad-profile-content {
