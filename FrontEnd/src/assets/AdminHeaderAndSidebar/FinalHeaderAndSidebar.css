@@ -1,0 +1,62 @@
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+/* Sidebar: fixed width, dark background, full height */
+.admin-layout > .Sidebar {
+  width: 220px;
+  min-width: 220px;
+  max-width: 220px;
+  background: #181c23;
+  min-height: 100vh;
+  height: 100vh;
+  position: relative;
+  z-index: 2;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Main content fills the rest */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #f5f7fa;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* HeaderMsg at the top, content below */
+.content-area {
+  flex: 1;
+  padding: 0;
+  background: #f5f7fa;
+  overflow-y: auto;
+  min-height: 0;
+  height: 100%;
+}
+
+@media (max-width: 900px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+  .admin-layout > .Sidebar {
+    width: 100vw;
+    min-width: 0;
+    max-width: none;
+    height: auto;
+    min-height: 0;
+    box-shadow: none;
+  }
+  .main-content {
+    width: 100%;
+    min-height: 0;
+  }
+  .content-area {
+    padding: 0;
+    height: auto;
+  }
+}
