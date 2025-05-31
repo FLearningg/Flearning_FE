@@ -1,0 +1,640 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    sans-serif;
+  background-color: #f5f7fa;
+  color: #1d2026;
+}
+
+.ad-container {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  padding: 24px;
+}
+
+.ad-container .container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header */
+/* .ad-header, .ad-header-title, .ad-header-greeting, .ad-header-main-title, .ad-header-actions */
+
+.search-container {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8c94a3;
+  width: 16px;
+  height: 16px;
+}
+
+.search-input {
+  padding: 8px 12px 8px 40px;
+  width: 320px;
+  background-color: white;
+  border: 1px solid #e9eaf0;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #564ffd;
+  box-shadow: 0 0 0 2px rgba(86, 79, 253, 0.1);
+}
+
+.notification-btn {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.notification-btn:hover {
+  background-color: #f5f7fa;
+}
+
+.notification-icon {
+  width: 20px;
+  height: 20px;
+  color: #6e7485;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background-color: #ff6636;
+  border-radius: 50%;
+}
+
+.ad-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #ff6636;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Grid Layouts */
+.ad-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.ad-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+/* Cards */
+.ad-card {
+  background-color: white;
+  border: 1px solid #e9eaf0;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.ad-card-content {
+  padding: 24px;
+}
+
+.ad-card-header {
+  padding: 24px 24px 16px 24px;
+}
+
+.ad-card-title {
+  color: #1d2026;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Stat Cards */
+.stat-card-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon.orange {
+  background-color: #ffeee8;
+  color: #ff6636;
+}
+
+.stat-icon.purple {
+  background-color: #ebebff;
+  color: #564ffd;
+}
+
+.stat-icon.yellow {
+  background-color: #fff2e5;
+  color: #fd8e1f;
+}
+
+.stat-icon.green {
+  background-color: #e1f7e3;
+  color: #23bd33;
+}
+
+.stat-icon.red {
+  background-color: #fff0f0;
+  color: #e34444;
+}
+
+.stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1d2026;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  color: #8c94a3;
+  font-size: 14px;
+}
+
+/* Profile Section */
+.ad-profile-card {
+  background-color: #111033;
+  color: white;
+  border: none;
+  margin-bottom: 24px;
+}
+
+.ad-profile-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+}
+
+.ad-profile-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ad-profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #ff6636;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ad-profile-info h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.ad-profile-email {
+  color: #a1a5b3;
+  font-size: 14px;
+}
+
+.ad-profile-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.ad-progress-section {
+  text-align: center;
+}
+
+.ad-progress-label {
+  font-size: 14px;
+  color: #a1a5b3;
+  margin-bottom: 8px;
+}
+
+.ad-progress-bar {
+  width: 128px;
+  height: 8px;
+  background-color: #4e5566;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ad-progress-fill {
+  height: 100%;
+  background-color: #23bd33;
+  width: 25%;
+  border-radius: 4px;
+}
+
+.completion-text {
+  font-size: 14px;
+  color: white;
+}
+
+.edit-btn {
+  background-color: #ff6636;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.edit-btn:hover {
+  background-color: #e55a2b;
+}
+
+.download-btn {
+  background: none;
+  border: none;
+  color: white;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.download-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Activity Section */
+.ad-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.ad-select {
+  padding: 4px 8px;
+  border: 1px solid #e9eaf0;
+  border-radius: 4px;
+  font-size: 12px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.activity-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+}
+
+.activity-avatar.kevin {
+  background-color: #ff6636;
+}
+
+.activity-avatar.john {
+  background-color: #e34444;
+}
+
+.activity-avatar.sraboni {
+  background-color: #ff6636;
+}
+
+.activity-avatar.arif {
+  background-color: #ff6636;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-text {
+  font-size: 14px;
+  color: #1d2026;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.activity-text .username {
+  font-weight: 600;
+}
+
+.activity-time {
+  font-size: 12px;
+  color: #8c94a3;
+}
+
+/* Revenue Section */
+.revenue-highlight {
+  background-color: #564ffd;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.revenue-number {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.revenue-date {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.chart-placeholder {
+  height: 128px;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c94a3;
+  font-size: 14px;
+}
+
+/* Profile View Chart */
+.ad-bar-chart {
+  height: 128px;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-end;
+  padding: 16px;
+  gap: 2px;
+  margin-bottom: 16px;
+}
+
+.ad-bar {
+  background-color: #23bd33;
+  border-radius: 2px 2px 0 0;
+  flex: 1;
+}
+
+.earnings-summary {
+  text-align: center;
+}
+
+.earnings-amount {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1d2026;
+  margin-bottom: 4px;
+}
+
+.earnings-label {
+  color: #8c94a3;
+  font-size: 14px;
+}
+
+/* Rating Section */
+.rating-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.rating-summary {
+  background-color: #fff2e5;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.rating-number {
+  font-size: 48px;
+  font-weight: 700;
+  color: #1d2026;
+  margin-bottom: 8px;
+}
+
+.stars {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.ad-star {
+  width: 16px;
+  height: 16px;
+}
+
+.ad-star.filled {
+  color: #fd8e1f;
+  fill: #fd8e1f;
+}
+
+.ad-star.empty {
+  color: #e9eaf0;
+}
+
+.rating-label {
+  color: #8c94a3;
+  font-size: 14px;
+}
+
+.rating-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.rating-stars .ad-star {
+  width: 12px;
+  height: 12px;
+}
+
+.rating-bar {
+  flex: 1;
+  height: 8px;
+  background-color: #e9eaf0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.rating-bar-fill {
+  height: 100%;
+  background-color: #fd8e1f;
+  border-radius: 4px;
+}
+
+.rating-percentage {
+  font-size: 14px;
+  color: #8c94a3;
+  width: 32px;
+  text-align: right;
+}
+
+/* Footer */
+.ad-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 24px;
+  border-top: 1px solid #e9eaf0;
+}
+
+.ad-footer-text {
+  color: #8c94a3;
+  font-size: 14px;
+}
+
+.ad-footer-links {
+  display: flex;
+  gap: 24px;
+}
+
+.ad-footer-link {
+  color: #8c94a3;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.ad-footer-link:hover {
+  color: #1d2026;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ad-container {
+    padding: 16px;
+  }
+
+  .ad-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .ad-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .search-input {
+    width: 200px;
+  }
+
+  .ad-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ad-profile-content {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .ad-profile-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .ad-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rating-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ad-footer {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-input {
+    width: 150px;
+  }
+
+  .ad-profile-right {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
