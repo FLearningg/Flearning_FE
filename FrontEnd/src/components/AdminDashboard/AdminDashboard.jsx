@@ -141,7 +141,7 @@ const AdminDashboard = () => {
 
   const StarIcon = ({ filled }) => (
     <svg
-      className={`star ${filled ? "filled" : "empty"}`}
+      className={`ad-star ${filled ? "filled" : "empty"}`}
       fill={filled ? "currentColor" : "none"}
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -156,12 +156,12 @@ const AdminDashboard = () => {
   );
 
   return (
-    <div className="dashboard">
-      <div className="container">
+    <div className="ad-dashboard">
+      <div className="ad-container">
         {/* Stats Cards Row 1 */}
-        <div className="stats-grid">
-          <div className="card">
-            <div className="card-content">
+        <div className="ad-stats-grid">
+          <div className="ad-card">
+            <div className="ad-card-content">
               <div className="stat-card-content">
                 <div className="stat-icon orange">
                   <PlayIcon />
@@ -174,8 +174,8 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="card">
-            <div className="card-content">
+          <div className="ad-card">
+            <div className="ad-card-content">
               <div className="stat-card-content">
                 <div className="stat-icon purple">
                   <BookOpenIcon />
@@ -188,8 +188,8 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="card">
-            <div className="card-content">
+          <div className="ad-card">
+            <div className="ad-card-content">
               <div className="stat-card-content">
                 <div className="stat-icon yellow">
                   <UsersIcon />
@@ -202,8 +202,8 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="card">
-            <div className="card-content">
+          <div className="ad-card">
+            <div className="ad-card-content">
               <div className="stat-card-content">
                 <div className="stat-icon green">
                   <AwardIcon />
@@ -218,9 +218,9 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Cards Row 2 */}
-        <div className="stats-grid">
-          <div className="card">
-            <div className="card-content">
+        <div className="ad-stats-grid">
+          <div className="ad-card">
+            <div className="ad-card-content">
               <div className="stat-card-content">
                 <div className="stat-icon red">
                   <GraduationCapIcon />
@@ -233,8 +233,8 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="card">
-            <div className="card-content">
+          <div className="ad-card">
+            <div className="ad-card-content">
               <div className="stat-card-content">
                 <div className="stat-icon green">
                   <MonitorIcon />
@@ -247,8 +247,8 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="card">
-            <div className="card-content">
+          <div className="ad-card">
+            <div className="ad-card-content">
               <div className="stat-card-content">
                 <div className="stat-icon purple">
                   <DollarSignIcon />
@@ -261,8 +261,8 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="card">
-            <div className="card-content">
+          <div className="ad-card">
+            <div className="ad-card-content">
               <div className="stat-card-content">
                 <div className="stat-icon purple">
                   <ShoppingCartIcon />
@@ -277,16 +277,16 @@ const AdminDashboard = () => {
         </div>
 
         {/* Profile Section */}
-        <div className="card profile-card">
-          <div className="profile-content">
-            <div className="profile-left">
-              <div className="profile-avatar">VS</div>
-              <div className="profile-info">
+        <div className="ad-card ad-profile-card">
+          <div className="ad-profile-content">
+            <div className="ad-profile-left">
+              <div className="ad-profile-avatar">VS</div>
+              <div className="ad-profile-info">
                 <h3>Vako Shvili</h3>
-                <p className="profile-email">vako.shvili@gmail.com</p>
+                <p className="ad-profile-email">vako.shvili@gmail.com</p>
               </div>
             </div>
-            <div className="profile-right">
+            <div className="ad-profile-right">
               <p className="completion-text">25% Completed</p>
               <button className="edit-btn">Edit Biography</button>
               <button className="download-btn">
@@ -297,20 +297,20 @@ const AdminDashboard = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="bottom-grid">
+        <div className="ad-bottom-grid">
           {/* Recent Activity */}
-          <div className="card">
-            <div className="card-header">
-              <div className="section-header">
-                <h3 className="card-title">Recent Activity</h3>
-                <select className="select">
+          <div className="ad-card">
+            <div className="ad-card-header">
+              <div className="ad-section-header">
+                <h3 className="ad-card-title">Recent Activity</h3>
+                <select className="ad-select">
                   <option>Today</option>
                   <option>This week</option>
                   <option>This month</option>
                 </select>
               </div>
             </div>
-            <div className="card-content">
+            <div className="ad-card-content">
               <div className="activity-list">
                 <div className="activity-item">
                   <div className="activity-avatar kevin">K</div>
@@ -359,18 +359,18 @@ const AdminDashboard = () => {
           </div>
 
           {/* Revenue Chart */}
-          <div className="card">
-            <div className="card-header">
-              <div className="section-header">
-                <h3 className="card-title">Revenue</h3>
-                <select className="select">
+          <div className="ad-card">
+            <div className="ad-card-header">
+              <div className="ad-section-header">
+                <h3 className="ad-card-title">Revenue</h3>
+                <select className="ad-select">
                   <option>This month</option>
                   <option>This week</option>
                   <option>This year</option>
                 </select>
               </div>
             </div>
-            <div className="card-content">
+            <div className="ad-card-content">
               <div className="revenue-highlight">
                 <p className="revenue-number">51,749</p>
                 <p className="revenue-date">7th Aug</p>
@@ -382,25 +382,25 @@ const AdminDashboard = () => {
           </div>
 
           {/* Profile View */}
-          <div className="card">
-            <div className="card-header">
-              <div className="section-header">
-                <h3 className="card-title">Profile View</h3>
-                <select className="select">
+          <div className="ad-card">
+            <div className="ad-card-header">
+              <div className="ad-section-header">
+                <h3 className="ad-card-title">Profile View</h3>
+                <select className="ad-select">
                   <option>Today</option>
                   <option>This week</option>
                   <option>This month</option>
                 </select>
               </div>
             </div>
-            <div className="card-content">
+            <div className="ad-card-content">
               <div className="bar-chart">
                 {[
                   40, 60, 80, 45, 70, 90, 55, 75, 65, 85, 50, 70, 60, 80, 45,
                 ].map((height, i) => (
                   <div
                     key={i}
-                    className="bar"
+                    className="ad-bar"
                     style={{ height: `${height}%` }}
                   />
                 ))}
@@ -414,20 +414,20 @@ const AdminDashboard = () => {
         </div>
 
         {/* Bottom Charts */}
-        <div className="charts-grid">
+        <div className="ad-charts-grid">
           {/* Overall Course Rating */}
-          <div className="card">
-            <div className="card-header">
-              <div className="section-header">
-                <h3 className="card-title">Overall Course Rating</h3>
-                <select className="select">
+          <div className="ad-card">
+            <div className="ad-card-header">
+              <div className="ad-section-header">
+                <h3 className="ad-card-title">Overall Course Rating</h3>
+                <select className="ad-select">
                   <option>This week</option>
                   <option>This month</option>
                   <option>This year</option>
                 </select>
               </div>
             </div>
-            <div className="card-content">
+            <div className="ad-card-content">
               <div className="rating-grid">
                 <div className="rating-summary">
                   <p className="rating-number">4.6</p>
@@ -469,18 +469,18 @@ const AdminDashboard = () => {
           </div>
 
           {/* Course Overview */}
-          <div className="card">
-            <div className="card-header">
-              <div className="section-header">
-                <h3 className="card-title">Course Overview</h3>
-                <select className="select">
+          <div className="ad-card">
+            <div className="ad-card-header">
+              <div className="ad-section-header">
+                <h3 className="ad-card-title">Course Overview</h3>
+                <select className="ad-select">
                   <option>This week</option>
                   <option>This month</option>
                   <option>This year</option>
                 </select>
               </div>
             </div>
-            <div className="card-content">
+            <div className="ad-card-content">
               <div className="chart-placeholder" style={{ height: "192px" }}>
                 Course overview chart visualization
               </div>
@@ -489,7 +489,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Footer */}
-        <div className="footer">
+        <div className="ad-footer">
           <p className="footer-text">
             © 2021 - Eduguard. Designed by Templatecookie. All rights reserved
           </p>
