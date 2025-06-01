@@ -487,24 +487,6 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="ad-footer">
-          <p className="footer-text">
-            © 2021 - Eduguard. Designed by Templatecookie. All rights reserved
-          </p>
-          <div className="footer-links">
-            <a href="#" className="footer-link">
-              FAQs
-            </a>
-            <a href="#" className="footer-link">
-              Privacy Policy
-            </a>
-            <a href="#" className="footer-link">
-              Terms & Condition
-            </a>
-          </div>
-        </div>
       </div>
     </div>
   );
