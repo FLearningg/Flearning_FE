@@ -29,8 +29,8 @@ function NavigationBar() {
                                 </NavLink>
                             </li>
                             <li className="nav-item">
-                                <NavLink to="/become-instructor" className="nav-link nav--link">
-                                    Become an instructor
+                                <NavLink to="/faqs" className="nav-link nav--link">
+                                    FAQs
                                 </NavLink>
                             </li>
                         </ul>
