@@ -383,7 +383,7 @@ const getStatusClass = (status) => {
 };
 
 // Main Dashboard Component
-const AdminEarning = () => {
+const AdminEarning = ({ title = "Earning" }) => {
   const [activeCancelIndex, setActiveCancelIndex] = useState(null);
   const popupRef = useRef(null);
 
@@ -406,6 +406,10 @@ const AdminEarning = () => {
     <div className="ae-dashboard">
       {/* Main Content */}
       <div className="ae-main-content">
+        {/* Header Title for dynamic header */}
+        <div style={{ padding: "24px 24px 0 24px" }}>
+          <h1 style={{ fontSize: 28, fontWeight: 700 }}>{title}</h1>
+        </div>
         {/* Stats Cards */}
         <div className="ae-stats-grid">
           <StatCard

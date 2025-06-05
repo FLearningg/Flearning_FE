@@ -14,8 +14,8 @@ const languageOptions = ["English", "Spanish", "French"];
 const levelOptions = ["Beginner", "Intermediate", "Advanced"];
 const durationUnitOptions = ["Day", "Week", "Month"];
 
-const CourseForm = () => {
-  const [title, setTitle] = React.useState("");
+const CourseForm = ({ title = "Create New Course" }) => {
+  const [titleState, setTitle] = React.useState("");
   const [subtitle, setSubtitle] = React.useState("");
   const [topic, setTopic] = React.useState("");
   const [category, setCategory] = React.useState("");
@@ -33,7 +33,7 @@ const CourseForm = () => {
           <ProgressTabs activeIndex={0} progressText="7/12" />
           <div className="cf-form-content">
             <div className="cf-form-header">
-              <h2 className="cf-form-title">Basic Information</h2>
+              <h2 className="cf-form-title">{title}</h2>
               <div className="cf-form-actions">
                 <CustomButton color="grey" type="normal" size="medium">
                   Save
@@ -53,7 +53,7 @@ const CourseForm = () => {
                     id="title"
                     placeholder="You course title"
                     maxLength={80}
-                    value={title}
+                    value={titleState}
                     onChange={(e) => setTitle(e.target.value)}
                   />
                 </div>

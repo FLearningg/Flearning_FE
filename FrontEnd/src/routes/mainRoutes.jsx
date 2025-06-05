@@ -92,7 +92,7 @@ const mainRoutesContent = // Đây là JSX, không phải là một component
         path="admin/dashboard"
         element={
           <FinalHeaderAndSidebar>
-            <AdminDashboard />
+            <AdminDashboard title="Dashboard" />
           </FinalHeaderAndSidebar>
         }
       />
@@ -100,7 +100,7 @@ const mainRoutesContent = // Đây là JSX, không phải là một component
         path="admin/earning"
         element={
           <FinalHeaderAndSidebar>
-            <AdminEarning />
+            <AdminEarning title="Earning" />
           </FinalHeaderAndSidebar>
         }
       />
@@ -108,7 +108,7 @@ const mainRoutesContent = // Đây là JSX, không phải là một component
         path="admin/courses/basic-information"
         element={
           <FinalHeaderAndSidebar>
-            <CourseForm />
+            <CourseForm title="Create New Course" />
           </FinalHeaderAndSidebar>
         }
       />
@@ -116,7 +116,7 @@ const mainRoutesContent = // Đây là JSX, không phải là một component
         path="admin/courses/advance-information"
         element={
           <FinalHeaderAndSidebar>
-            <CourseFormAdvance />
+            <CourseFormAdvance title="Create New Course" />
           </FinalHeaderAndSidebar>
         }
       />
