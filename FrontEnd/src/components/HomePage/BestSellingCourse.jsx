@@ -6,34 +6,158 @@ import PopupCard from '../common/Card/PopupCard';
 
 
 function BestSellingCourse() {
-    const cardProps = {
-        image: '/images/CourseImages.png',
-        category: 'Design',
-        price: '53$',
-        title: 'UI/UX Design Fundamentals',
-        rating: 4.8,
-        students: 1200,
-    };
-    const detailedProps = {
-        title: 'UI/UX Design Fundamentals',
-        author: 'John Doe',
-        authorAvatar: '/images/author-avatar.png',
-        rating: 4.8,
-        ratingCount: 320,
-        students: 1200,
-        level: 'Beginner',
-        duration: '8h 30m',
-        price: '53$',
-        oldPrice: '75$',
-        discount: '29%',
-        learnList: [
-            'Understand the basics of UI/UX design',
-            'Learn design thinking process',
-            'Work with popular design tools',
-            'Create wireframes and prototypes',
-            'Build a portfolio project'
-        ]
-    };
+    const coursesInfo = [//sample data (must be an array)
+        {
+            cardProps: {
+                image: '/images/CourseImages.png',
+                category: 'Design',
+                price: '53$',
+                title: 'UI/UX Design Fundamentals',
+                rating: 4.8,
+                students: 1200,
+            },
+            detailedProps: {
+                title: 'UI/UX Design Fundamentals',
+                author: 'John Doe',
+                authorAvatar: '/images/author-avatar.png',
+                rating: 4.8,
+                ratingCount: 320,
+                students: 1200,
+                level: 'Beginner',
+                duration: '8h 30m',
+                price: '53$',
+                oldPrice: '75$',
+                discount: '29%',
+                learnList: [
+                    'Understand the basics of UI/UX design',
+                    'Learn design thinking process',
+                    'Work with popular design tools',
+                    'Create wireframes and prototypes',
+                    'Build a portfolio project'
+                ]
+            }
+        },
+        {
+            cardProps: {
+                image: '/images/CourseImages.png',
+                category: 'Design',
+                price: '53$',
+                title: 'UI/UX Design Fundamentals',
+                rating: 4.8,
+                students: 1200,
+            },
+            detailedProps: {
+                title: 'UI/UX Design Fundamentals',
+                author: 'John Doe',
+                authorAvatar: '/images/author-avatar.png',
+                rating: 4.8,
+                ratingCount: 320,
+                students: 1200,
+                level: 'Beginner',
+                duration: '8h 30m',
+                price: '53$',
+                oldPrice: '75$',
+                discount: '29%',
+                learnList: [
+                    'Understand the basics of UI/UX design',
+                    'Learn design thinking process',
+                    'Work with popular design tools',
+                    'Create wireframes and prototypes',
+                    'Build a portfolio project'
+                ]
+            }
+        },
+        {
+            cardProps: {
+                image: '/images/CourseImages.png',
+                category: 'Design',
+                price: '53$',
+                title: 'UI/UX Design Fundamentals',
+                rating: 4.8,
+                students: 1200,
+            },
+            detailedProps: {
+                title: 'UI/UX Design Fundamentals',
+                author: 'John Doe',
+                authorAvatar: '/images/author-avatar.png',
+                rating: 4.8,
+                ratingCount: 320,
+                students: 1200,
+                level: 'Beginner',
+                duration: '8h 30m',
+                price: '53$',
+                oldPrice: '75$',
+                discount: '29%',
+                learnList: [
+                    'Understand the basics of UI/UX design',
+                    'Learn design thinking process',
+                    'Work with popular design tools',
+                    'Create wireframes and prototypes',
+                    'Build a portfolio project'
+                ]
+            }
+        },
+        {
+            cardProps: {
+                image: '/images/CourseImages.png',
+                category: 'Design',
+                price: '53$',
+                title: 'UI/UX Design Fundamentals',
+                rating: 4.8,
+                students: 1200,
+            },
+            detailedProps: {
+                title: 'UI/UX Design Fundamentals',
+                author: 'John Doe',
+                authorAvatar: '/images/author-avatar.png',
+                rating: 4.8,
+                ratingCount: 320,
+                students: 1200,
+                level: 'Beginner',
+                duration: '8h 30m',
+                price: '53$',
+                oldPrice: '75$',
+                discount: '29%',
+                learnList: [
+                    'Understand the basics of UI/UX design',
+                    'Learn design thinking process',
+                    'Work with popular design tools',
+                    'Create wireframes and prototypes',
+                    'Build a portfolio project'
+                ]
+            }
+        },
+        {
+            cardProps: {
+                image: '/images/CourseImages.png',
+                category: 'Design',
+                price: '53$',
+                title: 'UI/UX Design Fundamentals',
+                rating: 4.8,
+                students: 1200,
+            },
+            detailedProps: {
+                title: 'UI/UX Design Fundamentals',
+                author: 'John Doe',
+                authorAvatar: '/images/author-avatar.png',
+                rating: 4.8,
+                ratingCount: 320,
+                students: 1200,
+                level: 'Beginner',
+                duration: '8h 30m',
+                price: '53$',
+                oldPrice: '75$',
+                discount: '29%',
+                learnList: [
+                    'Understand the basics of UI/UX design',
+                    'Learn design thinking process',
+                    'Work with popular design tools',
+                    'Create wireframes and prototypes',
+                    'Build a portfolio project'
+                ]
+            }
+        }
+    ]
     return (
         <>
             <div style={{ backgroundColor: "#ecebeb7c" }}>
@@ -41,47 +165,13 @@ function BestSellingCourse() {
                     <h3 className="text-center mb-5">Best selling courses</h3>
                     <div className="desktop-view">
                         <div className="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-3">
-                            <div className="col">
-                                <div>
-                                    <PopupCard cardProps={cardProps} detailedProps={detailedProps} />
+                            {coursesInfo.map((courseInfo, index) => (
+                                <div className="col" key={index}>
+                                    <div>
+                                        <PopupCard cardProps={courseInfo.cardProps} detailedProps={courseInfo.detailedProps} />
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="col">
-                                <div>
-                                    <PopupCard cardProps={cardProps} detailedProps={detailedProps} />
-                                </div>
-                            </div>
-                            <div className="col">
-                                <div>
-                                    <PopupCard cardProps={cardProps} detailedProps={detailedProps} />
-                                </div>
-                            </div>
-                            <div className="col">
-                                <div>
-                                    <PopupCard cardProps={cardProps} detailedProps={detailedProps} />
-                                    {/* <Card
-                                        image={'/images/CourseImages.png'}
-                                        category={'Design'}
-                                        price={'53$'}
-                                        title={'UI/UX Design Fundamentals'}
-                                        rating={4.8}
-                                        students={1200}
-                                    /> */}
-                                </div>
-                            </div>
-                            <div className="col">
-                                <div>
-                                    <PopupCard cardProps={cardProps} detailedProps={detailedProps} />
-                                    {/* <Card
-                                        image={'/images/CourseImages.png'}
-                                        category={'Design'}
-                                        price={'53$'}
-                                        title={'UI/UX Design Fundamentals'}
-                                        rating={4.8}
-                                        students={1200}
-                                    /> */}
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                     {/* for mobile */}
