@@ -103,7 +103,6 @@
   right: 0;
   width: 30px;
   height: 1.4em;
-  background: linear-gradient(to right, transparent, #fff 50%);
   pointer-events: none;
 }
 

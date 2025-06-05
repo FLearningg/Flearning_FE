@@ -274,15 +274,7 @@
   line-height: 1.4;
 }
 
-.course-info h3::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 30%;
-  height: 1.4em;
-  background: linear-gradient(to right, transparent, #fff 50%);
-}
+
 
 .course-footer {
   display: flex;
