@@ -132,7 +132,7 @@
     }
 }
 
-@media screen and (min-width: 1024px) {
+@media screen and (min-width: 768px) {
     .tablet-view-nav {
         display: none;
     }
@@ -141,12 +141,12 @@
         display: block;
     }
 
-    .search-input {
+    /* .search-input {
         border-radius: 0px;
-    }
+    } */
 }
 
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 768px) {
     .tablet-view-nav {
         display: block;
     }
@@ -159,9 +159,9 @@
         width: 25%;
     }
 
-    .search-input {
+    /* .search-input {
         border-radius: 20px !important;
-    }
+    } */
 }
 
 /* Notification */
