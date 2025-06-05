@@ -3,3 +3,15 @@
   width: 100%; /* Take full width of its navbar cell */
   max-width: 500px; /* Optional: prevent it from becoming too wide */
 }
+
+.noResultsDropdown {
+  padding: 10px;
+  text-align: center;
+  color: #777; /* Or your desired text color */
+  background-color: #fff; /* Or match your dropdown background */
+  border: 1px solid #ccc; /* Or match your dropdown border */
+  border-top: none; /* Optional, if it sits directly below input that has a bottom border */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional, to match dropdown shadow */
+  border-radius: 0 0 4px 4px; /* Optional, to match dropdown border-radius */
+  margin-top: 2px; /* Adjust as needed */
+}
