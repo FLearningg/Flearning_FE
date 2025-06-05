@@ -7,32 +7,33 @@ const SearchBox = ({
   data = [],
   placeholder = "Search...",
   onSelect,
-  onCategoryClick, // New prop
-  categoryLabel = "Browse", // New prop
-  containerClassName // For custom styling from parent
+  onCategoryClick,
+  categoryLabel = "Browse",
+  containerClassName
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState([]);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [isUiOpen, setIsUiOpen] = useState(false); // Controls visibility of dropdown/message area
   const searchBoxRef = useRef(null);
 
   useEffect(() => {
-    if (searchTerm) {
+    // Filter data when search term changes and UI is open
+    if (searchTerm && isUiOpen) {
       const results = data.filter((item) =>
         item.label.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredData(results);
-      setIsDropdownVisible(results.length > 0);
     } else {
+      // Clear filtered data if no search term or UI is closed
       setFilteredData([]);
-      setIsDropdownVisible(false);
     }
-  }, [searchTerm, data]);
+  }, [searchTerm, data, isUiOpen]);
 
   useEffect(() => {
+    // Handle clicks outside the search box to close the UI
     const handleClickOutside = (event) => {
       if (searchBoxRef.current && !searchBoxRef.current.contains(event.target)) {
-        setIsDropdownVisible(false);
+        setIsUiOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -42,18 +43,23 @@ const SearchBox = ({
   }, []);
 
   const handleInputChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const handleInputFocus = () => {
-    if (searchTerm && filteredData.length > 0) {
-      setIsDropdownVisible(true);
+    const newSearchTerm = event.target.value;
+    setSearchTerm(newSearchTerm);
+    if (newSearchTerm) {
+      setIsUiOpen(true); // Show UI when user starts typing
+    } else {
+      setIsUiOpen(false); // Hide UI if search term is cleared
+      setFilteredData([]); // Explicitly clear data
     }
   };
 
+  const handleInputFocus = () => {
+    setIsUiOpen(true); // Show UI when input is focused
+  };
+
   const handleItemClick = (item) => {
-    setSearchTerm(item.label);
-    setIsDropdownVisible(false);
+    setSearchTerm(item.label); // Set input value to selected item's label
+    setIsUiOpen(false); // Hide UI after selection
     if (onSelect) {
       onSelect(item);
     }
@@ -65,15 +71,28 @@ const SearchBox = ({
         value={searchTerm}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
+        // onBlur is not directly managed here, handleClickOutside handles it for the UI area
         placeholder={placeholder}
-        onCategoryClick={onCategoryClick} // Pass down
-        categoryLabel={categoryLabel}   // Pass down
+        onCategoryClick={onCategoryClick}
+        categoryLabel={categoryLabel}
       />
-      <DropdownList
-        items={filteredData}
-        onItemClick={handleItemClick}
-        isVisible={isDropdownVisible}
-      />
+      {isUiOpen && (
+        <>
+          {filteredData.length > 0 && (
+            <DropdownList
+              items={filteredData}
+              onItemClick={handleItemClick}
+              isVisible={true} // DropdownList is rendered only if items exist and UI is open
+            />
+          )}
+          {/* Show "No results found" if there's a search term, UI is open, but no results */}
+          {searchTerm && filteredData.length === 0 && (
+            <div className={styles.noResultsDropdown}> {/* Add this class to your CSS module */}
+              No results found
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
