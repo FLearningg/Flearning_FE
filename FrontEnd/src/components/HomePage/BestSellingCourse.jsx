@@ -58,28 +58,28 @@ function BestSellingCourse() {
                             </div>
                             <div className="col">
                                 <div>
-                                    {/* <PopupCard cardProps={cardProps} detailedProps={detailedProps} /> */}
-                                    <Card
+                                    <PopupCard cardProps={cardProps} detailedProps={detailedProps} />
+                                    {/* <Card
                                         image={'/images/CourseImages.png'}
                                         category={'Design'}
                                         price={'53$'}
                                         title={'UI/UX Design Fundamentals'}
                                         rating={4.8}
                                         students={1200}
-                                    />
+                                    /> */}
                                 </div>
                             </div>
                             <div className="col">
                                 <div>
-                                    {/* <PopupCard cardProps={cardProps} detailedProps={detailedProps} /> */}
-                                    <Card
+                                    <PopupCard cardProps={cardProps} detailedProps={detailedProps} />
+                                    {/* <Card
                                         image={'/images/CourseImages.png'}
                                         category={'Design'}
                                         price={'53$'}
                                         title={'UI/UX Design Fundamentals'}
                                         rating={4.8}
                                         students={1200}
-                                    />
+                                    /> */}
                                 </div>
                             </div>
                         </div>

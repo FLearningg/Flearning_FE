@@ -14,9 +14,9 @@ function App() {
       <Header />
       <div style={{ paddingTop: '9%' }}>
         {/* <SumaryHeader/> */}
-        {/* <HomePage /> */}
+        <HomePage />
         {/* <AboutUs/> */}
-        <ContactUs/>
+        {/* <ContactUs/> */}
         
       </div>
       <Footer />

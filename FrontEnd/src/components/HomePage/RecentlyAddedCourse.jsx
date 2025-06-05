@@ -58,15 +58,7 @@ function RecentlyAddedCourse() {
                         </div>
                         <div className="col">
                             <div>
-                                {/* <PopupCard cardProps={cardProps} detailedProps={detailedProps} /> */}
-                                <Card
-                                    image={'/images/CourseImages.png'}
-                                    category={'Design'}
-                                    price={'53$'}
-                                    title={'UI/UX Design Fundamentals'}
-                                    rating={4.8}
-                                    students={1200}
-                                />
+                                <PopupCard cardProps={cardProps} detailedProps={detailedProps} />
                             </div>
                         </div>
                     </div>
@@ -110,7 +102,7 @@ function RecentlyAddedCourse() {
                         </SwiperSlide>
                     </Swiper>
                 </div>
-                <div className='d-flex justify-content-center'>
+                <div className='d-flex justify-content-center mt-4'>
                     <button className='create-account-btn p-2 px-3 mt-4'>Browse All Course <FontAwesomeIcon icon={faChevronRight} /></button>
                 </div>
             </div>
