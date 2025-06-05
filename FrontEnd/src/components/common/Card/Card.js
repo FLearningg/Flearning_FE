@@ -1,9 +1,10 @@
 import React from "react";
+import PropTypes from "prop-types";
 import "./Card.css";
 
 // SVG Components
 export const StarIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-label="Star rating">
     <path
       d="M10 15.27L16.18 19l-1.64-7.03L20 7.24l-7.19-.61L10 0 7.19 6.63 0 7.24l5.46 4.73L3.82 19z"
       fill="#FFB400"
@@ -12,7 +13,7 @@ export const StarIcon = () => (
 );
 
 export const UserIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-label="Students">
     <g>
       <circle cx="10" cy="7" r="4" stroke="#7B7B7B" strokeWidth="1.5" />
       <path
@@ -26,7 +27,7 @@ export const UserIcon = () => (
 );
 
 export const ClockIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-label="Duration">
     <path
       d="M8 14.6667C11.6819 14.6667 14.6667 11.6819 14.6667 8C14.6667 4.3181 11.6819 1.33334 8 1.33334C4.3181 1.33334 1.33333 4.3181 1.33333 8C1.33333 11.6819 4.3181 14.6667 8 14.6667Z"
       stroke="#6E7A8A"
@@ -45,7 +46,7 @@ export const ClockIcon = () => (
 );
 
 export const LevelIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-label="Level">
     <path
       d="M2 14L2 8.5"
       stroke="#6E7A8A"
@@ -68,23 +69,29 @@ export const LevelIcon = () => (
 );
 
 const Card = ({ image, category, price, title, rating, students }) => (
-  <div className="card-container">
-    <div className="card-image" style={{ backgroundImage: `url(${image})` }} />
-    <div className="divider" />
+  <div className="card-container" role="article" tabIndex="0">
+    <div 
+      className="card-image" 
+      style={{ backgroundImage: `url(${image})` }}
+      role="img"
+      aria-label={`Course image for ${title}`}
+    />
     <div className="card-body custom-card-body">
       <div className="custom-row">
-        <div className="card-category">{category}</div>
-        <div className="card-price">
+        <div className="card-category" aria-label={`Category: ${category}`}>
+          {category}
+        </div>
+        <div className="card-price" aria-label={`Price: ${price}`}>
           <span className="orange-gradient">{price}</span>
         </div>
       </div>
-      <div className="card-title">{title}</div>
+      <div className="card-title" title={title}>{title}</div>
       <div className="card-footer">
-        <div className="rating">
+        <div className="rating" aria-label={`Rating: ${rating} stars`}>
           <StarIcon />
           {rating}
         </div>
-        <div className="students">
+        <div className="students" aria-label={`${students} students enrolled`}>
           <UserIcon />
           {students}
         </div>
@@ -92,6 +99,24 @@ const Card = ({ image, category, price, title, rating, students }) => (
     </div>
   </div>
 );
+
+Card.propTypes = {
+  image: PropTypes.string.isRequired,
+  category: PropTypes.string.isRequired,
+  price: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  rating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  students: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+};
+
+Card.defaultProps = {
+  image: "/api/placeholder/312/234",
+  category: "Course",
+  price: "Free",
+  title: "Course Title",
+  rating: "0.0",
+  students: "0",
+};
 
 export const DetailedCard = ({
   title,
@@ -107,7 +132,7 @@ export const DetailedCard = ({
   discount,
   learnList,
 }) => (
-  <div className="detailed-card-container">
+  <div className="detailed-card-container" role="article" tabIndex="0">
     <div className="detailed-card-body">
       <h3 className="detailed-title">{title}</h3>
 
@@ -116,13 +141,15 @@ export const DetailedCard = ({
           <div
             className="author-avatar"
             style={{ backgroundImage: `url(${authorAvatar})` }}
+            role="img"
+            aria-label={`${author}'s profile picture`}
           />
           <div className="author-name">
             Course by
             <strong>{author}</strong>
           </div>
         </div>
-        <div className="rating-info">
+        <div className="rating-info" aria-label={`Rating: ${rating} stars from ${ratingCount} reviews`}>
           <StarIcon />
           {rating}
           <span style={{ color: "#6E7A8A" }}>({ratingCount})</span>
@@ -130,28 +157,36 @@ export const DetailedCard = ({
       </div>
 
       <div className="stats-row">
-        <div className="stat-item">
+        <div className="stat-item" aria-label={`${students} students enrolled`}>
           <UserIcon />
           {students} students
         </div>
 
-        <div className="stat-item">
+        <div className="stat-item" aria-label={`Difficulty level: ${level}`}>
           <LevelIcon />
           {level}
         </div>
 
-        <div className="stat-item">
+        <div className="stat-item" aria-label={`Course duration: ${duration}`}>
           <ClockIcon />
           {duration}
         </div>
       </div>
 
       <div className="price-row">
-        <div className="current-price">
+        <div className="current-price" aria-label={`Current price: ${price}`}>
           <span className="orange-gradient">{price}</span>
         </div>
-        <div className="old-price">{oldPrice}</div>
-        <div className="discount">{discount}</div>
+        {oldPrice && (
+          <div className="old-price" aria-label={`Original price: ${oldPrice}`}>
+            {oldPrice}
+          </div>
+        )}
+        {discount && (
+          <div className="discount" aria-label={`Discount: ${discount}`}>
+            {discount}
+          </div>
+        )}
       </div>
 
       <div>
@@ -166,18 +201,52 @@ export const DetailedCard = ({
           What you'll learn
         </div>
         <ul className="learn-list">
-          {learnList.map((item, index) => (
-            <li key={index} className="learn-item">
+          {learnList && learnList.map((item, index) => (
+            <li key={`learn-item-${index}`} className="learn-item">
               {item}
             </li>
           ))}
         </ul>
       </div>
 
-      <button className="card-button">Add To Cart</button>
-      <button className="card-detail-button">Course Detail</button>
+      <button 
+        className="card-button"
+        aria-label={`Add ${title} to cart`}
+        type="button"
+      >
+        Add To Cart
+      </button>
+      <button 
+        className="card-detail-button"
+        aria-label={`View details for ${title}`}
+        type="button"
+      >
+        Course Detail
+      </button>
     </div>
   </div>
 );
+
+DetailedCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  author: PropTypes.string.isRequired,
+  authorAvatar: PropTypes.string,
+  rating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  ratingCount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  students: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  level: PropTypes.string.isRequired,
+  duration: PropTypes.string.isRequired,
+  price: PropTypes.string.isRequired,
+  oldPrice: PropTypes.string,
+  discount: PropTypes.string,
+  learnList: PropTypes.arrayOf(PropTypes.string),
+};
+
+DetailedCard.defaultProps = {
+  authorAvatar: "/api/placeholder/36/36",
+  oldPrice: null,
+  discount: null,
+  learnList: [],
+};
 
 export default Card;
