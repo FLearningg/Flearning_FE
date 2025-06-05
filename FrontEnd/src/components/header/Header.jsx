@@ -20,12 +20,10 @@ function Header() {
                 {/* for desktop */}
                 <NavigationBar />
                 {/* when already login */}
-                {/* <h6 className='text-center mt-3 text-danger'>Sau khi login</h6> */}
                 <nav className="navbar navbar-light bg-light pb-3 pt-3 border-bottom">
                     <div className="container-fluid mx-2">
                         <div className="d-flex w-100 align-items-center">
                             <LogoHeader />
-                            <Browse />
                             <div className='ms-3'>
                                 <SearchBar />
                             </div>
@@ -36,7 +34,6 @@ function Header() {
                     </div>
                 </nav>
             </div>
-            {/* <h6 className='text-center mt-3 text-danger'>Navbar cho tablet (nhỏ hơn 1024)</h6> */}
             {/* for mobile */}
             <div className='position-fixed w-100' style={{ zIndex: 2000 }}>
                 <MobileHeader user={userExample} />
