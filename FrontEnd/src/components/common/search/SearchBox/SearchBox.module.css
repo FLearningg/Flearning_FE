@@ -5,13 +5,17 @@
 }
 
 .noResultsDropdown {
-  padding: 10px;
-  text-align: center;
-  color: #777; /* Or your desired text color */
-  background-color: #fff; /* Or match your dropdown background */
-  border: 1px solid #ccc; /* Or match your dropdown border */
-  border-top: none; /* Optional, if it sits directly below input that has a bottom border */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional, to match dropdown shadow */
-  border-radius: 0 0 4px 4px; /* Optional, to match dropdown border-radius */
-  margin-top: 2px; /* Adjust as needed */
+  position: absolute;
+  top: calc(100% + 5px); /* Same positioning as dropdownList */
+  left: 0;
+  right: 0;
+  background-color: #fff; /* Match dropdownList */
+  border: 1px solid #e0e0e0; /* Match dropdownList */
+  border-top: none; /* Match dropdownList */
+  border-radius: 0 0 8px 8px; /* Match dropdownList */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Match dropdownList */
+  z-index: 1000; /* Same z-index as dropdownList */
+  padding: 10px 15px; /* Add padding for the text, similar to dropdownItem */
+  color: #555; /* Or your preferred color for this message */
+  text-align: left; /* Or 'center' if you prefer */
 }
