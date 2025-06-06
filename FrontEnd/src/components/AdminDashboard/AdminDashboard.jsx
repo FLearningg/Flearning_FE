@@ -1,6 +1,6 @@
 import "../../assets/AdminDashboard/AdminDashboard.css";
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ title = "Dashboard" }) => {
   // SVG Icons as components
   const SearchIcon = () => (
     <svg

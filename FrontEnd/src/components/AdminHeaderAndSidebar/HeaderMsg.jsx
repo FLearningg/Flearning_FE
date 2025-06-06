@@ -1,6 +1,8 @@
 import "../../assets/AdminHeaderAndSidebar/HeaderMsg.css";
 import { FaBars, FaComments } from "react-icons/fa";
 import React from "react";
+import Notification from "../header/Notification";
+import SearchBar from "../header/SearchBar";
 
 export function HeaderMsg({ onHamburgerClick, title = "Dashboard" }) {
   // Responsive check for tablet and below
@@ -34,41 +36,11 @@ export function HeaderMsg({ onHamburgerClick, title = "Dashboard" }) {
         <h1 className="title">{title}</h1>
       </div>
       <div className="header-right">
-        <div className="search-container">
-          <svg
-            className="search-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="text" placeholder="Search" className="search-input" />
+        <div style={{ minWidth: 220, maxWidth: 350, width: 250 }}>
+          <SearchBar />
         </div>
-        <div className="notification-container">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="notification-icon"
-          >
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
-          <span className="notification-badge">3</span>
+        <div style={{ marginLeft: 16 }}>
+          <Notification />
         </div>
         <div className="profile-image">
           <img src="/placeholder.svg?height=40&width=40" alt="Profile" />
