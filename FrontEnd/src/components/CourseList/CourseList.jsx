@@ -92,15 +92,12 @@ const CourseList = () => {
   const location = useLocation();
 
   return (
-    <div className="profile-container">
-      <ProfileSection 
-        avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
-        name="Kevin Gilbert"
-        title="Web Designer & Best-Selling Instructor"
-        activePath={location.pathname}
-        showMobileHeader={true}
-      />
-
+    <ProfileSection 
+      avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
+      name="Kevin Gilbert"
+      title="Web Designer & Best-Selling Instructor"
+      activePath={location.pathname}
+    >
       <div className="course-list-wrapper">
         <div className="course-list-container">
           <div className="courses-header">
@@ -160,7 +157,7 @@ const CourseList = () => {
           </div>
         </div>
       </div>
-    </div>
+    </ProfileSection>
   );
 };
 

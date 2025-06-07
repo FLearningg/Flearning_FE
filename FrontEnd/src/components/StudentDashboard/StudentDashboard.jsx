@@ -115,45 +115,44 @@ const StudentDashboard = () => {
   const location = useLocation();
 
   return (
-    <div className="dashboard-container">
-      <ProfileSection 
-        avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
-        name="Kevin Gilbert"
-        title="Web Designer & Best-Selling Instructor"
-        activePath={location.pathname}
-        showMobileHeader={false}
-      />
-
-      <div className="dashboard-header">
-        <h2>Dashboard</h2>
-      </div>
-
-      <div className="stats-grid">
-        {STATS_DATA.map(stat => (
-          <StatCard key={stat.id} {...stat} />
-        ))}
-      </div>
-
-      <div className="learning-section">
-        <div className="learning-section-header">
-          <h3>Let's start learning, Kevin</h3>
-          <div className="learning-nav-buttons">
-            <button className="learning-nav-btn learning-nav-prev" aria-label="Previous courses">
-              ←
-            </button>
-            <button className="learning-nav-btn learning-nav-next" aria-label="Next courses">
-              →
-            </button>
-          </div>
+    <ProfileSection 
+      avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
+      name="Kevin Gilbert"
+      title="Web Designer & Best-Selling Instructor"
+      activePath={location.pathname}
+    >
+      <div className="dashboard-content">
+        <div className="dashboard-header">
+          <h2>Dashboard</h2>
         </div>
 
-        <div className="learning-grid">
-          {LEARNING_DATA.map(course => (
-            <LearningCard key={course.id} {...course} />
+        <div className="stats-grid">
+          {STATS_DATA.map(stat => (
+            <StatCard key={stat.id} {...stat} />
           ))}
         </div>
+
+        <div className="learning-section">
+          <div className="learning-section-header">
+            <h3>Let's start learning, Kevin</h3>
+            <div className="learning-nav-buttons">
+              <button className="learning-nav-btn learning-nav-prev" aria-label="Previous courses">
+                ←
+              </button>
+              <button className="learning-nav-btn learning-nav-next" aria-label="Next courses">
+                →
+              </button>
+            </div>
+          </div>
+
+          <div className="learning-grid">
+            {LEARNING_DATA.map(course => (
+              <LearningCard key={course.id} {...course} />
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </ProfileSection>
   );
 };
 

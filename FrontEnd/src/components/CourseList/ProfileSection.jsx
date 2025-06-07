@@ -6,9 +6,8 @@ import '../../assets/CourseList/ProfileSection.css';
 
 const NAV_ITEMS = [
   { path: '/profile/dashboard', label: 'Dashboard' },
-  { path: '/profile/courses', label: 'Courses' },
-  { path: '/profile/teachers', label: 'Teachers' },
-  { path: '/profile/message', label: 'Message' },
+  { path: '/profile/courses', label: 'My Courses' },
+  { path: '/profile/message', label: 'Messages' },
   { path: '/profile/wishlist', label: 'Wishlist' },
   { path: '/profile/purchase-history', label: 'Purchase History' },
   { path: '/profile/settings', label: 'Settings' }
@@ -19,24 +18,30 @@ const ProfileSection = ({
   name, 
   title,
   activePath,
-  showMobileHeader = false
+  wrapperBackground = "#FFEEE8",
+  useFullWidthWrapper = true,
+  children
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  return (
+  // Tự động tạo mobile header title từ activePath
+  const getMobileHeaderTitle = () => {
+    const currentItem = NAV_ITEMS.find(item => item.path === activePath);
+    return currentItem ? currentItem.label : "Profile";
+  };
+
+  const profileContent = (
     <>
-      {showMobileHeader && (
-        <div className="course-mobile-header">
-          <button
-            className="course-mobile-toggle"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-          >
-            {mobileMenuOpen ? <FaTimes /> : <FaBars />}
-          </button>
-          <h2>My Courses</h2>
-        </div>
-      )}
+      <div className="course-mobile-header">
+        <button
+          className="course-mobile-toggle"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+        >
+          {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+        </button>
+        <h2>{getMobileHeaderTitle()}</h2>
+      </div>
 
       <div className="profile-section">
         <div className="profile-content">
@@ -68,6 +73,7 @@ const ProfileSection = ({
               className={`course-nav-link ${
                 activePath === item.path ? "course-nav-link-active" : ""
               }`}
+              onClick={() => setMobileMenuOpen(false)}
             >
               {item.label}
             </Link>
@@ -76,6 +82,28 @@ const ProfileSection = ({
       </div>
     </>
   );
+
+  if (useFullWidthWrapper) {
+    return (
+      <>
+        <div 
+          className="profile-section-full-wrapper"
+          style={{ backgroundColor: wrapperBackground }}
+        >
+          <div className="profile-section-inner-container">
+            {profileContent}
+          </div>
+        </div>
+        {children && (
+          <div className="profile-container">
+            {children}
+          </div>
+        )}
+      </>
+    );
+  }
+
+  return profileContent;
 };
 
 ProfileSection.propTypes = {
@@ -83,7 +111,9 @@ ProfileSection.propTypes = {
   name: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   activePath: PropTypes.string.isRequired,
-  showMobileHeader: PropTypes.bool
+  wrapperBackground: PropTypes.string,
+  useFullWidthWrapper: PropTypes.bool,
+  children: PropTypes.node
 };
 
 export default ProfileSection; 

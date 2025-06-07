@@ -19,15 +19,12 @@ export function StudentMessage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   return (
-    <div className="profile-container">
-      <ProfileSection 
-        avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
-        name="Kevin Gilbert"
-        title="Web Designer & Best-Selling Instructor"
-        activePath={location.pathname}
-        showMobileHeader={false}
-      />
-      
+    <ProfileSection 
+      avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
+      name="Kevin Gilbert"
+      title="Web Designer & Best-Selling Instructor"
+      activePath={location.pathname}
+    >
       <div className="app-container">
         <div className="main-area">
           {isTablet && (
@@ -47,6 +44,6 @@ export function StudentMessage() {
           />
         </div>
       </div>
-    </div>
+    </ProfileSection>
   );
 }

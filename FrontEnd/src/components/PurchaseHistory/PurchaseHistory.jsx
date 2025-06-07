@@ -165,15 +165,12 @@ const PurchaseHistory = () => {
   const location = useLocation();
 
   return (
-    <div className="flearning-purchase-container">
-      <ProfileSection 
-        avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
-        name="Kevin Gilbert"
-        title="Web Designer & Best-Selling Instructor"
-        activePath={location.pathname}
-        showMobileHeader={false}
-      />
-
+    <ProfileSection 
+      avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
+      name="Kevin Gilbert"
+      title="Web Designer & Best-Selling Instructor"
+      activePath={location.pathname}
+    >
       <div className="flearning-purchase-content">
         <div className="flearning-purchase-header-main">
           <h2>Purchase History</h2>
@@ -193,7 +190,7 @@ const PurchaseHistory = () => {
           <p>Yay! You have seen all your purchase history. 😎</p>
         </div>
       </div>
-    </div>
+    </ProfileSection>
   );
 };
 
