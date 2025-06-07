@@ -8,8 +8,9 @@ const FinalHeaderAndSidebar = ({ children }) => {
   let title = "Dashboard";
   let childWithProps = children;
 
-  if (React.isValidElement(children) && children.props.title) {
-    title = children.props.title;
+  if (React.isValidElement(children)) {
+    title = children.props.title || title;
+    childWithProps = React.cloneElement(children, { title });
   }
 
   // Add sidebar open state
@@ -28,7 +29,6 @@ const FinalHeaderAndSidebar = ({ children }) => {
         className="Sidebar"
       />
       <div className="main-content">
-
         <HeaderMsg title={title} onHamburgerClick={handleHamburgerClick} />
         <div className="content-area">{childWithProps}</div>
         <footer className="cf-footer">
@@ -43,7 +43,6 @@ const FinalHeaderAndSidebar = ({ children }) => {
             <span className="cf-footer-link">Terms & Condition</span>
           </div>
         </footer>
-
       </div>
     </div>
   );

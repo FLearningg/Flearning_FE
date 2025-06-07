@@ -1,4 +1,3 @@
-// src/routes/authRoutes.js
 import React from 'react';
 import { Route } from 'react-router-dom';
 

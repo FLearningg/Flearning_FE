@@ -1,6 +1,9 @@
 import "../../assets/AdminHeaderAndSidebar/Sidebar.css";
+import { NavLink } from "react-router-dom";
+import { useState } from "react";
 
 export function Sidebar({ open, setOpen }) {
+  const [activeHref, setActiveHref] = useState("/admin/dashboard");
   // Only show overlay on tablet/mobile screens
   const isMobile =
     typeof window !== "undefined" &&
@@ -28,7 +31,7 @@ export function Sidebar({ open, setOpen }) {
         style={isMobile && !open ? { width: 0, minWidth: 0 } : {}}
       >
         <div className="sidebar-header">
-          <a href="/" className="logo-link">
+          <NavLink to="/" className="logo-link">
             <div className="logo-icon">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -46,27 +49,54 @@ export function Sidebar({ open, setOpen }) {
               </svg>
             </div>
             <span className="logo-text">F-Learning</span>
-          </a>
+          </NavLink>
         </div>
 
         <nav className="sidebar-nav">
           <ul className="nav-list">
-            <NavItem href="/dashboard" icon="bar-chart" label="Dashboard" />
             <NavItem
-              href="/create-course"
+              href="/admin/dashboard"
+              icon="bar-chart"
+              label="Dashboard"
+              active={activeHref === "/admin/dashboard"}
+              onClick={() => setActiveHref("/admin/dashboard")}
+            />
+            <NavItem
+              href="/admin/courses/basic-information"
               icon="plus-circle"
               label="Create New Course"
+              active={activeHref === "/admin/courses/basic-information"}
+              onClick={() => setActiveHref("/admin/courses/basic-information")}
             />
-            <NavItem href="/my-courses" icon="book" label="My Courses" />
-            <NavItem href="/earning" icon="dollar-sign" label="Earning" />
             <NavItem
-              href="/message"
+              href="/admin/my-courses"
+              icon="book"
+              label="My Courses"
+              active={activeHref === "/admin/my-courses"}
+              onClick={() => setActiveHref("/admin/my-courses")}
+            />
+            <NavItem
+              href="/admin/earning"
+              icon="dollar-sign"
+              label="Earning"
+              active={activeHref === "/admin/earning"}
+              onClick={() => setActiveHref("/admin/earning")}
+            />
+            <NavItem
+              href="/admin/message"
               icon="message-circle"
               label="Message"
-              active
+              active={activeHref === "/admin/message"}
               badge="3"
+              onClick={() => setActiveHref("/admin/message")}
             />
-            <NavItem href="/settings" icon="settings" label="Settings" />
+            <NavItem
+              href="/admin/settings"
+              icon="settings"
+              label="Settings"
+              active={activeHref === "/admin/settings"}
+              onClick={() => setActiveHref("/admin/settings")}
+            />
           </ul>
         </nav>
 
@@ -95,10 +125,10 @@ export function Sidebar({ open, setOpen }) {
   );
 }
 
-function NavItem({ href, icon, label, active, badge }) {
+function NavItem({ href, icon, label, active, badge, onClick }) {
   return (
-    <li className={`nav-item ${active ? "active" : ""}`}>
-      <a href={href} className="nav-link">
+    <li className={`nav-item ${active ? "active" : ""}`} onClick={onClick}>
+      <NavLink to={href} className="nav-link">
         <span className="nav-icon">
           {icon === "bar-chart" && (
             <svg
@@ -200,7 +230,7 @@ function NavItem({ href, icon, label, active, badge }) {
         </span>
         <span className="nav-label">{label}</span>
         {badge && <div className="nav-badge">{badge}</div>}
-      </a>
+      </NavLink>
     </li>
   );
 }
