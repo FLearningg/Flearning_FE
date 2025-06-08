@@ -16,6 +16,7 @@ function RecentlyAddedCourse() {
                 title: 'UI/UX Design Fundamentals',
                 rating: 4.8,
                 students: 1200,
+                variant: 'large'
             },
             detailedProps: {
                 title: 'UI/UX Design Fundamentals',
@@ -46,6 +47,7 @@ function RecentlyAddedCourse() {
                 title: 'UI/UX Design Fundamentals',
                 rating: 4.8,
                 students: 1200,
+                variant: 'large'
             },
             detailedProps: {
                 title: 'UI/UX Design Fundamentals',
@@ -76,6 +78,7 @@ function RecentlyAddedCourse() {
                 title: 'UI/UX Design Fundamentals',
                 rating: 4.8,
                 students: 1200,
+                variant: 'large'
             },
             detailedProps: {
                 title: 'UI/UX Design Fundamentals',
@@ -106,6 +109,7 @@ function RecentlyAddedCourse() {
                 title: 'UI/UX Design Fundamentals',
                 rating: 4.8,
                 students: 1200,
+                variant: 'large'
             },
             detailedProps: {
                 title: 'UI/UX Design Fundamentals',
@@ -159,6 +163,7 @@ function RecentlyAddedCourse() {
                                 title={'UI/UX Design Fundamentals'}
                                 rating={4.8}
                                 students={1200}
+                                variant="large"
                             />
                         </SwiperSlide>
                         <SwiperSlide>
@@ -169,6 +174,7 @@ function RecentlyAddedCourse() {
                                 title={'UI/UX Design Fundamentals'}
                                 rating={4.8}
                                 students={1200}
+                                variant="large"
                             />
                         </SwiperSlide>
                         <SwiperSlide>
@@ -179,6 +185,7 @@ function RecentlyAddedCourse() {
                                 title={'UI/UX Design Fundamentals'}
                                 rating={4.8}
                                 students={1200}
+                                variant="large"
                             />
                         </SwiperSlide>
                     </Swiper>

@@ -4,10 +4,11 @@ import "./Card.css";
 
 // SVG Components
 export const StarIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-label="Star rating">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-label="Star rating">
     <path
-      d="M10 15.27L16.18 19l-1.64-7.03L20 7.24l-7.19-.61L10 0 7.19 6.63 0 7.24l5.46 4.73L3.82 19z"
-      fill="#FFB400"
+      d="M8 12.2l3.09 1.83-.82-3.51L13 8.17l-3.59-.31L8 4.5l-1.41 3.36L3 8.17l2.73 2.35-.82 3.51L8 12.2z"
+      fill="#fd8e1f"
+      stroke="#fd8e1f"
     />
   </svg>
 );
@@ -68,33 +69,52 @@ export const LevelIcon = () => (
   </svg>
 );
 
-const Card = ({ image, category, price, title, rating, students }) => (
-  <div className="card-container" role="article" tabIndex="0">
-    <div 
-      className="card-image" 
-      style={{ backgroundImage: `url(${image})` }}
-      role="img"
-      aria-label={`Course image for ${title}`}
-    />
-    <div className="card-body custom-card-body">
-      <div className="custom-row">
-        <div className="card-category" aria-label={`Category: ${category}`}>
+const Card = ({ 
+  image, 
+  category, 
+  categoryBgColor, 
+  categoryTextColor, 
+  price, 
+  title, 
+  rating, 
+  students,
+  variant = "normal" // "normal" or "large"
+}) => (
+  <div className={`modern-card-container ${variant === "large" ? "modern-card-large" : "modern-card-normal"}`} role="article" tabIndex="0">
+    <div className="modern-card-image-container">
+      <img
+        src={image || "/api/placeholder/240/140"}
+        alt={title}
+        className="modern-card-image"
+        loading="lazy"
+      />
+    </div>
+    <div className="modern-card-content">
+      <div className="modern-card-header">
+        <span
+          className="modern-category-badge"
+          style={{ 
+            backgroundColor: categoryBgColor || "#ffeee8", 
+            color: categoryTextColor || "#993d20" 
+          }}
+        >
           {category}
-        </div>
-        <div className="card-price" aria-label={`Price: ${price}`}>
-          <span className="orange-gradient">{price}</span>
-        </div>
+        </span>
+        <span className="modern-card-price">
+          {price}
+        </span>
       </div>
-      <div className="card-title" title={title}>{title}</div>
-      <div className="card-footer">
-        <div className="rating" aria-label={`Rating: ${rating} stars`}>
+      <h3 className="modern-card-title" title={title}>
+        {title}
+      </h3>
+      <div className="modern-card-footer">
+        <div className="modern-rating" aria-label={`Rating: ${rating} stars`}>
           <StarIcon />
-          {rating}
+          <span>{typeof rating === 'number' ? rating.toFixed(1) : rating}</span>
         </div>
-        <div className="students" aria-label={`${students} students enrolled`}>
-          <UserIcon />
-          {students}
-        </div>
+        <span className="modern-students" aria-label={`${students} students enrolled`}>
+          <span className="modern-students-number">{students}</span> students
+        </span>
       </div>
     </div>
   </div>
@@ -103,19 +123,25 @@ const Card = ({ image, category, price, title, rating, students }) => (
 Card.propTypes = {
   image: PropTypes.string.isRequired,
   category: PropTypes.string.isRequired,
+  categoryBgColor: PropTypes.string,
+  categoryTextColor: PropTypes.string,
   price: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   rating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   students: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  variant: PropTypes.oneOf(["normal", "large"]),
 };
 
 Card.defaultProps = {
-  image: "/api/placeholder/312/234",
+  image: "/api/placeholder/240/140",
   category: "Course",
+  categoryBgColor: "#ffeee8",
+  categoryTextColor: "#993d20",
   price: "Free",
   title: "Course Title",
-  rating: "0.0",
+  rating: 0.0,
   students: "0",
+  variant: "normal",
 };
 
 export const DetailedCard = ({

@@ -1,3 +1,198 @@
+/* Modern Card Styles */
+.modern-card-container {
+  width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f3f4f6;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.modern-card-normal {
+  max-width: 240px;
+}
+
+.modern-card-large {
+  max-width: 312px;
+  min-height: 388px;
+}
+
+.modern-card-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modern-card-container:focus {
+  outline: 2px solid #ff6636;
+  outline-offset: 2px;
+}
+
+.modern-card-image-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.modern-card-normal .modern-card-image-container {
+  height: 140px;
+}
+
+.modern-card-large .modern-card-image-container {
+  height: 234px;
+}
+
+.modern-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px 8px 0 0;
+  transition: transform 0.2s ease;
+}
+
+.modern-card-container:hover .modern-card-image {
+  transform: scale(1.05);
+}
+
+.modern-card-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.modern-card-large .modern-card-content {
+  padding: 20px;
+  min-height: 154px;
+}
+
+.modern-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.modern-card-large .modern-card-header {
+  margin-bottom: 12px;
+}
+
+.modern-category-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modern-card-large .modern-category-badge {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.modern-card-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ff6636;
+}
+
+.modern-card-large .modern-card-price {
+  font-size: 20px;
+}
+
+.modern-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d2026;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 44.8px;
+}
+
+.modern-card-large .modern-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  min-height: 50.4px;
+}
+
+.modern-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #8c94a3;
+  margin-top: auto;
+  padding-top: 12px;
+  position: relative;
+}
+
+.modern-card-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -16px;
+  right: -16px;
+  height: 1px;
+  background-color: #d1d5db;
+}
+
+.modern-card-large .modern-card-footer {
+  font-size: 16px;
+  gap: 24px;
+  padding-top: 16px;
+}
+
+.modern-card-large .modern-card-footer::before {
+  left: -20px;
+  right: -20px;
+}
+
+.modern-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.modern-card-large .modern-rating {
+  margin-right: 0;
+}
+
+.modern-rating span {
+  font-weight: 500;
+}
+
+.modern-card-large .modern-rating span {
+  font-weight: 600;
+}
+
+.modern-students {
+  font-weight: 400;
+}
+
+.modern-students-number {
+  font-weight: 700;
+}
+
+.modern-card-large .modern-students {
+  font-weight: 400;
+}
+
+.modern-card-large .modern-students-number {
+  font-weight: 900;
+}
+
 /* Card Styles */
 .orange-gradient {
   background: linear-gradient(90deg, #ff7a00 0%, #ff9a00 100%);

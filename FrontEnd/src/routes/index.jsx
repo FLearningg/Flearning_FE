@@ -6,6 +6,8 @@ import AppLayout from '../layouts/AppLayout';
 import mainRoutesContent from './mainRoutes';
 import authRoutesContent from './authRoutes';
 
+import adminRoutesContent from './adminRoutes';
+
 import ErrorPage from '../pages/MainPage/ErrorPage';
 
 const AppRouter = () => {
@@ -17,6 +19,9 @@ const AppRouter = () => {
 
         {/* Nhúng trực tiếp JSX của authRoutesContent */}
         {authRoutesContent}
+      </Route>
+      <Route path="/admin" element={<AppLayout />}>
+        {adminRoutesContent}
       </Route>
       <Route path="*" element={
         <AppLayout>

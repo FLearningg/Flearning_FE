@@ -34,52 +34,6 @@
   margin-left: auto;
 }
 
-.search-container {
-  position: relative;
-}
-
-.search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #8c94a3;
-}
-
-.search-input {
-  padding: 8px 16px 8px 40px;
-  background-color: #f5f7fa;
-  border-radius: 8px;
-  border: none;
-  width: 220px;
-  font-size: 15px;
-}
-
-.notification-container {
-  position: relative;
-}
-
-.notification-icon {
-  color: #6e7485;
-}
-
-.notification-badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background-color: #ff6636;
-  color: white;
-  font-size: 11px;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-weight: 700;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-}
-
 .profile-image {
   width: 40px;
   height: 40px;
