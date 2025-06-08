@@ -4,17 +4,11 @@ import { useState, useEffect } from "react";
 
 export function Sidebar({ open, setOpen }) {
   const location = useLocation();
-  const [activeHref, setActiveHref] = useState("/admin/dashboard");
   // Only show overlay on tablet/mobile screens
   const isMobile =
     typeof window !== "undefined" &&
     window.innerWidth <= 768 &&
     window.innerHeight <= 683;
-
-  // Update activeHref when the URL changes
-  useEffect(() => {
-    setActiveHref(location.pathname);
-  }, [location.pathname]);
 
   return (
     <>
@@ -65,44 +59,40 @@ export function Sidebar({ open, setOpen }) {
               href="/admin/dashboard"
               icon="bar-chart"
               label="Dashboard"
-              active={activeHref === "/admin/dashboard"}
-              onClick={() => setActiveHref("/admin/dashboard")}
+              active={location.pathname.startsWith("/admin/dashboard")}
             />
             <NavItem
               href="/admin/courses/basic-information"
               icon="plus-circle"
               label="Create New Course"
-              active={activeHref === "/admin/courses/basic-information"}
-              onClick={() => setActiveHref("/admin/courses/basic-information")}
+              active={location.pathname.startsWith(
+                "/admin/courses/basic-information"
+              )}
             />
             <NavItem
-              href="/admin/my-courses"
+              href="/admin/courses"
               icon="book"
               label="My Courses"
-              active={activeHref === "/admin/my-courses"}
-              onClick={() => setActiveHref("/admin/my-courses")}
+              active={location.pathname.startsWith("/admin/courses")}
             />
             <NavItem
               href="/admin/earning"
               icon="dollar-sign"
               label="Earning"
-              active={activeHref === "/admin/earning"}
-              onClick={() => setActiveHref("/admin/earning")}
+              active={location.pathname.startsWith("/admin/earning")}
             />
             <NavItem
               href="/admin/message"
               icon="message-circle"
               label="Message"
-              active={activeHref === "/admin/message"}
+              active={location.pathname.startsWith("/admin/message")}
               badge="3"
-              onClick={() => setActiveHref("/admin/message")}
             />
             <NavItem
               href="/admin/settings"
               icon="settings"
               label="Settings"
-              active={activeHref === "/admin/settings"}
-              onClick={() => setActiveHref("/admin/settings")}
+              active={location.pathname.startsWith("/admin/settings")}
             />
           </ul>
         </nav>
@@ -131,9 +121,9 @@ export function Sidebar({ open, setOpen }) {
     </>
   );
 }
-function NavItem({ href, icon, label, active, badge, onClick }) {
+function NavItem({ href, icon, label, active, badge }) {
   return (
-    <li className={`nav-item ${active ? "active" : ""}`} onClick={onClick}>
+    <li className={`nav-item ${active ? "active" : ""}`}>
       <NavLink to={href} className="nav-link">
         <span className="nav-icon">
           {icon === "bar-chart" && (
