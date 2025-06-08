@@ -1,8 +1,13 @@
-/* Dashboard Container */
-.dashboard-container {
+/* Profile Container */
+.profile-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 20px;
+}
+
+/* Dashboard Content */
+.dashboard-content {
+  padding: 0;
 }
 
 .dashboard-header {
@@ -226,7 +231,7 @@
 }
 
 @media (max-width: 768px) {
-  .dashboard-container {
+  .profile-container {
     padding: 16px;
   }
 

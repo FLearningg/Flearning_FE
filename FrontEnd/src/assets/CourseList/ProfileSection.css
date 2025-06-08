@@ -98,6 +98,18 @@
   background-color: #ff6b38;
 }
 
+/* Full width wrapper styles */
+.profile-section-full-wrapper {
+  padding: 1rem 0;
+  margin-bottom: 1.5rem;
+}
+
+.profile-section-inner-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .course-mobile-header {
