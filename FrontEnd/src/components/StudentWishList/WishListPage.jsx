@@ -76,7 +76,7 @@ function WishListPage() {
     };
 
     return (
-        <div className="dashboard-container">
+        <div className="wishlist-container">
             <ProfileSection
                 avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
                 name="Kevin Gilbert"
@@ -84,68 +84,69 @@ function WishListPage() {
                 activePath={location.pathname}
                 showMobileHeader={false}
             />
+            <div className="wishlist-content">
+                <div className="dashboard-header">
+                    <h2>Wishlist ({WishList_DATA?.length})</h2>
+                </div>
 
-            <div className="dashboard-header">
-                <h2>Wishlist ({WishList_DATA?.length})</h2>
-            </div>
-
-            <div className="table-responsive">
-                <table className="table align-middle">
-                    <thead className="table-light">
-                        <tr>
-                            <th scope="col" className='text-secondary fw-medium p-3'>COURSE</th>
-                            <th scope="col" className='text-secondary fw-medium p-3'>PRICE</th>
-                            <th scope="col" className='text-secondary fw-medium p-3'>ACTION</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentData.map((item, index) => (
-                            <tr key={startIdx + index}>
-                                <td className='p-3'>
-                                    <div className="d-flex align-items-start gap-3 flex-nowrap">
-                                        <img src={item.courseImage} className="course-img" alt="course" />
-                                        <div className="flex-shrink-1" style={{ minWidth: 0 }}>
-                                            <div className="rating-star mb-1">
-                                                <FontAwesomeIcon icon={faStar} /> {item.rating} <span className="text-muted">({item.reviewCount} Review)</span>
-                                            </div>
-                                            {/* Link to course details page */}
-                                            <Link className='text-decoration-none text-reset' to={'#'}>
-                                                <div className="course-title">{item.courseName}</div>
-                                            </Link>
-                                            <div className="course-author">Course by: {item.courseAuthor}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="text-start p-3">
-                                    <span className="price-current">${item.price.toFixed(2)}</span>
-                                    {item.oldPrice &&
-                                        <span className="price-old ms-2">${item.oldPrice.toFixed(2)}</span>
-                                    }
-                                </td>
-                                <td className="text-end p-3">
-                                    <div className="d-flex gap-2 flex-nowrap">
-                                        <button className="btn btn-light wishlist-button-buy-now border border-1 rounded-0">Buy Now</button>
-                                        <button className="btn btn-cart rounded-0">Add To Cart</button>
-                                        <button
-                                            className="btn btn-fav rounded-0 p-2"
-                                            onClick={() => toggleHeart(startIdx + index)}
-                                            style={{ minWidth: 40 }}
-                                        >
-                                            <FontAwesomeIcon icon={faTimesCircle} />
-                                        </button>
-                                    </div>
-                                </td>
+                <div className="table-responsive">
+                    <table className="table align-middle">
+                        <thead className="table-light">
+                            <tr>
+                                <th scope="col" className='text-secondary fw-medium p-3'>COURSE</th>
+                                <th scope="col" className='text-secondary fw-medium p-3'>PRICE</th>
+                                <th scope="col" className='text-secondary fw-medium p-3'>ACTION</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {currentData.map((item, index) => (
+                                <tr key={startIdx + index}>
+                                    <td className='p-3'>
+                                        <div className="d-flex align-items-start gap-3 flex-nowrap">
+                                            <img src={item.courseImage} className="course-img" alt="course" />
+                                            <div className="flex-shrink-1" style={{ minWidth: 0 }}>
+                                                <div className="rating-star mb-1">
+                                                    <FontAwesomeIcon icon={faStar} /> {item.rating} <span className="text-muted">({item.reviewCount} Review)</span>
+                                                </div>
+                                                {/* Link to course details page */}
+                                                <Link className='text-decoration-none text-reset' to={'#'}>
+                                                    <div className="course-title">{item.courseName}</div>
+                                                </Link>
+                                                <div className="course-author">Course by: {item.courseAuthor}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="text-start p-3">
+                                        <span className="price-current">${item.price.toFixed(2)}</span>
+                                        {item.oldPrice &&
+                                            <span className="price-old ms-2">${item.oldPrice.toFixed(2)}</span>
+                                        }
+                                    </td>
+                                    <td className="text-end p-3">
+                                        <div className="d-flex gap-2 flex-nowrap">
+                                            <button className="btn btn-light wishlist-button-buy-now border border-1 rounded-0">Buy Now</button>
+                                            <button className="btn btn-cart rounded-0">Add To Cart</button>
+                                            <button
+                                                className="btn btn-fav rounded-0 p-2"
+                                                onClick={() => toggleHeart(startIdx + index)}
+                                                style={{ minWidth: 40 }}
+                                            >
+                                                <FontAwesomeIcon icon={faTimesCircle} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                {/* Pagination controls */}
+                <WishListPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                />
             </div>
-            {/* Pagination controls */}
-            <WishListPagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-            />
         </div>
     )
 }
