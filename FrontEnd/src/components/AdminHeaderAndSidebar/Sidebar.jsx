@@ -1,14 +1,21 @@
 import "../../assets/AdminHeaderAndSidebar/Sidebar.css";
-import { NavLink } from "react-router-dom";
-import { useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export function Sidebar({ open, setOpen }) {
+  const location = useLocation();
   const [activeHref, setActiveHref] = useState("/admin/dashboard");
   // Only show overlay on tablet/mobile screens
   const isMobile =
     typeof window !== "undefined" &&
     window.innerWidth <= 768 &&
     window.innerHeight <= 683;
+
+  // Update activeHref when the URL changes
+  useEffect(() => {
+    setActiveHref(location.pathname);
+  }, [location.pathname]);
+
   return (
     <>
       {isMobile && open && (
@@ -124,7 +131,6 @@ export function Sidebar({ open, setOpen }) {
     </>
   );
 }
-
 function NavItem({ href, icon, label, active, badge, onClick }) {
   return (
     <li className={`nav-item ${active ? "active" : ""}`} onClick={onClick}>

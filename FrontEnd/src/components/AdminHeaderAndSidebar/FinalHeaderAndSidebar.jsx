@@ -22,15 +22,15 @@ const FinalHeaderAndSidebar = ({ children }) => {
   const handleSidebarClose = () => setSidebarOpen(false);
 
   return (
-    <div className="admin-layout">
+    <div className="ahs-admin-layout">
       <Sidebar
         open={sidebarOpen}
         setOpen={setSidebarOpen}
         className="Sidebar"
       />
-      <div className="main-content">
+      <div className="ahs-main-content">
         <HeaderMsg title={title} onHamburgerClick={handleHamburgerClick} />
-        <div className="content-area">{childWithProps}</div>
+        <div className="ahs-content-area">{childWithProps}</div>
         <footer className="cf-footer">
           <div className="cf-footer-left">
             © 2021 - Eduguard. Designed by{" "}

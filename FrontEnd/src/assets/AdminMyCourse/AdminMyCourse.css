@@ -1,0 +1,683 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    sans-serif;
+  background-color: #f5f7fa;
+}
+
+.amc-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f7fa;
+}
+
+/* Sidebar Styles */
+.amc-sidebar {
+  width: 256px;
+  background-color: #1d2026;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.amc-sidebar-header {
+  padding: 24px;
+}
+
+.amc-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.amc-logo-icon {
+  width: 32px;
+  height: 32px;
+  background-color: #ff6636;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.amc-logo-text {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.amc-sidebar-nav {
+  flex: 1;
+  padding: 0 16px;
+}
+
+.amc-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.amc-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: #8c94a3;
+  text-decoration: none;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.amc-nav-link:hover {
+  background-color: #4e5566;
+  color: white;
+}
+
+.amc-nav-link.amc-active {
+  background-color: #ff6636;
+  color: white;
+}
+
+.amc-nav-link svg {
+  width: 20px;
+  height: 20px;
+}
+
+.amc-message-badge {
+  position: absolute;
+  right: 16px;
+  width: 8px;
+  height: 8px;
+  background-color: #ff6636;
+  border-radius: 50%;
+}
+
+.amc-sidebar-footer {
+  padding: 16px;
+}
+
+/* Main Content */
+.amc-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.amc-header {
+  background-color: white;
+  border-bottom: 1px solid #e9eaf0;
+  padding: 16px 32px;
+}
+
+.amc-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.amc-header-title {
+  color: #8c94a3;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.amc-header-main {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1d2026;
+}
+
+.amc-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.amc-search-container {
+  position: relative;
+}
+
+.amc-search-input {
+  padding: 8px 12px 8px 40px;
+  width: 256px;
+  border: 1px solid #e9eaf0;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.amc-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8c94a3;
+  width: 16px;
+  height: 16px;
+}
+
+.amc-notification-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: #8c94a3;
+}
+
+.amc-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #e9eaf0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6e7485;
+}
+
+/* Breadcrumb */
+.amc-breadcrumb {
+  padding: 16px 32px;
+  background-color: white;
+  border-bottom: 1px solid #e9eaf0;
+}
+
+.amc-breadcrumb-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #8c94a3;
+  flex-wrap: wrap;
+}
+
+.amc-breadcrumb-active {
+  color: #1d2026;
+}
+
+/* Content Area */
+.amc-content {
+  flex: 1;
+  padding: 32px;
+}
+
+.amc-content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
+}
+
+/* Cards */
+.amc-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 32px;
+}
+
+.amc-card-content {
+  padding: 24px;
+}
+
+.amc-card-header {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.amc-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1d2026;
+}
+
+/* Course Info */
+.amc-course-info {
+  display: flex;
+  gap: 24px;
+}
+
+.amc-course-image {
+  width: 320px;
+  height: 192px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.amc-course-details {
+  flex: 1;
+}
+
+.amc-course-meta {
+  font-size: 14px;
+  color: #8c94a3;
+  margin-bottom: 4px;
+}
+
+.amc-course-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1d2026;
+  margin-bottom: 8px;
+}
+
+.amc-course-description {
+  color: #8c94a3;
+  margin-bottom: 16px;
+}
+
+.amc-withdraw-btn {
+  background-color: #ff6636;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.amc-withdraw-btn:hover {
+  background-color: #fd8e1f;
+}
+
+.amc-course-creators {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.amc-creators-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.amc-creator-avatars {
+  display: flex;
+  gap: 4px;
+}
+
+.amc-creator-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #e9eaf0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #6e7485;
+}
+
+.amc-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.amc-star {
+  width: 16px;
+  height: 16px;
+  color: #fd8e1f;
+  fill: #fd8e1f;
+}
+
+.amc-rating-text {
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.amc-rating-count {
+  font-size: 14px;
+  color: #8c94a3;
+}
+
+.amc-course-pricing {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.amc-price-item h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1d2026;
+}
+
+.amc-price-item p {
+  font-size: 14px;
+  color: #8c94a3;
+}
+
+/* Stats Grid */
+.amc-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.amc-stat-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+}
+
+.amc-stat-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.amc-stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.amc-stat-icon.amc-orange {
+  background-color: #ffeee8;
+  color: #ff6636;
+}
+
+.amc-stat-icon.amc-purple {
+  background-color: #ebebff;
+  color: #564ffd;
+}
+
+.amc-stat-icon.amc-red {
+  background-color: #fff0f0;
+  color: #e34444;
+}
+
+.amc-stat-icon.amc-green {
+  background-color: #e1f7e3;
+  color: #23bd33;
+}
+
+.amc-stat-icon.amc-gray {
+  background-color: #e9eaf0;
+  color: #6e7485;
+}
+
+.amc-stat-icon.amc-yellow {
+  background-color: #fff2e5;
+  color: #fd8e1f;
+}
+
+.amc-stat-number {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1d2026;
+}
+
+.amc-stat-label {
+  font-size: 14px;
+  color: #8c94a3;
+}
+
+/* Charts Grid */
+.amc-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.amc-chart-placeholder {
+  height: 256px;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c94a3;
+}
+
+/* Rating Sidebar */
+.amc-rating-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.amc-rating-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 0;
+}
+
+.amc-rating-content {
+  padding: 24px;
+}
+
+.amc-rating-circle {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.amc-rating-display {
+  width: 128px;
+  height: 128px;
+  background-color: #fff2e5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.amc-rating-number {
+  font-size: 48px;
+  font-weight: 700;
+  color: #1d2026;
+}
+
+.amc-rating-stars {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.amc-rating-label {
+  font-size: 14px;
+  color: #8c94a3;
+  margin-top: 4px;
+}
+
+.amc-rating-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.amc-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.amc-rating-stars-small {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.amc-star-small {
+  width: 12px;
+  height: 12px;
+}
+
+.amc-star-filled {
+  color: #fd8e1f;
+  fill: #fd8e1f;
+}
+
+.amc-star-empty {
+  color: #e9eaf0;
+}
+
+.amc-rating-text-small {
+  font-size: 14px;
+  color: #8c94a3;
+  margin-left: 4px;
+}
+
+.amc-progress-bar {
+  flex: 1;
+  height: 8px;
+  background-color: #e9eaf0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.amc-progress-fill {
+  height: 100%;
+  background-color: #fd8e1f;
+  transition: width 0.3s;
+}
+
+.amc-rating-percentage {
+  font-size: 14px;
+  color: #8c94a3;
+  width: 32px;
+  text-align: right;
+}
+
+.amc-select {
+  padding: 6px 12px;
+  border: 1px solid #e9eaf0;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .amc-content-grid {
+    grid-template-columns: 1fr;
+  }
+  .amc-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .amc-charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .amc-sidebar {
+    width: 200px;
+    /* Optionally hide or overlay sidebar on mobile */
+    /* display: none; or position: absolute; left: -100%; */
+  }
+  .amc-course-info {
+    flex-direction: column;
+  }
+  .amc-course-image {
+    width: 100%;
+    height: auto;
+  }
+  .amc-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .amc-course-creators {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .amc-course-pricing {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .amc-card-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .amc-content {
+    padding: 4px;
+  }
+  .amc-card-content {
+    padding: 6px;
+  }
+  .amc-header,
+  .amc-breadcrumb {
+    padding: 8px;
+  }
+  .amc-header-main {
+    font-size: 18px;
+  }
+  .amc-card-title {
+    font-size: 16px;
+  }
+  .amc-course-title {
+    font-size: 16px;
+  }
+  .amc-course-meta,
+  .amc-course-description {
+    font-size: 12px;
+  }
+  .amc-stat-number {
+    font-size: 16px;
+  }
+  .amc-stat-label {
+    font-size: 12px;
+  }
+  .amc-rating-number {
+    font-size: 32px;
+  }
+  .amc-rating-label {
+    font-size: 12px;
+  }
+  .amc-breadcrumb-content {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    white-space: normal;
+    font-size: 12px;
+    gap: 2px;
+    word-break: break-word;
+  }
+  .amc-course-info {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .amc-course-details > div {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .amc-withdraw-btn {
+    width: 100%;
+    margin-top: 8px;
+    font-size: 15px;
+    padding: 10px 0;
+    text-align: center;
+  }
+  .amc-course-image {
+    width: 100%;
+    height: auto;
+    min-width: 0;
+  }
+}
