@@ -29,7 +29,7 @@ function WishList() {
                     <div className='position-fixed bg-white p-2 px-3 border-3 border-bottom ' style={{ width: '374px', zIndex: 1000 }}>
                         <div className="d-flex align-items-center">
                             <h5 className='text-start fw-bold mb-0'>WishList</h5>
-                            <Link to={'/'} className='ms-auto see-all-link'>
+                            <Link to={'/profile/wishlist'} className='ms-auto see-all-link'>
                                 <small>See all</small>
                             </Link>
                         </div>
