@@ -7,10 +7,13 @@ import AdminMyCourse from "../components/AdminMyCourse/AdminMyCourse";
 import CourseForm from "../components/CRUDCourseAndLesson/CourseForm";
 import CourseFormAdvance from "../components/CRUDCourseAndLesson/CourseFormAdvance";
 import CourseCurriculum from "../components/CRUDCourseAndLesson/CourseCurriculum";
+import AdminDiscount from "../components/AdminDiscount/AdminDiscount";
+
 const adminRoutesContent = (
   <>
     <Route path="dashboard" element={<AdminDashboard title="Dashboard" />} />
     <Route path="earning" element={<AdminEarning title="Earning" />} />
+    <Route path="discounts" element={<AdminDiscount title="Discount Management" />} />
     <Route
       path="courses/basic-information"
       element={<CourseForm title="Basic Information" />}
