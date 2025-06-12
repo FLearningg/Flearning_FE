@@ -82,11 +82,10 @@ export function Sidebar({ open, setOpen }) {
               active={location.pathname.startsWith("/admin/earning")}
             />
             <NavItem
-              href="/admin/message"
-              icon="message-circle"
-              label="Message"
-              active={location.pathname.startsWith("/admin/message")}
-              badge="3"
+              href="/admin/discounts"
+              icon="tag"
+              label="Discounts"
+              active={location.pathname.startsWith("/admin/discounts")}
             />
             <NavItem
               href="/admin/settings"
@@ -205,6 +204,22 @@ function NavItem({ href, icon, label, active, badge }) {
               strokeLinejoin="round"
             >
               <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+          )}
+          {icon === "tag" && (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
             </svg>
           )}
           {icon === "settings" && (
