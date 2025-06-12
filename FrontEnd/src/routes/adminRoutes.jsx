@@ -6,7 +6,7 @@ import AdminEarning from "../components/AdminEarning/AdminEarning";
 import AdminMyCourse from "../components/AdminMyCourse/AdminMyCourse";
 import CourseForm from "../components/CRUDCourseAndLesson/CourseForm";
 import CourseFormAdvance from "../components/CRUDCourseAndLesson/CourseFormAdvance";
-
+import CourseCurriculum from "../components/CRUDCourseAndLesson/CourseCurriculum";
 const adminRoutesContent = (
   <>
     <Route path="dashboard" element={<AdminDashboard title="Dashboard" />} />
@@ -20,6 +20,10 @@ const adminRoutesContent = (
       element={<CourseFormAdvance title="Advance Information" />}
     />
     <Route path="courses" element={<AdminMyCourse title="My Courses" />} />
+    <Route
+      path="courses/curriculum"
+      element={<CourseCurriculum title="Course Curriculum" />}
+    />
   </>
 );
 export default adminRoutesContent;
