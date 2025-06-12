@@ -64,7 +64,10 @@ export default function CourseForm() {
           onClick={() => addInput(type)}
           disabled={items.length >= MAX_INPUTS}
         >
-          <Plus className="icon-sm" /> Add new
+          <div className="acc-add-sections-container">
+            <Plus className="icon-sm" />
+            <span>Add new</span>
+          </div>
         </CustomButton>
       </div>
       <div className="input-list">
@@ -120,7 +123,10 @@ export default function CourseForm() {
                 <div className="upload-card">
                   <ImageIcon className="upload-icon" />
                   <CustomButton color="primary" type="normal" size="small">
-                    <Upload className="icon-sm" /> Upload Image
+                    <div className="acc-add-sections-container">
+                      <Upload className="icon-sm" />
+                      <span>Upload Image</span>
+                    </div>
                   </CustomButton>
                 </div>
               </div>
@@ -132,7 +138,10 @@ export default function CourseForm() {
                 <div className="upload-card">
                   <Play className="upload-icon" />
                   <CustomButton color="primary" type="normal" size="small">
-                    <Upload className="icon-sm" /> Upload Video
+                    <div className="acc-add-sections-container">
+                      <Upload className="icon-sm" />
+                      <span>Upload Video</span>
+                    </div>
                   </CustomButton>
                 </div>
               </div>

@@ -1,17 +1,39 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { HeaderMsg } from "./HeaderMsg";
 import "../../assets/AdminHeaderAndSidebar/FinalHeaderAndSidebar.css";
 
-const FinalHeaderAndSidebar = ({ children }) => {
-  // If children is a React element, extract its props
-  let title = "Dashboard";
-  let childWithProps = children;
+const routeTitleMap = {
+  "/admin/dashboard": "Dashboard",
+  "/admin/courses/basic-information": "Create New Course",
+  "/admin/courses/advance-information": "Create New Course",
+  "/admin/courses/curriculum": "Create New Course",
+  "/admin/courses/publish": "Create New Course",
+  "/admin/courses": "My Courses",
+  "/admin/earning": "Earning",
+  "/admin/discounts": "Discounts",
+  "/admin/settings": "Settings",
+  // Add more mappings as needed
+};
 
-  if (React.isValidElement(children)) {
-    title = children.props.title || title;
-    childWithProps = React.cloneElement(children, { title });
+function getTitleFromPath(pathname) {
+  // Find the best match for the current path
+  for (const route in routeTitleMap) {
+    if (
+      (route.endsWith("/") && pathname.startsWith(route)) ||
+      (!route.endsWith("/") && pathname === route) ||
+      pathname.startsWith(route)
+    ) {
+      return routeTitleMap[route];
+    }
   }
+  return "Dashboard";
+}
+
+const FinalHeaderAndSidebar = ({ children }) => {
+  const location = useLocation();
+  const title = getTitleFromPath(location.pathname);
 
   // Add sidebar open state
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -20,6 +42,12 @@ const FinalHeaderAndSidebar = ({ children }) => {
   const handleHamburgerClick = () => setSidebarOpen(true);
   // Handler to close sidebar
   const handleSidebarClose = () => setSidebarOpen(false);
+
+  // Clone children with title prop if needed
+  let childWithProps = children;
+  if (React.isValidElement(children)) {
+    childWithProps = React.cloneElement(children, { title });
+  }
 
   return (
     <div className="ahs-admin-layout">
