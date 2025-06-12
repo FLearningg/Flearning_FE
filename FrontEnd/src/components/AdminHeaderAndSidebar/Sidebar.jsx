@@ -73,7 +73,7 @@ export function Sidebar({ open, setOpen }) {
               href="/admin/courses"
               icon="book"
               label="My Courses"
-              active={location.pathname.startsWith("/admin/courses")}
+              active={location.pathname.endsWith("/admin/courses")}
             />
             <NavItem
               href="/admin/earning"

@@ -97,10 +97,10 @@ export default function CourseForm() {
             <div className="cf-form-header">
               <h2 className="cf-form-title">Advance Information</h2>
               <div className="cf-form-actions">
-                <CustomButton color="grey" type="normal" size="medium">
+                <CustomButton color="primary" type="normal" size="medium">
                   Save
                 </CustomButton>
-                <CustomButton color="warning" type="normal" size="medium">
+                <CustomButton color="transparent" type="normal" size="medium">
                   Save & Preview
                 </CustomButton>
               </div>
@@ -184,8 +184,8 @@ export default function CourseForm() {
               "requirement"
             )}
 
-            <div className="cf-form-actions-bottom">
-              <CustomButton color="grey" type="normal" size="large">
+            <div className="acc-navigation-buttons">
+              <CustomButton color="transparent" type="normal" size="large">
                 Previous
               </CustomButton>
               <CustomButton color="primary" type="normal" size="large">

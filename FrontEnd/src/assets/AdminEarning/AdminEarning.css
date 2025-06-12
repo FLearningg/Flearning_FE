@@ -680,29 +680,6 @@ body {
   color: #1d2026;
 }
 
-/* Footer */
-.ae-footer {
-  padding: 24px;
-  font-size: 14px;
-  color: #8c94a3;
-  display: flex;
-  justify-content: space-between;
-}
-
-.ae-footer-links {
-  display: flex;
-  gap: 16px;
-}
-
-.ae-footer-links a {
-  color: #8c94a3;
-  text-decoration: none;
-}
-
-.ae-footer-links a:hover {
-  color: #1d2026;
-}
-
 /* Responsive */
 @media (max-width: 1024px) {
   .ae-stats-grid {

@@ -35,10 +35,10 @@ const CourseForm = ({ title = "Create New Course" }) => {
             <div className="cf-form-header">
               <h2 className="cf-form-title">{title}</h2>
               <div className="cf-form-actions">
-                <CustomButton color="grey" type="normal" size="medium">
+                <CustomButton color="primary" type="normal" size="medium">
                   Save
                 </CustomButton>
-                <CustomButton color="warning" type="normal" size="medium">
+                <CustomButton color="transparent" type="normal" size="medium">
                   Save & Preview
                 </CustomButton>
               </div>
@@ -157,9 +157,9 @@ const CourseForm = ({ title = "Create New Course" }) => {
                   </div>
                 </div>
               </div>
-              <div className="cf-form-actions-bottom">
+              <div className="acc-navigation-buttons">
                 <CustomButton
-                  color="grey"
+                  color="transparent"
                   type="normal"
                   size="large"
                   onClick={() => {}}

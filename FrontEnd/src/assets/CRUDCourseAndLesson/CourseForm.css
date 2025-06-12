@@ -384,3 +384,21 @@ body {
   max-width: 1200px;
   width: 100%;
 }
+
+@media (max-width: 600px) {
+  .cf-form-actions-bottom {
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    margin-top: 24px;
+    padding-top: 0;
+  }
+  .cf-form-actions-bottom .cf-btn,
+  .cf-form-actions-bottom button {
+    width: 100% !important;
+    padding: 12px 0 !important;
+    font-size: 15px;
+    border-radius: 8px;
+  }
+}

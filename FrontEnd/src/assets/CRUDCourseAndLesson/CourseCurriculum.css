@@ -1,0 +1,627 @@
+/* Base Styles */
+.acc-app-container {
+  display: flex;
+  min-height: 100vh;
+  margin-bottom: 24px;
+  margin: 32px 10px 10px 0;
+}
+
+/* Icon Sizes */
+.acc-icon-xs {
+  width: 16px;
+  height: 16px;
+}
+
+.acc-icon-sm {
+  width: 20px;
+  height: 20px;
+}
+
+/* Sidebar Styles */
+.acc-sidebar {
+  width: 256px;
+  background-color: #1d2026;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.acc-logo-section {
+  padding: 24px;
+  border-bottom: 1px solid rgba(110, 116, 133, 0.2);
+}
+
+.acc-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.acc-logo-icon {
+  width: 32px;
+  height: 32px;
+  background-color: #ff6636;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.acc-logo-text {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.acc-navigation {
+  flex: 1;
+  padding: 16px;
+}
+
+.acc-nav-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.acc-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #8c94a3;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.acc-nav-item:hover {
+  background-color: rgba(110, 116, 133, 0.1);
+}
+
+.acc-nav-item-active {
+  background-color: #ff6636;
+  color: white;
+}
+
+.acc-nav-item-with-badge {
+  position: relative;
+}
+
+.acc-notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #ff6636;
+  color: white;
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.acc-sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid rgba(110, 116, 133, 0.2);
+}
+
+/* Main Content Layout (like CourseForm, but acc- prefix) */
+.acc-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.acc-main-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  min-height: calc(100vh - 96px);
+  display: flex;
+  flex-direction: column;
+}
+
+.acc-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.acc-form-content {
+  flex: 1;
+  padding: 32px;
+}
+
+.acc-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  max-width: 1024px;
+}
+
+.acc-form-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1d2026;
+}
+
+.acc-form-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Header Styles */
+.acc-header {
+  background-color: white;
+  border-bottom: 1px solid #e9eaf0;
+  padding: 16px 32px;
+}
+
+.acc-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.acc-greeting {
+  color: #8c94a3;
+  font-size: 14px;
+  margin: 0 0 4px 0;
+}
+
+.acc-page-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1d2026;
+  margin: 0;
+}
+
+.acc-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.acc-search-container {
+  position: relative;
+}
+
+.acc-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8c94a3;
+  width: 16px;
+  height: 16px;
+}
+
+.acc-search-input {
+  padding-left: 40px;
+  width: 320px;
+  background-color: #f5f7fa;
+  border: none;
+}
+
+.acc-notification-icon {
+  width: 20px;
+  height: 20px;
+  color: #8c94a3;
+}
+
+.acc-user-avatar {
+  width: 32px;
+  height: 32px;
+}
+
+.acc-avatar-fallback {
+  background-color: #ff6636;
+  color: white;
+}
+
+/* Progress Section */
+.acc-progress-section {
+  background-color: white;
+  border-bottom: 1px solid #e9eaf0;
+  padding: 24px 32px;
+}
+
+.acc-progress-steps {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.acc-progress-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.acc-step-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.acc-step-completed {
+  background-color: #23bd33;
+  color: white;
+}
+
+.acc-step-current {
+  background-color: #ff6636;
+  color: white;
+}
+
+.acc-step-pending {
+  border: 2px solid #e9eaf0;
+  background-color: white;
+}
+
+.acc-step-number {
+  color: #8c94a3;
+  font-size: 14px;
+}
+
+.acc-step-label {
+  color: #8c94a3;
+}
+
+.acc-step-label-current {
+  color: #1d2026;
+  font-weight: 500;
+}
+
+.acc-step-counter {
+  color: #8c94a3;
+  font-size: 14px;
+}
+
+/* Course Structure */
+.acc-course-structure {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.acc-section-card {
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #e9eaf0;
+  padding: 24px;
+}
+
+.acc-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.acc-section-title-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.acc-section-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #8c94a3;
+}
+
+.acc-section-line {
+  width: 16px;
+  height: 2px;
+  background-color: #c2c8d0;
+  border-radius: 2px;
+  position: relative;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.acc-section-line::before,
+.acc-section-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 16px;
+  height: 2px;
+  background-color: #c2c8d0;
+  border-radius: 2px;
+}
+
+.acc-section-line::before {
+  top: -5px;
+}
+
+.acc-section-line::after {
+  top: 5px;
+}
+
+.acc-section-label {
+  font-weight: 500;
+}
+
+.acc-section-name {
+  color: #1d2026;
+}
+
+.acc-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.acc-action-button {
+  color: #8c94a3;
+}
+
+.acc-action-button:hover {
+  color: #1d2026;
+}
+
+/* Lectures */
+.acc-lectures-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-left: 24px;
+}
+
+.acc-lecture-item {
+  background-color: #f5f7fa;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.acc-lecture-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.acc-lecture-title-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.acc-lecture-line {
+  width: 16px;
+  height: 2px;
+  background-color: #c2c8d0;
+  border-radius: 2px;
+  position: relative;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.acc-lecture-line::before,
+.acc-lecture-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 16px;
+  height: 2px;
+  background-color: #c2c8d0;
+  border-radius: 2px;
+}
+
+.acc-lecture-line::before {
+  top: -5px;
+}
+
+.acc-lecture-line::after {
+  top: 5px;
+}
+
+.acc-lecture-name {
+  color: #1d2026;
+}
+
+.acc-lecture-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.acc-contents-button {
+  color: #ff6636;
+  display: flex;
+  align-items: center; /* Add this line to vertically center children */
+}
+
+.acc-contents-button:hover {
+  background-color: #ffeee8;
+}
+
+.acc-chevron {
+  margin-left: 4px;
+  display: flex; /* Add this line */
+  align-items: center; /* Add this line */
+}
+
+.acc-dropdown-content {
+  width: 192px;
+}
+
+.acc-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Expanded Content */
+.acc-expanded-content {
+  margin-left: 24px;
+  padding: 16px;
+  background-color: white;
+  border: 1px solid #e9eaf0;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.acc-content-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.acc-content-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #8c94a3;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.acc-content-option:hover {
+  color: #1d2026;
+}
+
+/* Add Sections Button */
+.acc-add-sections-button {
+  width: 100%;
+  padding: 24px;
+  color: #ff6636;
+  border-color: #ff6636;
+  border-style: dashed;
+  background-color: rgba(255, 238, 232, 0.3);
+  display: flex;
+}
+.acc-add-sections-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.acc-add-sections-button:hover {
+  background-color: #ffeee8;
+}
+
+.acc-add-icon {
+  margin-right: 8px;
+}
+
+/* Navigation Buttons */
+.acc-navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 48px;
+}
+
+.acc-nav-button {
+  padding: 8px 32px;
+}
+
+.acc-nav-button-primary {
+  background-color: #ff6636;
+}
+
+.acc-nav-button-primary:hover {
+  background-color: rgba(255, 102, 54, 0.9);
+}
+
+/* Footer */
+.acc-footer {
+  background-color: white;
+  border-top: 1px solid #e9eaf0;
+  padding: 16px 32px;
+}
+
+.acc-footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #8c94a3;
+}
+
+.acc-footer-highlight {
+  color: #1d2026;
+}
+
+.acc-footer-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.acc-footer-link {
+  color: #8c94a3;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.acc-footer-link:hover {
+  color: #1d2026;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .acc-main-container {
+    max-width: 100vw;
+  }
+}
+
+@media (max-width: 768px) {
+  .acc-form-content {
+    padding: 16px;
+  }
+  .acc-form-header {
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 16px;
+    max-width: 100vw;
+  }
+  .acc-form-title {
+    font-size: 18px;
+  }
+  .acc-main-container {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 0;
+    min-height: unset;
+    max-width: 100vw;
+    width: 100vw;
+  }
+}
+
+@media (max-width: 600px) {
+  .acc-main-container {
+    padding: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+  .acc-form-content {
+    padding: 4px !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+  .acc-form-header {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+    max-width: 100vw;
+    justify-self: center;
+  }
+  .acc-form-title {
+    font-size: 16px;
+  }
+}
