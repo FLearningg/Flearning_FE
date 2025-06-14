@@ -1,15 +1,15 @@
 import React, { useState } from 'react'
 import ProfileSection from '../CourseList/ProfileSection'
 import { Link, useLocation } from 'react-router-dom';
-import '../../assets/StudentWishList/StudentWishList.css';
+import '../../assets/StudentCartPage/StudentCart.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
-import WishListPagination from './WishListPagination';
+import CartPagePagination from './CartPagePagination';
 
-function WishListPage() {
+function CartPage() {
     const location = useLocation();
-    const WishList_DATA = [
+    const Cart_DATA = [
         {
             courseImage: "/images/CourseImages.png",
             courseName: "The Ultimate Drawing Course - Beginner to Advanced",
@@ -60,19 +60,19 @@ function WishListPage() {
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 4;
-    const totalPages = Math.ceil(WishList_DATA.length / itemsPerPage);
+    const totalPages = Math.ceil(Cart_DATA.length / itemsPerPage);
 
     // Get current page data
     const startIdx = (currentPage - 1) * itemsPerPage;
-    const currentData = WishList_DATA.slice(startIdx, startIdx + itemsPerPage);
+    const currentData = Cart_DATA.slice(startIdx, startIdx + itemsPerPage);
 
     const handlePageChange = (page) => {
         if (page >= 1 && page <= totalPages) setCurrentPage(page);
     };
 
     const toggleHeart = (index) => {
-        // Logic to remove item from wishlist
-        console.log('removed from wishlist', index);
+        // Logic to remove item from cart
+        console.log('removed from cart', index);
     };
 
     return (
@@ -84,10 +84,10 @@ function WishListPage() {
                 activePath={location.pathname}
                 showMobileHeader={false}
             />
-            <div className="wishlist-container">
-                <div className="wishlist-content">
+            <div className="cart-container">
+                <div className="cart-content">
                     <div className="dashboard-header">
-                        <h2>Wishlist ({WishList_DATA?.length})</h2>
+                        <h2>Cart ({Cart_DATA?.length})</h2>
                     </div>
 
                     <div className="table-responsive">
@@ -104,31 +104,30 @@ function WishListPage() {
                                     <tr key={startIdx + index}>
                                         <td className='p-3'>
                                             <div className="d-flex align-items-start gap-3 flex-nowrap">
-                                                <img src={item.courseImage} className="wishlist-course-img" alt="course" />
+                                                <img src={item.courseImage} className="cart-course-img" alt="course" />
                                                 <div className="flex-shrink-1" style={{ minWidth: 0 }}>
-                                                    <div className="wl-rating-star mb-1">
+                                                    <div className="cart-rating-star mb-1">
                                                         <FontAwesomeIcon icon={faStar} /> {item.rating} <span className="text-muted">({item.reviewCount} Review)</span>
                                                     </div>
                                                     {/* Link to course details page */}
                                                     <Link className='text-decoration-none text-reset' to={'#'}>
                                                         <div className="text-truncate fw-semibold">{item.courseName}</div>
                                                     </Link>
-                                                    <div className="wl-course-author">Course by: {item.courseAuthor}</div>
+                                                    <div className="cart-course-author">Course by: {item.courseAuthor}</div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="text-start p-3">
-                                            <span className="wl-price-current">${item.price.toFixed(2)}</span>
+                                            <span className="cart-price-current">${item.price.toFixed(2)}</span>
                                             {item.oldPrice &&
-                                                <span className="wl-price-old ms-2">${item.oldPrice.toFixed(2)}</span>
+                                                <span className="cart-price-old ms-2">${item.oldPrice.toFixed(2)}</span>
                                             }
                                         </td>
                                         <td className="text-end p-3">
                                             <div className="d-flex gap-2 flex-nowrap">
-                                                <button className="btn btn-light wishlist-button-buy-now border border-1 rounded-0">Buy Now</button>
-                                                <button className="btn wl-btn-cart rounded-0">Add To Cart</button>
+                                                <button className="btn btn-light cart-button-buy-now border border-1 rounded-0">Buy Now</button>
                                                 <button
-                                                    className="btn wl-btn-fav rounded-0 p-2"
+                                                    className="btn cart-btn-fav rounded-0 p-2"
                                                     onClick={() => toggleHeart(startIdx + index)}
                                                     style={{ minWidth: 40 }}
                                                 >
@@ -142,7 +141,7 @@ function WishListPage() {
                         </table>
                     </div>
                     {/* Pagination controls */}
-                    <WishListPagination
+                    <CartPagePagination
                         currentPage={currentPage}
                         totalPages={totalPages}
                         onPageChange={handlePageChange}
@@ -153,4 +152,4 @@ function WishListPage() {
     )
 }
 
-export default WishListPage;
+export default CartPage;

@@ -18,9 +18,11 @@ function HeaderRight({ user }) {
           <>
             <Notification />
             <WishList />
-            <button className="btn btn-light rounded-circle icon-btn">
-              <img src="/icons/cart.png" className="icon" alt="" />
-            </button>
+            <Link to="/profile/cart">
+              <button className="btn btn-light rounded-circle icon-btn">
+                <img src="/icons/cart.png" className="icon" alt="" />
+              </button>
+            </Link>
           </>
         ) : (
           <></>

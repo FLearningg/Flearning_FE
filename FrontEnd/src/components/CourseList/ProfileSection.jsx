@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { path: '/profile/courses', label: 'My Courses' },
   { path: '/profile/message', label: 'Messages' },
   { path: '/profile/wishlist', label: 'Wishlist' },
+  { path: '/profile/cart', label: 'Shopping Cart' },
   { path: '/profile/purchase-history', label: 'Purchase History' },
   { path: '/profile/settings', label: 'Settings' }
 ];

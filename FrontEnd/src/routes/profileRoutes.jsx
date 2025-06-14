@@ -8,6 +8,7 @@ import PurchaseHistory from '../components/PurchaseHistory/PurchaseHistory';
 import { StudentMessage } from '../components/StudentMessage/StudentMessage';
 import WishListPage from '../components/StudentWishList/WishListPage';
 import ProfileSetting from '../components/ProfileSetting/ProfileSetting';
+import CartPage from "../components/StudentCartPage/CartPage";
 
 const ProfileRoutes = () => {
   return (
@@ -16,6 +17,7 @@ const ProfileRoutes = () => {
       <Route path="courses" element={<CourseList />} />
       <Route path="message" element={<StudentMessage />} />
       <Route path="wishlist" element={<WishListPage />} />
+      <Route path="cart" element={<CartPage/>} />
       <Route path="purchase-history" element={<PurchaseHistory />} />
       <Route path="settings" element={<ProfileSetting />} />
     </Routes>
