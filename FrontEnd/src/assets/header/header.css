@@ -167,7 +167,7 @@
 /* Notification */
 .dropdown-menu-fixed-right {
     position: fixed !important;
-    right: 0 !important;
+    right: 15px !important;
     left: auto !important;
     z-index: 2010 !important;
     border-radius: 10px;
@@ -246,4 +246,11 @@
     .dropdown-menu-fixed-right {
         top: 55px !important; /* thấp hơn nữa cho điện thoại nhỏ */
     }
+}
+.header-btn-show-more{
+    background-color: #ddd !important;
+    font-weight: 600 !important;
+}
+.header-btn-show-more:hover{
+    background-color: #cbc8c8 !important;
 }

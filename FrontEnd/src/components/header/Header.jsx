@@ -28,7 +28,7 @@ function Header() {
                                 <SearchBar />
                             </div>
                             <div className='ms-auto'>
-                                <HeaderRight user={null} />
+                                <HeaderRight user={userExample} />
                             </div>
                         </div>
                     </div>
