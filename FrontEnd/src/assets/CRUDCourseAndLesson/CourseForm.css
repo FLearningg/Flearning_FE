@@ -21,12 +21,17 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center; 
+  justify-content: flex-start; 
 }
 
 /* Form Content */
 .cf-form-content {
   flex: 1;
   padding: 32px;
+  max-width: 1024px; 
+  width: 100%; 
+  margin: 0 auto;
 }
 
 .cf-form-header {

@@ -8,25 +8,18 @@ import CourseForm from "../components/CRUDCourseAndLesson/CourseForm";
 import CourseFormAdvance from "../components/CRUDCourseAndLesson/CourseFormAdvance";
 import CourseCurriculum from "../components/CRUDCourseAndLesson/CourseCurriculum";
 import AdminDiscount from "../components/AdminDiscount/AdminDiscount";
+import CoursePublish from "../components/CRUDCourseAndLesson/CoursePublish";
 
 const adminRoutesContent = (
   <>
-    <Route path="dashboard" element={<AdminDashboard title="Dashboard" />} />
-    <Route path="earning" element={<AdminEarning title="Earning" />} />
-    <Route path="discounts" element={<AdminDiscount title="Discount Management" />} />
-    <Route
-      path="courses/basic-information"
-      element={<CourseForm title="Basic Information" />}
-    />
-    <Route
-      path="courses/advance-information"
-      element={<CourseFormAdvance title="Advance Information" />}
-    />
-    <Route path="courses" element={<AdminMyCourse title="My Courses" />} />
-    <Route
-      path="courses/curriculum"
-      element={<CourseCurriculum title="Course Curriculum" />}
-    />
+    <Route path="dashboard" element={<AdminDashboard />} />
+    <Route path="earning" element={<AdminEarning />} />
+    <Route path="discounts" element={<AdminDiscount />} />
+    <Route path="courses/basic-information" element={<CourseForm />} />
+    <Route path="courses/advance-information" element={<CourseFormAdvance />} />
+    <Route path="courses" element={<AdminMyCourse />} />
+    <Route path="courses/curriculum" element={<CourseCurriculum />} />
+    <Route path="courses/publish" element={<CoursePublish />} />
   </>
 );
 export default adminRoutesContent;

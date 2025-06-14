@@ -1,0 +1,438 @@
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.cp-container {
+  min-height: 100vh;
+  background-color: #f5f7fa; /* Light gray background for the page */
+  padding: 32px 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cp-content-wrapper {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  max-width: 1024px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Make the white card only fit its content */
+.cp-content-wrapper,
+.cp-main-content,
+.cp-form-content {
+  min-height: unset !important;
+  height: auto !important;
+  flex: 0 0 auto !important;
+}
+
+/* Prevent stretching in the parent container */
+.cp-container {
+  align-items: flex-start !important;
+}
+
+/* Progress Stepper */
+.cp-stepper-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  position: relative;
+}
+
+.cp-stepper-line {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #e9eaf0;
+}
+
+.cp-stepper-progress {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  width: 75%;
+  height: 2px;
+  background-color: #23bd33;
+}
+
+.cp-step-item {
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  padding-right: 16px;
+  z-index: 1;
+}
+
+.cp-step-item.cp-active {
+  padding-left: 16px;
+}
+
+.cp-step-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.cp-step-icon.cp-completed {
+  background-color: #23bd33;
+}
+
+.cp-step-icon.cp-active {
+  background-color: #ff6636;
+}
+
+.cp-check-icon,
+.cp-play-icon {
+  width: 24px;
+  height: 24px;
+  color: #ffffff;
+}
+
+.cp-step-label {
+  color: #6e7485;
+  font-weight: 500;
+}
+
+.cp-step-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.cp-step-title {
+  color: #1d2026;
+  font-weight: 500;
+}
+
+.cp-step-progress {
+  color: #ff6636;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Header */
+.cp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.cp-page-title {
+  font-size: 30px;
+  font-weight: bold;
+  color: #1d2026;
+}
+
+.cp-header-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+/* Add to CoursePublish.css */
+.cp-page-header {
+  width: 100%;
+  max-width: 1024px;
+  margin: 0 auto 16px auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cp-breadcrumbs {
+  color: #8c94a3;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.cp-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.cp-footer-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+
+/* Buttons */
+.cp-btn {
+  padding: 12px 24px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cp-btn-primary {
+  background-color: #ff6636;
+  color: #ffffff;
+}
+
+.cp-btn-primary:hover {
+  background-color: #e55a2b;
+}
+
+.cp-btn-secondary {
+  background-color: #ffeee8;
+  color: #ff6636;
+  border: 1px solid #ffeee8;
+}
+
+.cp-btn-secondary:hover {
+  background-color: #ffd9cc;
+}
+
+.cp-btn-outline {
+  background-color: transparent;
+  color: #6e7485;
+  border: 1px solid #e9eaf0;
+}
+
+.cp-btn-outline:hover {
+  background-color: #f5f7fa;
+}
+
+.cp-submit-btn {
+  padding: 12px 32px;
+}
+
+/* Sections */
+.cp-section {
+  margin-bottom: 48px;
+}
+
+.cp-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1d2026;
+  margin-bottom: 24px;
+}
+
+/* Message Section */
+.cp-message-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .cp-message-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cp-form-group {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Search */
+.cp-search-container {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.cp-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #8c94a3;
+}
+
+.cp-search-input {
+  width: 100%;
+  height: 48px;
+  padding: 12px 12px 12px 44px;
+  border: 1px solid #e9eaf0;
+  border-radius: 6px;
+  font-family: inherit;
+  color: #8c94a3;
+}
+
+.cp-search-input::placeholder {
+  color: #8c94a3;
+}
+
+.cp-search-input:focus {
+  outline: none;
+  border-color: #ff6636;
+}
+
+/* Instructor Cards */
+.cp-instructor-cards {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cp-instructor-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 200px;
+}
+
+.cp-instructor-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cp-instructor-avatar.cp-green {
+  background-color: #23bd33;
+}
+
+.cp-instructor-avatar.cp-orange {
+  background-color: #ff6636;
+}
+
+.cp-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cp-instructor-info {
+  flex: 1;
+}
+
+.cp-instructor-name {
+  font-weight: 500;
+  color: #1d2026;
+  margin-bottom: 2px;
+}
+
+.cp-instructor-role {
+  font-size: 14px;
+  color: #6e7485;
+}
+
+.cp-remove-btn {
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #8c94a3;
+  transition: color 0.2s ease;
+}
+
+.cp-remove-btn:hover {
+  color: #1d2026;
+}
+
+.cp-x-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Bottom Navigation */
+.cp-bottom-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .cp-stepper-container {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .cp-stepper-line,
+  .cp-stepper-progress {
+    display: none;
+  }
+
+  .cp-content-wrapper {
+    padding: 24px;
+    max-width: 100vw;
+  }
+}
+
+@media (max-width: 768px) {
+  .cp-container {
+    padding: 16px 0;
+  }
+  .cp-content-wrapper {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .cp-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .cp-header-buttons {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .cp-instructor-cards {
+    flex-direction: column;
+  }
+
+  .cp-instructor-card {
+    min-width: auto;
+  }
+
+  .cp-bottom-nav {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .cp-submit-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .cp-page-title {
+    font-size: 24px;
+  }
+
+  .cp-header-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .cp-btn {
+    width: 100%;
+  }
+}
