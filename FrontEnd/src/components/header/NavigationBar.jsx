@@ -8,27 +8,27 @@ function NavigationBar() {
                 <div className="container-fluid">
                     <div className="d-flex">
                         <ul className="navbar-nav me-auto mb-lg-0">
-                            <li className="nav-item">
+                            <li className="nav-item mb-0 p-0">
                                 <NavLink to="/" className="nav-link nav--link">
                                     Home
                                 </NavLink>
                             </li>
-                            <li className="nav-item">
+                            <li className="nav-item mb-0 p-0">
                                 <NavLink to="/courses" className="nav-link nav--link">
                                     Courses
                                 </NavLink>
                             </li>
-                            <li className="nav-item">
+                            <li className="nav-item mb-0 p-0">
                                 <NavLink to="/about" className="nav-link nav--link">
                                     About
                                 </NavLink>
                             </li>
-                            <li className="nav-item">
+                            <li className="nav-item mb-0 p-0">
                                 <NavLink to="/contact" className="nav-link nav--link">
                                     Contact
                                 </NavLink>
                             </li>
-                            <li className="nav-item">
+                            <li className="nav-item mb-0 p-0">
                                 <NavLink to="/faqs" className="nav-link nav--link">
                                     FAQs
                                 </NavLink>
