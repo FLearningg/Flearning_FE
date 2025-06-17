@@ -1,0 +1,31 @@
+.course-card {
+  transition: 0.3s;
+  border: 1px solid #1d1d1d; /* màu đen nhạt */
+}
+
+.course-card-img {
+  height: 220px;
+  object-fit: cover;
+}
+
+.course-category {
+  background-color: #ffeee8;
+  color: #ff6636;
+  font-weight: 500;
+  font-size: 0.75rem;
+  padding: 0.35em 0.75em;
+  border-radius: 0.25rem;
+}
+
+.course-price {
+  color: #ff6636;
+  font-size: 1.1rem;
+}
+
+.course-title {
+  font-size: 1rem;
+  line-height: 1.4;
+  color: #1d2026;
+  min-height: 48px;
+  overflow: hidden;
+}

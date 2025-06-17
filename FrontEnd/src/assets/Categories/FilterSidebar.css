@@ -1,0 +1,9 @@
+.form-range::-webkit-slider-thumb {
+  background: #007bff;
+  cursor: pointer;
+}
+
+.form-range::-moz-range-thumb {
+  background: #007bff;
+  cursor: pointer;
+}
