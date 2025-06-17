@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import PropTypes from "prop-types";
 import "./Card.css";
 
@@ -69,6 +70,93 @@ export const LevelIcon = () => (
   </svg>
 );
 
+export const MoreIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-label="More options">
+    <circle cx="12" cy="12" r="2" fill="currentColor"/>
+    <circle cx="12" cy="5" r="2" fill="currentColor"/>
+    <circle cx="12" cy="19" r="2" fill="currentColor"/>
+  </svg>
+);
+
+const AdminDropdownMenu = ({ actions, onActionClick, isOpen, onClose, triggerRect }) => {
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !triggerRect) return null;
+
+  // Calculate menu position with viewport bounds checking
+  const menuWidth = 140;
+  const menuHeight = 120; // Estimated height for 3 items
+  const padding = 8;
+
+  let left = triggerRect.left - menuWidth + triggerRect.width;
+  let top = triggerRect.bottom + 5;
+
+  // Adjust if menu would go off the right edge
+  if (left < padding) {
+    left = triggerRect.right - menuWidth;
+  }
+
+  // Adjust if menu would go off the left edge
+  if (left < padding) {
+    left = padding;
+  }
+
+  // Adjust if menu would go off the bottom edge
+  if (top + menuHeight > window.innerHeight - padding) {
+    top = triggerRect.top - menuHeight - 5;
+  }
+
+  // Adjust if menu would go off the top edge
+  if (top < padding) {
+    top = triggerRect.bottom + 5;
+  }
+
+  const menuStyle = {
+    position: 'fixed',
+    top: `${top}px`,
+    left: `${left}px`,
+    zIndex: 9999,
+    minWidth: `${menuWidth}px`
+  };
+
+  const menuContent = (
+    <div className="admin-dropdown-menu" ref={menuRef} style={menuStyle}>
+      {actions.map((action, index) => (
+        <button
+          key={index}
+          className={`admin-dropdown-item ${action.type || ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onActionClick(action);
+            onClose();
+          }}
+        >
+          {action.icon && <span className="admin-dropdown-icon">{action.icon}</span>}
+          {action.label}
+        </button>
+      ))}
+    </div>
+  );
+
+  return createPortal(menuContent, document.body);
+};
+
 const Card = ({ 
   image, 
   category, 
@@ -78,47 +166,162 @@ const Card = ({
   title, 
   rating, 
   students,
-  variant = "normal" // "normal" or "large"
-}) => (
-  <div className={`modern-card-container ${variant === "large" ? "modern-card-large" : "modern-card-normal"}`} role="article" tabIndex="0">
-    <div className="modern-card-image-container">
-      <img
-        src={image || "/api/placeholder/240/140"}
-        alt={title}
-        className="modern-card-image"
-        loading="lazy"
-      />
-    </div>
-    <div className="modern-card-content">
-      <div className="modern-card-header">
-        <span
-          className="modern-category-badge"
-          style={{ 
-            backgroundColor: categoryBgColor || "#ffeee8", 
-            color: categoryTextColor || "#993d20" 
-          }}
-        >
-          {category}
-        </span>
-        <span className="modern-card-price">
-          {price}
-        </span>
+  variant = "normal", // "normal", "large", "auto", "custom", "admin"
+  customWidth,
+  customHeight,
+  customImageHeight,
+  onMenuAction,
+  menuActions = []
+}) => {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [triggerRect, setTriggerRect] = useState(null);
+  const menuTriggerRef = useRef(null);
+
+  const handleMenuToggle = (e) => {
+    e.stopPropagation();
+    
+    if (!dropdownOpen && menuTriggerRef.current) {
+      const rect = menuTriggerRef.current.getBoundingClientRect();
+      setTriggerRect(rect);
+    }
+    
+    setDropdownOpen(!dropdownOpen);
+  };
+
+  const handleMenuAction = (action) => {
+    if (onMenuAction) {
+      onMenuAction(action);
+    }
+  };
+
+  // Calculate container styles based on variant
+  const getContainerStyles = () => {
+    const baseStyles = {};
+    
+    switch (variant) {
+      case "auto":
+        return {
+          ...baseStyles,
+          width: "100%",
+          maxWidth: "none",
+          minWidth: "200px"
+        };
+      case "custom":
+        return {
+          ...baseStyles,
+          width: customWidth || "240px",
+          height: customHeight || "auto",
+          maxWidth: customWidth || "240px",
+          minHeight: customHeight || "auto"
+        };
+      case "large":
+        return baseStyles;
+      case "normal":
+      default:
+        return baseStyles;
+    }
+  };
+
+  // Calculate image container styles based on variant
+  const getImageStyles = () => {
+    if (variant === "custom" && customImageHeight) {
+      return { height: customImageHeight };
+    }
+    return {};
+  };
+
+  // Generate CSS class names based on variant
+  const getContainerClasses = () => {
+    const baseClass = "modern-card-container";
+    
+    switch (variant) {
+      case "auto":
+        return `${baseClass} modern-card-auto`;
+      case "custom":
+        return `${baseClass} modern-card-custom`;
+      case "large":
+        return `${baseClass} modern-card-large`;
+      case "admin":
+        return `${baseClass} modern-card-admin`;
+      case "normal":
+      default:
+        return `${baseClass} modern-card-normal`;
+    }
+  };
+
+  return (
+    <div 
+      className={getContainerClasses()} 
+      style={getContainerStyles()}
+      role="article" 
+      tabIndex="0"
+    >
+      <div 
+        className="modern-card-image-container"
+        style={getImageStyles()}
+      >
+        <img
+          src={image || "/api/placeholder/240/140"}
+          alt={title}
+          className="modern-card-image"
+          loading="lazy"
+        />
       </div>
-      <h3 className="modern-card-title" title={title}>
-        {title}
-      </h3>
-      <div className="modern-card-footer">
-        <div className="modern-rating" aria-label={`Rating: ${rating} stars`}>
-          <StarIcon />
-          <span>{typeof rating === 'number' ? rating.toFixed(1) : rating}</span>
+      <div className="modern-card-content">
+        <div className="modern-card-header">
+          <span
+            className="modern-category-badge"
+            style={{ 
+              backgroundColor: categoryBgColor || "#ffeee8", 
+              color: categoryTextColor || "#993d20" 
+            }}
+          >
+            {category}
+          </span>
+          <div className="modern-card-header-right">
+            <span className="modern-card-price">
+              {price}
+            </span>
+            {variant === "admin" && menuActions.length > 0 && (
+              <div className="admin-menu-container">
+                <button 
+                  ref={menuTriggerRef}
+                  className="admin-menu-trigger"
+                  onClick={handleMenuToggle}
+                  aria-label="More options"
+                >
+                  <MoreIcon />
+                </button>
+                <AdminDropdownMenu
+                  actions={menuActions}
+                  onActionClick={handleMenuAction}
+                  isOpen={dropdownOpen}
+                  onClose={() => {
+                    setDropdownOpen(false);
+                    setTriggerRect(null);
+                  }}
+                  triggerRect={triggerRect}
+                />
+              </div>
+            )}
+          </div>
         </div>
-        <span className="modern-students" aria-label={`${students} students enrolled`}>
-          <span className="modern-students-number">{students}</span> students
-        </span>
+        <h3 className="modern-card-title" title={title}>
+          {title}
+        </h3>
+        <div className="modern-card-footer">
+          <div className="modern-rating" aria-label={`Rating: ${rating} stars`}>
+            <StarIcon />
+            <span>{typeof rating === 'number' ? rating.toFixed(1) : rating}</span>
+          </div>
+          <span className="modern-students" aria-label={`${students} students enrolled`}>
+            <span className="modern-students-number">{students}</span> students
+          </span>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 Card.propTypes = {
   image: PropTypes.string.isRequired,
@@ -129,7 +332,16 @@ Card.propTypes = {
   title: PropTypes.string.isRequired,
   rating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   students: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  variant: PropTypes.oneOf(["normal", "large"]),
+  variant: PropTypes.oneOf(["normal", "large", "auto", "custom", "admin"]),
+  customWidth: PropTypes.string,
+  customHeight: PropTypes.string,
+  customImageHeight: PropTypes.string,
+  onMenuAction: PropTypes.func,
+  menuActions: PropTypes.arrayOf(PropTypes.shape({
+    label: PropTypes.string.isRequired,
+    type: PropTypes.string,
+    icon: PropTypes.node
+  })),
 };
 
 Card.defaultProps = {
@@ -142,6 +354,9 @@ Card.defaultProps = {
   rating: 0.0,
   students: "0",
   variant: "normal",
+  customWidth: null,
+  customHeight: null,
+  customImageHeight: null,
 };
 
 export const DetailedCard = ({
