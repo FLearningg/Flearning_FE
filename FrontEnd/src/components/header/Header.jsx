@@ -5,10 +5,10 @@ import HeaderRight from './HeaderRight';
 import LogoHeader from './LogoHeader';
 import MobileHeader from './MobileHeader';
 import NavigationBar from './NavigationBar';
-import { useAuth } from '../../hooks/useAuth'; 
+import { useSelector } from 'react-redux';
 
 function Header() {
-    const { currentUser } = useAuth();
+    const { currentUser } = useSelector((state) => state.auth);
 
     return (
         <>
