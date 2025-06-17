@@ -5,9 +5,7 @@ import AppRouter from './routes'; // Import AppRouter từ thư mục routes (ro
 
 function App() {
   return (
-    <Router>
       <AppRouter />
-    </Router>
   );
 }
 
