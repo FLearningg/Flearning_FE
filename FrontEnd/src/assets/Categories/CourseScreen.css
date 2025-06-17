@@ -1,4 +1,4 @@
-.custom-pagination {
+.course-screen .custom-pagination {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -6,7 +6,7 @@
   padding-top: 1.5rem;
 }
 
-.custom-pagination .page-item .page-link {
+.course-screen .custom-pagination .page-item .page-link {
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -21,20 +21,20 @@
   transition: background 0.3s;
 }
 
-.custom-pagination .page-item .page-link:hover {
+.course-screen .custom-pagination .page-item .page-link:hover {
   background-color: #ffede6;
 }
 
-.custom-pagination .page-item.active .page-link {
+.course-screen .custom-pagination .page-item.active .page-link {
   background-color: #ff6636;
   color: white;
 }
 
-.custom-pagination .page-item .page-link svg {
+.course-screen .custom-pagination .page-item .page-link svg {
   stroke: #ff6636;
 }
 
-.custom-pagination .page-item.disabled .page-link {
+.course-screen .custom-pagination .page-item.disabled .page-link {
   opacity: 0.4;
   pointer-events: none;
 }

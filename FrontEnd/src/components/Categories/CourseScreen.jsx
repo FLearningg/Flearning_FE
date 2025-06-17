@@ -80,7 +80,7 @@ export default function CourseScreen() {
   useEffect(() => { setCurrentPage(1); }, [searchQuery]);
 
   return (
-    <div className="p-4">
+    <div className="p-4 course-screen">
       <CourseFilterHeader
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}

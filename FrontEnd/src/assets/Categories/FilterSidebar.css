@@ -1,9 +1,9 @@
-.form-range::-webkit-slider-thumb {
+.filter-sidebar .form-range::-webkit-slider-thumb {
   background: #007bff;
   cursor: pointer;
 }
 
-.form-range::-moz-range-thumb {
+.filter-sidebar .form-range::-moz-range-thumb {
   background: #007bff;
   cursor: pointer;
 }

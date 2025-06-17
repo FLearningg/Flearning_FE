@@ -99,7 +99,7 @@ export default function FilterSidebar({
   ];
 
   return (
-    <div className="w-100">
+    <div className="w-100 filter-sidebar">
       <Section title="Category" sectionKey="category">
         {renderCheckboxList(categories, "category", selectedCategories, setSelectedCategories)}
       </Section>

@@ -1,34 +1,33 @@
-
 /* 5-column support for Bootstrap */
 @media (min-width: 1200px) {
-  .col-xl-2-4 {
+  .best-selling-section .col-xl-2-4 {
     flex: 0 0 auto;
     width: 20%;
   }
 }
 
-.course-card {
+.best-selling-section .course-card {
   transition: all 0.3s ease;
   height: 100%;
 }
 
-.course-card:hover {
+.best-selling-section .course-card:hover {
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
   transform: translateY(-2px);
 }
 
-.card-img-wrapper {
+.best-selling-section .card-img-wrapper {
   aspect-ratio: 16/9;
   overflow: hidden;
 }
 
-.card-img-top {
+.best-selling-section .card-img-top {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.course-title {
+.best-selling-section .course-title {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -41,27 +40,27 @@
   font-weight: 500;
 }
 
-.course-category {
+.best-selling-section .course-category {
   font-size: 0.75rem;
   letter-spacing: 0.05em;
 }
 
-.course-price {
+.best-selling-section .course-price {
   color: #ff6636;
   font-size: 1.125rem;
 }
 
-.course-rating {
+.best-selling-section .course-rating {
   color: #1d2026;
   font-size: 0.875rem;
 }
 
-.course-students {
+.best-selling-section .course-students {
   color: #8c94a3;
   font-size: 0.875rem;
 }
 
-.section-title {
+.best-selling-section .section-title {
   font-size: 2.5rem;
   margin-bottom: 3rem;
 }

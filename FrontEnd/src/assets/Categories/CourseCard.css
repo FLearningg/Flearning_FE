@@ -3,12 +3,12 @@
   border: 1px solid #1d1d1d; /* màu đen nhạt */
 }
 
-.course-card-img {
+.course-card .course-card-img {
   height: 220px;
   object-fit: cover;
 }
 
-.course-category {
+.course-card .course-category {
   background-color: #ffeee8;
   color: #ff6636;
   font-weight: 500;
@@ -17,12 +17,12 @@
   border-radius: 0.25rem;
 }
 
-.course-price {
+.course-card .course-price {
   color: #ff6636;
   font-size: 1.1rem;
 }
 
-.course-title {
+.course-card .course-title {
   font-size: 1rem;
   line-height: 1.4;
   color: #1d2026;

@@ -2,7 +2,7 @@
   width: 100%;
 }
 
-.filter-btn {
+.course-filter-header .filter-btn {
   border: 1px solid #000000;
   color: #ff6636;
   font-weight: 600;
@@ -13,7 +13,7 @@
   border-radius: 8px;
 }
 
-.filter-count {
+.course-filter-header .filter-count {
   position: absolute;
   top: -8px;
   right: -8px;
@@ -25,11 +25,11 @@
   color: white;
 }
 
-.course-search {
+.course-filter-header .course-search {
   min-width: 250px;
 }
 
-.search-icon {
+.course-filter-header .search-icon {
   position: absolute;
   left: 12px;
   top: 50%;
@@ -37,14 +37,14 @@
   color: #8c94a3;
 }
 
-.suggestion-item {
+.course-filter-header .suggestion-item {
   color: #ff6636;
   font-weight: 500;
   cursor: pointer;
   text-transform: capitalize;
 }
 
-.suggestion-item {
+.course-filter-header .suggestion-item {
   background-color: #f5f7fa;
   border: none;
   border-radius: 4px;
@@ -53,8 +53,7 @@
   transition: all 0.2s ease;
 }
 
-.suggestion-item:hover {
+.course-filter-header .suggestion-item:hover {
   background-color: #ff6636;
   color: #fff;
 }
-
