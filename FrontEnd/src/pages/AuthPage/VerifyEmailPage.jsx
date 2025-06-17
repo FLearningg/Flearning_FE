@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Spin, Result, Button } from 'antd';
-import { verifyEmail } from '../../services/api/authService';
+import { verifyEmail } from '../../services/authService';
 
 const VerifyEmailPage = () => {
     const { token } = useParams();

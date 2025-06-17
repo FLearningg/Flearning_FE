@@ -2,7 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { AuthProvider } from './services/providers/authProvider';
+import { Provider } from 'react-redux';
+import { store } from './store/index'
 import App from './App';
 import 'antd/dist/reset.css';
 import './index.css';
@@ -17,11 +18,11 @@ const GOOGLE_CLIENT_ID =  process.env.REACT_APP_GOOGLE_CLIENT_ID;
 root.render(
   <React.StrictMode>
     <BrowserRouter>
+    <Provider store={store}>
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-        <AuthProvider>
           <App />
-        </AuthProvider>
       </GoogleOAuthProvider>
+    </Provider>
     </BrowserRouter>
   </React.StrictMode>
 );

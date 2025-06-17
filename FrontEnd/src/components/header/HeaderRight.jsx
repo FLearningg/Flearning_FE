@@ -2,17 +2,19 @@ import { faCog, faSignOutAlt, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth"; 
+import { useDispatch } from "react-redux";
+import { logout } from "../../store/authSlice";
 import Notification from "./Notification";
 import WishList from "./WishList";
 
 function HeaderRight({ user: currentUser }) {
-  const { logout } = useAuth();
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout(); 
-    navigate('/login'); 
+    dispatch(logout());
+    navigate('/login');
   };
 
   return (
