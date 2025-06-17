@@ -22,6 +22,28 @@
   min-height: 388px;
 }
 
+/* Auto-resize variant - adapts to container */
+.modern-card-auto {
+  width: 100%;
+  max-width: none;
+  min-width: 200px;
+  height: auto;
+  /* Enhanced responsive behavior for sidebar scenarios */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom variant - user-defined dimensions */
+.modern-card-custom {
+  /* Dimensions will be set via inline styles */
+  max-width: none;
+}
+
+/* Admin variant - for admin dashboard cards */
+.modern-card-admin {
+  max-width: 280px;
+  min-width: 250px;
+}
+
 .modern-card-container:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -44,6 +66,142 @@
 
 .modern-card-large .modern-card-image-container {
   height: 234px;
+}
+
+/* Auto variant image container - responsive height with smooth transitions */
+.modern-card-auto .modern-card-image-container {
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio as base */
+  position: relative;
+  transition: padding-bottom 0.3s ease;
+}
+
+.modern-card-auto .modern-card-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: transform 0.3s ease;
+}
+
+/* Auto variant content - fully responsive padding */
+.modern-card-auto .modern-card-content {
+  padding: clamp(8px, 3vw, 24px);
+  transition: padding 0.3s ease;
+}
+
+/* Auto variant header - responsive spacing with transitions */
+.modern-card-auto .modern-card-header {
+  margin-bottom: clamp(4px, 2vw, 16px);
+  transition: margin-bottom 0.3s ease;
+}
+
+/* Auto variant badge - responsive sizing with smooth scaling */
+.modern-card-auto .modern-category-badge {
+  padding: clamp(2px, 1vw, 8px) clamp(4px, 2vw, 16px);
+  font-size: clamp(9px, 2.5vw, 14px);
+  transition: all 0.3s ease;
+}
+
+/* Auto variant price - responsive sizing with transitions */
+.modern-card-auto .modern-card-price {
+  font-size: clamp(12px, 4vw, 24px);
+  transition: font-size 0.3s ease;
+}
+
+/* Auto variant title - responsive sizing with smooth transitions */
+.modern-card-auto .modern-card-title {
+  font-size: clamp(12px, 3.5vw, 20px);
+  margin: 0 0 clamp(4px, 2vw, 20px) 0;
+  min-height: auto;
+  line-height: clamp(1.2, 1.4, 1.6);
+  transition: all 0.3s ease;
+}
+
+/* Auto variant footer - responsive sizing with transitions */
+.modern-card-auto .modern-card-footer {
+  font-size: clamp(10px, 2.8vw, 18px);
+  padding-top: clamp(6px, 2.5vw, 20px);
+  gap: clamp(6px, 3vw, 32px);
+  transition: all 0.3s ease;
+}
+
+.modern-card-auto .modern-card-footer::before {
+  left: calc(-1 * clamp(8px, 3vw, 24px));
+  right: calc(-1 * clamp(8px, 3vw, 24px));
+  transition: left 0.3s ease, right 0.3s ease;
+}
+
+/* Container width-based responsive behavior for sidebar scenarios */
+/* Small container (sidebar open) - compact layout */
+.modern-card-auto {
+  container-type: inline-size;
+}
+
+@container (max-width: 300px) {
+  .modern-card-auto .modern-card-image-container {
+    padding-bottom: 45%; /* Shorter aspect ratio for compact layout */
+  }
+  
+  .modern-card-auto .modern-card-title {
+    -webkit-line-clamp: 2;
+    font-size: 12px;
+  }
+  
+  .modern-card-auto .modern-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    font-size: 11px;
+  }
+  
+  .modern-card-auto .modern-category-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+  
+  .modern-card-auto .modern-card-price {
+    font-size: 14px;
+  }
+}
+
+@container (min-width: 301px) and (max-width: 480px) {
+  .modern-card-auto .modern-card-image-container {
+    padding-bottom: 50%; /* Medium aspect ratio */
+  }
+  
+  .modern-card-auto .modern-card-title {
+    font-size: 14px;
+    -webkit-line-clamp: 2;
+  }
+  
+  .modern-card-auto .modern-card-footer {
+    font-size: 12px;
+  }
+}
+
+@container (min-width: 481px) and (max-width: 600px) {
+  .modern-card-auto .modern-card-image-container {
+    padding-bottom: 52%; /* Standard aspect ratio */
+  }
+  
+  .modern-card-auto .modern-card-title {
+    font-size: 15px;
+  }
+}
+
+@container (min-width: 601px) {
+  .modern-card-auto .modern-card-image-container {
+    padding-bottom: 56.25%; /* Full 16:9 aspect ratio */
+  }
+  
+  .modern-card-auto .modern-card-title {
+    font-size: 16px;
+  }
+}
+
+/* Custom variant image container - flexible height */
+.modern-card-custom .modern-card-image-container {
+  height: 140px; /* Default, can be overridden by inline styles */
 }
 
 .modern-card-image {
@@ -70,6 +228,16 @@
   min-height: 154px;
 }
 
+/* Auto variant content - responsive padding */
+.modern-card-auto .modern-card-content {
+  padding: clamp(12px, 2vw, 20px);
+}
+
+/* Custom variant content - default padding */
+.modern-card-custom .modern-card-content {
+  padding: 16px;
+}
+
 .modern-card-header {
   display: flex;
   justify-content: space-between;
@@ -77,8 +245,19 @@
   margin-bottom: 8px;
 }
 
+.modern-card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .modern-card-large .modern-card-header {
   margin-bottom: 12px;
+}
+
+/* Auto variant header - responsive spacing */
+.modern-card-auto .modern-card-header {
+  margin-bottom: clamp(6px, 1vw, 12px);
 }
 
 .modern-category-badge {
@@ -96,6 +275,12 @@
   font-weight: 600;
 }
 
+/* Auto variant badge - responsive sizing */
+.modern-card-auto .modern-category-badge {
+  padding: clamp(3px, 0.5vw, 6px) clamp(6px, 1vw, 12px);
+  font-size: clamp(10px, 1.2vw, 12px);
+}
+
 .modern-card-price {
   font-size: 16px;
   font-weight: 700;
@@ -104,6 +289,11 @@
 
 .modern-card-large .modern-card-price {
   font-size: 20px;
+}
+
+/* Auto variant price - responsive sizing */
+.modern-card-auto .modern-card-price {
+  font-size: clamp(14px, 2vw, 20px);
 }
 
 .modern-card-title {
@@ -125,6 +315,18 @@
   font-weight: 600;
   margin: 0 0 16px 0;
   min-height: 50.4px;
+}
+
+/* Auto variant title - responsive sizing */
+.modern-card-auto .modern-card-title {
+  font-size: clamp(14px, 2vw, 18px);
+  margin: 0 0 clamp(6px, 1vw, 16px) 0;
+  min-height: auto;
+}
+
+/* Custom variant title - flexible sizing */
+.modern-card-custom .modern-card-title {
+  min-height: auto;
 }
 
 .modern-card-footer {
@@ -157,6 +359,24 @@
 .modern-card-large .modern-card-footer::before {
   left: -20px;
   right: -20px;
+}
+
+/* Auto variant footer - responsive sizing */
+.modern-card-auto .modern-card-footer {
+  font-size: clamp(12px, 1.5vw, 16px);
+  padding-top: clamp(8px, 1.5vw, 16px);
+  gap: clamp(8px, 2vw, 24px);
+}
+
+.modern-card-auto .modern-card-footer::before {
+  left: calc(-1 * clamp(12px, 2vw, 20px));
+  right: calc(-1 * clamp(12px, 2vw, 20px));
+}
+
+/* Custom variant footer - default behavior */
+.modern-card-custom .modern-card-footer::before {
+  left: -16px;
+  right: -16px;
 }
 
 .modern-rating {
@@ -773,4 +993,140 @@
   .pointer {
     display: none;
   }
+}
+
+/* Responsive Media Queries for Auto Variant */
+@media (max-width: 480px) {
+  .modern-card-auto .modern-card-image-container {
+    padding-bottom: 50%; /* Adjust aspect ratio for small screens */
+  }
+  
+  .modern-card-auto .modern-card-content {
+    padding: 12px;
+  }
+  
+  .modern-card-auto .modern-card-title {
+    font-size: 14px;
+    -webkit-line-clamp: 3; /* Allow more lines on small screens */
+  }
+  
+  .modern-card-auto .modern-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .modern-card-auto .modern-card-image-container {
+    padding-bottom: 52%; /* Medium aspect ratio */
+  }
+  
+  .modern-card-auto .modern-card-title {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .modern-card-auto .modern-card-image-container {
+    padding-bottom: 55%; /* Larger aspect ratio */
+  }
+}
+
+@media (min-width: 1025px) {
+  .modern-card-auto .modern-card-image-container {
+    padding-bottom: 56.25%; /* Full 16:9 aspect ratio */
+  }
+}
+
+/* Utility classes for common custom sizes */
+.modern-card-square {
+  aspect-ratio: 1;
+}
+
+.modern-card-wide {
+  aspect-ratio: 2;
+}
+
+.modern-card-tall {
+  aspect-ratio: 0.75;
+}
+
+/* Admin Menu Styles */
+.admin-menu-container {
+  position: relative;
+}
+
+.admin-menu-trigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-menu-trigger:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.admin-dropdown-menu {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  /* Position and z-index will be handled via inline styles when using portal */
+}
+
+.admin-dropdown-item {
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  color: #374151;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-dropdown-item:hover {
+  background-color: #f9fafb;
+}
+
+.admin-dropdown-item.danger {
+  color: #dc2626;
+}
+
+.admin-dropdown-item.danger:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.admin-dropdown-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Admin variant specific styles */
+.modern-card-admin .modern-card-image-container {
+  height: 160px;
+}
+
+.modern-card-admin .modern-card-content {
+  padding: 16px;
+}
+
+.modern-card-admin .modern-card-header {
+  margin-bottom: 12px;
 }
