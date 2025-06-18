@@ -141,7 +141,7 @@ function RecentlyAddedCourse() {
                     <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
                         {coursesInfo?.map((courseInfo) => (
                             <div className="col">
-                                <div>
+                                <div className='mb-5'>
                                     <PopupCard cardProps={courseInfo.cardProps} detailedProps={courseInfo.detailedProps} />
                                 </div>
                             </div>
@@ -152,42 +152,26 @@ function RecentlyAddedCourse() {
                 <div className="mobile-view">
                     <Swiper
                         spaceBetween={20}
-                        slidesPerView={1.2}
+                        slidesPerView={1.7}
                         grabCursor={true}
+                        breakpoints={{
+                            768: {
+                                slidesPerView: 1.5,
+                            }
+                        }}
                     >
-                        <SwiperSlide>
-                            <Card
-                                image={'/images/CourseImages.png'}
-                                category={'Design'}
-                                price={'53$'}
-                                title={'UI/UX Design Fundamentals'}
-                                rating={4.8}
-                                students={1200}
-                                variant="large"
-                            />
-                        </SwiperSlide>
-                        <SwiperSlide>
-                            <Card
-                                image={'/images/CourseImages.png'}
-                                category={'Design'}
-                                price={'53$'}
-                                title={'UI/UX Design Fundamentals'}
-                                rating={4.8}
-                                students={1200}
-                                variant="large"
-                            />
-                        </SwiperSlide>
-                        <SwiperSlide>
-                            <Card
-                                image={'/images/CourseImages.png'}
-                                category={'Design'}
-                                price={'53$'}
-                                title={'UI/UX Design Fundamentals'}
-                                rating={4.8}
-                                students={1200}
-                                variant="large"
-                            />
-                        </SwiperSlide>
+                        {coursesInfo?.map((courseInfo, index) => (
+                            <SwiperSlide key={index}>
+                                <Card
+                                    image={courseInfo.cardProps.image}
+                                    category={courseInfo.cardProps.category}
+                                    price={courseInfo.cardProps.price}
+                                    title={courseInfo.cardProps.title}
+                                    rating={courseInfo.cardProps.rating}
+                                    students={courseInfo.cardProps.students}
+                                />
+                            </SwiperSlide>
+                        ))}
                     </Swiper>
                 </div>
                 <div className='d-flex justify-content-center mt-4'>

@@ -164,7 +164,7 @@ function BestSellingCourse() {
                 <div className="container py-5" >
                     <h3 className="text-center mb-5">Best selling courses</h3>
                     <div className="desktop-view">
-                        <div className="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-3">
+                        <div className="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-3">
                             {coursesInfo.map((courseInfo, index) => (
                                 <div className="col" key={index}>
                                     <div>
@@ -178,39 +178,29 @@ function BestSellingCourse() {
                     <div className="mobile-view">
                         <Swiper
                             spaceBetween={20}
-                            slidesPerView={1.2}
+                            slidesPerView={1.5}
                             grabCursor={true}
+                            breakpoints={{
+                                640: {
+                                    slidesPerView: 2.5,
+                                },
+                                768: {
+                                    slidesPerView: 3.5,
+                                }                                
+                            }}
                         >
-                            <SwiperSlide>
-                                <Card
-                                    image={'/images/CourseImages.png'}
-                                    category={'Design'}
-                                    price={'53$'}
-                                    title={'UI/UX Design Fundamentals'}
-                                    rating={4.8}
-                                    students={1200}
-                                />
-                            </SwiperSlide>
-                            <SwiperSlide>
-                                <Card
-                                    image={'/images/CourseImages.png'}
-                                    category={'Design'}
-                                    price={'53$'}
-                                    title={'UI/UX Design Fundamentals'}
-                                    rating={4.8}
-                                    students={1200}
-                                />
-                            </SwiperSlide>
-                            <SwiperSlide>
-                                <Card
-                                    image={'/images/CourseImages.png'}
-                                    category={'Design'}
-                                    price={'53$'}
-                                    title={'UI/UX Design Fundamentals'}
-                                    rating={4.8}
-                                    students={1200}
-                                />
-                            </SwiperSlide>
+                            {coursesInfo.map((courseInfo, index) => (
+                                <SwiperSlide key={index}>
+                                    <Card
+                                        image={courseInfo.cardProps.image}
+                                        category={courseInfo.cardProps.category}
+                                        price={courseInfo.cardProps.price}
+                                        title={courseInfo.cardProps.title}
+                                        rating={courseInfo.cardProps.rating}
+                                        students={courseInfo.cardProps.students}
+                                    />
+                                </SwiperSlide>
+                            ))}
                         </Swiper>
                     </div>
                 </div>
