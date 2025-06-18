@@ -64,15 +64,15 @@
 ### ✔ Cấu trúc:
 
 ```
-<type>/<screen>-<ui|be|api>
+<type>/<JiraTicketID>_<screen>-<ui|be|api>
 ```
 
 ### 📌 Ví dụ:
 
-- `feature/Login-UI`
-- `feature/ProductDetail-BE`
-- `bugfix/EmailSending-UI`
-- `refactor/ApiHandler-API`
+- `feature/FLN-1_Login-UI`
+- `feature/FLN-2_ProductDetail-BE`
+- `bugfix/FLN-3_EmailSending-UI`
+- `refactor/FLN-4_ApiHandler-API`
 
 ### 📎 Ghi chú:
 
