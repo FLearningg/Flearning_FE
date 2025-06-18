@@ -12,7 +12,7 @@ function Advertisement() {
                             <p className="advertisement-text">Learn with expert <br /> anytime anywhere</p>
                             <p className="text-secondary advertisement-text-2">Our mision is to help people to find the best course
                                 online and learn with expert anytime, anywhere.</p>
-                            <Link to="#" className="btn-create-account"><button className="">Create account</button></Link>
+                            <Link to="/signup" className="btn-create-account"><button className="">Create account</button></Link>
                         </div>
                     </div>
                     <div className="col-6 pe-0">
@@ -31,7 +31,7 @@ function Advertisement() {
                         </p>
                     </div>
                     <hr />
-                    <Link to="#" className="btn-create-account"><button className="">Create account</button></Link>
+                    <Link to="/signup" className="btn-create-account"><button className="">Create account</button></Link>
                 </div>
             </div>
         </>
