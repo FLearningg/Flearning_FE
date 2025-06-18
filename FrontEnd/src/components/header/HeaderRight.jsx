@@ -1,20 +1,26 @@
-import { faBell, faHeart, faUser } from "@fortawesome/free-regular-svg-icons";
-import {
-  faCog,
-  faShoppingCart,
-  faSignOutAlt,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCog, faSignOutAlt, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logout } from "../../store/authSlice";
 import Notification from "./Notification";
 import WishList from "./WishList";
 
-function HeaderRight({ user }) {
+function HeaderRight({ user: currentUser }) {
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
+
   return (
     <>
       <div className="d-flex align-items-center gap-1">
-        {user ? (
+        {currentUser ? (
           <>
             <Notification />
             <WishList />
@@ -27,13 +33,13 @@ function HeaderRight({ user }) {
         ) : (
           <></>
         )}
-        {user ? (
+        {currentUser ? (
           <div className="ms-2 dropdown">
             <img
-              src={user.userImage}
+              src={currentUser.userImage || '/images/defaultImageUser.png'}
               alt=""
               className="rounded-circle"
-              style={{ width: "40px", height: "40px", cursor: "pointer" }}
+              style={{ width: "40px", height: "40px", cursor: "pointer", objectFit: 'cover' }}
               id="userDropdown"
               data-bs-toggle="dropdown"
               aria-expanded="false"
@@ -57,10 +63,10 @@ function HeaderRight({ user }) {
                 <hr className="dropdown-divider" />
               </li>
               <li>
-                <Link to={"#"} className="dropdown-item dropdown-item-hover">
+                <button onClick={handleLogout} className="dropdown-item dropdown-item-hover">
                   <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
                   Logout
-                </Link>
+                </button>
               </li>
             </ul>
           </div>

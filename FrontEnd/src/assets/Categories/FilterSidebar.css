@@ -1,0 +1,9 @@
+.filter-sidebar .form-range::-webkit-slider-thumb {
+  background: #007bff;
+  cursor: pointer;
+}
+
+.filter-sidebar .form-range::-moz-range-thumb {
+  background: #007bff;
+  cursor: pointer;
+}

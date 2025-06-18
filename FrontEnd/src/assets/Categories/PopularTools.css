@@ -1,0 +1,94 @@
+.popular-tools-section {
+  padding: 2rem 0;
+}
+
+.popular-tools-section .section-header {
+  margin-bottom: 2rem;
+}
+
+.popular-tools-section .section-title {
+  color: #1d2026;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.popular-tools-section .nav-arrows {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.popular-tools-section .nav-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e9eaf0;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.popular-tools-section .nav-btn:hover {
+  background-color: #e9eaf0;
+  border-color: #8c94a3;
+}
+
+.popular-tools-section .nav-btn svg {
+  width: 16px;
+  height: 16px;
+  color: #8c94a3;
+}
+
+.popular-tools-section .tool-card {
+  border: 1px solid #e9eaf0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 100%;
+  background: #ffffff;
+}
+
+.popular-tools-section .tool-card:hover {
+  border-color: #8c94a3;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.popular-tools-section .tool-card.highlighted {
+  background: #ff6636;
+  border-color: #ff6636;
+  color: #ffffff;
+}
+
+.popular-tools-section .tool-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #1d2026;
+}
+
+.popular-tools-section .tool-card.highlighted .tool-name {
+  color: #ffffff;
+}
+
+.popular-tools-section .tool-courses {
+  font-size: 0.875rem;
+  color: #8c94a3;
+  margin: 0;
+}
+
+.popular-tools-section .tool-card.highlighted .tool-courses {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+@media (max-width: 768px) {
+  .popular-tools-section .section-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 1rem;
+  }
+}
