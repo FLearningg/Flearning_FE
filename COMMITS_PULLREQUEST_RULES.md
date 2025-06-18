@@ -63,7 +63,7 @@
 
 ### ✔ Cấu trúc:
 
-```
+
 <type>/<JiraTicketID>_<screen>-<ui|be|api>
 ```
 
@@ -73,6 +73,7 @@
 - `feature/FLN-2_ProductDetail-BE`
 - `bugfix/FLN-3_EmailSending-UI`
 - `refactor/FLN-4_ApiHandler-API`
+
 
 ### 📎 Ghi chú:
 
