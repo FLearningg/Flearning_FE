@@ -1,12 +1,12 @@
 // components/BestSelling.jsx
-import CourseCard from "./CourseCard"
+import Card from "../common/Card/Card"
 import "../../assets/Categories/BestSelling.css";
 
 export default function BestSelling() {
   const courses = [
     {
       id: 1,
-      image: "/placeholder.svg?height=200&width=320",
+      image: "/images/CourseImages.png",
       category: "DESIGN",
       categoryColor: "#ff6636",
       title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
@@ -16,7 +16,7 @@ export default function BestSelling() {
     },
     {
       id: 2,
-      image: "/placeholder.svg?height=200&width=320",
+      image: "/images/CourseImages.png",
       category: "DEVELOPMENTS",
       categoryColor: "#342f98",
       title: "The Complete 2021 Web Development Bootcamp",
@@ -26,7 +26,7 @@ export default function BestSelling() {
     },
     {
       id: 3,
-      image: "/placeholder.svg?height=200&width=320",
+      image: "/images/CourseImages.png",
       category: "BUSINESS",
       categoryColor: "#15711f",
       title: "Learn Python Programming Masterclass",
@@ -36,7 +36,7 @@ export default function BestSelling() {
     },
     {
       id: 4,
-      image: "/placeholder.svg?height=200&width=320",
+      image: "/images/CourseImages.png",
       category: "MARKETING",
       categoryColor: "#342f98",
       title: "The Complete Digital Marketing Course - 12 Courses in 1",
@@ -46,7 +46,7 @@ export default function BestSelling() {
     },
     {
       id: 5,
-      image: "/placeholder.svg?height=200&width=320",
+      image: "/images/CourseImages.png",
       category: "IT & SOFTWARE",
       categoryColor: "#fd8e1f",
       title: "Reiki Level I, II and Master/Teacher Program",
@@ -66,7 +66,16 @@ export default function BestSelling() {
         <div className="row g-4">
           {courses.map((course) => (
             <div key={course.id} className="col-12 col-md-6 col-lg-4 col-xl-2-4">
-              <CourseCard course={course} />
+              <Card 
+                image={course.image}
+                category={course.category}
+                categoryBgColor={course.categoryColor}
+                price={course.price}
+                title={course.title}
+                rating={course.rating}
+                students={course.students}
+                variant="normal"
+              />
             </div>
           ))}
         </div>

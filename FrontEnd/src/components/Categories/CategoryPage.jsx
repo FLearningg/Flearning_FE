@@ -10,8 +10,8 @@ const CategoryPage = () => {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                marginLeft: "300px",
-                marginRight: "300px",
+                marginLeft: "200px",
+                marginRight: "200px",
             }}
         >
             <div style={{ width: "100%" }}>
