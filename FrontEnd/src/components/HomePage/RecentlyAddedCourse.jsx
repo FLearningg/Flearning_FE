@@ -156,7 +156,7 @@ function RecentlyAddedCourse() {
                         grabCursor={true}
                         breakpoints={{
                             768: {
-                                slidesPerView: 1.5,
+                                slidesPerView: 2.5,
                             }
                         }}
                     >
