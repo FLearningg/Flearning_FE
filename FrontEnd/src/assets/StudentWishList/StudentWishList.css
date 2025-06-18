@@ -1,0 +1,93 @@
+.wishlist-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.wishlist-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.wishlist-button-buy-now {
+    background-color: #F5F7FA !important;
+}
+
+.wishlist-button-buy-now:hover {
+    background-color: #eeecec !important;
+}
+
+.wishlist-course-img {
+    /* width: 25%; */
+    width: 165px;
+    border-radius: 6px;
+}
+
+/* .wl-course-title {
+    font-weight: 600;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    white-space: normal;
+    max-width: 400px;
+} */
+
+.wl-course-author {
+    color: #888;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.wl-rating-star {
+    color: #f39c12;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.wl-price-current {
+    color: #ff5722;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.wl-price-old {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 0.875rem;
+}
+
+.wl-btn-cart {
+    background-color: #ff5722 !important;
+    color: white !important;
+    border: 1px solid #ff5722 !important;
+}
+
+.wl-btn-cart:hover {
+    background-color: #fff !important;
+    color: #ff5722 !important;
+}
+
+.wl-btn-fav {
+    background-color: #FFEEE8 !important;
+    color: #ff5722 !important;
+}
+
+.wishlist-button-primary {
+    background-color: #ff5722 !important;
+    border: 1px solid #ff5722 !important;
+}
+
+.wishlist-button-outline {
+    background-color: transparent !important;
+    color: #ff5722 !important;
+    border: 1px solid #ff5722 !important;
+}
+
+.wishlist-button-outline:hover {
+    background-color: #ff5722 !important;
+    color: white !important;
+}

@@ -1,0 +1,159 @@
+/* .bg-light-purple {
+    background-color: #f0f0ff !important;
+}
+
+.bg-light-green {
+    background-color: #e8f8e8 !important;
+}
+
+.bg-light-orange {
+    background-color: #fff5e8 !important;
+}
+
+.bg-light-red {
+    background-color: #ffeeee !important;
+}
+
+.bg-light-coral {
+    background-color: #ffe8e0 !important;
+}
+
+.bg-light-gray {
+    background-color: #f5f5f7 !important;
+} */
+
+/* Category cards styling */
+.category-card {
+    border-radius: 10px;
+    border: none !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-body-category {
+    padding: 1.5rem;
+}
+
+.card-category-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+
+}
+
+.card-category-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* .purple-icon {
+    background-color: #6366f1;
+}
+
+.green-icon {
+    background-color: #22c55e;
+}
+
+.orange-icon {
+    background-color: #f97316;
+}
+
+.red-icon {
+    background-color: #ef4444;
+}
+
+.coral-icon {
+    background-color: #f56565;
+}
+
+.gray-icon {
+    background-color: #4b5563;
+}
+
+.dark-gray-icon {
+    background-color: #1f2937;
+} */
+
+/* Browse all link */
+.browse-all {
+    color: #f97316;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.browse-all:hover {
+    border-bottom: 2px solid #f97316;
+}
+
+
+/* Thêm style mới cho card-body-category để sử dụng flexbox */
+.card-body-category {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Tạo container mới cho icon và title */
+.category-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+/* Điều chỉnh category-icon */
+.category-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    margin-bottom: 0;
+    color: white;
+    flex-shrink: 0;
+}
+
+/* Điều chỉnh card-category-title */
+.card-category-title {
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .row-cols-md-2>* {
+        flex: 0 0 auto !important;
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .row-cols-lg-4>* {
+        flex: 0 0 auto !important;
+        width: 50% !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .container {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .card-body-category {
+        padding: 1rem;
+    }
+
+    .category-header {
+        display: block;
+    }
+
+    .category-header .category-icon {
+        margin-bottom: 0.5rem;
+    }
+}

@@ -57,12 +57,6 @@ function MobileHeader({user}) {
                                 Contact
                             </NavLink>
                         </li>
-                        <li className="nav-item mb-2">
-                            <NavLink to="/become-instructor" className="nav-link nav-mobile-link" data-bs-dismiss="offcanvas">
-                                <FontAwesomeIcon icon={faChalkboardTeacher} className='me-2' />
-                                Become an instructor
-                            </NavLink>
-                        </li>
                     </ul>
                 </div>
             </div>

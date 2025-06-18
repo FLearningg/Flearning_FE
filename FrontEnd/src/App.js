@@ -1,15 +1,11 @@
-import logo from './logo.svg';
-import './App.css';
-import Header from './components/header/Header';
-import SumaryHeader from './components/sumaryCourse/SumaryHeader';
-import Footer from './components/footer/Footer';
+import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import AppRouter from './routes'; // Import AppRouter từ thư mục routes (routes/index.js)
+
+
 function App() {
   return (
-    <div>
-      <Header/>
-      <SumaryHeader/>
-      <Footer/>
-    </div>
+      <AppRouter />
   );
 }
 

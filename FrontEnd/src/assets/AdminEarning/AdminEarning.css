@@ -1,0 +1,717 @@
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", sans-serif;
+  background-color: #f5f7fa;
+}
+
+/* Layout */
+.ae-dashboard {
+  display: flex;
+  height: 100vh;
+  background-color: #f5f7fa;
+}
+
+/* Sidebar */
+.ae-sidebar {
+  width: 200px;
+  background-color: #1d2026;
+  display: flex;
+  flex-direction: column;
+}
+
+.ae-sidebar-header {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.ae-logo-icon {
+  background-color: #ff6636;
+  border-radius: 4px;
+  padding: 4px;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ae-logo-text {
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.ae-sidebar-nav {
+  flex: 1;
+  margin-top: 24px;
+}
+
+.ae-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: #8c94a3;
+  text-decoration: none;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.ae-nav-item:hover {
+  background-color: #2a2e39;
+  color: white;
+}
+
+.ae-nav-item.active {
+  background-color: #ff6636;
+  color: white;
+}
+
+.ae-nav-item-icon {
+  margin-right: 12px;
+  width: 18px;
+  height: 18px;
+}
+
+.ae-nav-item-badge {
+  margin-left: auto;
+  background-color: white;
+  color: #ff6636;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.ae-sidebar-footer {
+  padding: 16px;
+  margin-top: auto;
+}
+
+.ae-sign-out-btn {
+  display: flex;
+  align-items: center;
+  color: #8c94a3;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+  width: 100%;
+  padding: 8px 0;
+}
+
+.ae-sign-out-btn:hover {
+  color: white;
+}
+
+/* Main Content */
+.ae-main-content {
+  flex: 1;
+  overflow: auto;
+}
+
+/* Header */
+.ae-header {
+  background-color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ae-header-left p {
+  color: #8c94a3;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.ae-header-left h1 {
+  color: #1d2026;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.ae-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ae-search-container {
+  position: relative;
+}
+
+.ae-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8c94a3;
+  width: 18px;
+  height: 18px;
+}
+
+.ae-search-input {
+  background-color: #f5f7fa;
+  border-radius: 24px;
+  padding: 8px 16px 8px 40px;
+  width: 250px;
+  font-size: 14px;
+  border: none;
+  outline: none;
+}
+
+.ae-notification-container {
+  position: relative;
+}
+
+.ae-notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #ff6636;
+  color: white;
+  font-size: 12px;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ae-profile-image {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.ae-profile-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Stats Cards */
+.ae-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  padding: 24px;
+}
+
+.ae-stat-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.ae-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+}
+
+.ae-stat-icon.orange {
+  background-color: #ffeee8;
+}
+.ae-stat-icon.purple {
+  background-color: #ebebff;
+}
+.ae-stat-icon.red {
+  background-color: #fff0f0;
+}
+.ae-stat-icon.green {
+  background-color: #e1f7e3;
+}
+
+.ae-stat-amount {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.ae-stat-label {
+  font-size: 14px;
+  color: #8c94a3;
+}
+
+/* Charts and Cards Section */
+.ae-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 0 24px 24px;
+}
+
+.ae-chart-card,
+.ae-cards-section {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.ae-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.ae-section-title {
+  font-weight: 600;
+}
+
+.ae-section-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ae-section-dropdown span {
+  font-size: 14px;
+  color: #8c94a3;
+}
+
+/* Revenue Chart */
+.ae-chart-container {
+  position: relative;
+  height: 260px;
+  width: 100%;
+}
+
+.ae-chart-y-axis {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #8c94a3;
+}
+
+.ae-chart-area {
+  position: absolute;
+  left: 32px;
+  right: 0;
+  top: 0;
+  bottom: 24px;
+  background-color: rgba(225, 247, 227, 0.3);
+  border-radius: 4px;
+}
+
+.ae-chart-line {
+  position: absolute;
+  left: 33.33%;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed #23bd33;
+}
+
+.ae-chart-svg {
+  position: absolute;
+  inset: 0;
+}
+
+.ae-chart-data-point {
+  position: absolute;
+  left: 33.33%;
+  top: 25%;
+  transform: translate(-50%, -50%);
+}
+
+.ae-chart-tooltip {
+  background-color: #1d2026;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.ae-chart-tooltip-date {
+  font-size: 10px;
+  text-align: center;
+}
+
+.ae-chart-point {
+  width: 16px;
+  height: 16px;
+  background-color: white;
+  border: 2px solid #23bd33;
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+.ae-chart-x-axis {
+  position: absolute;
+  left: 32px;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #8c94a3;
+}
+
+/* Credit Card */
+.ae-cards-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ae-credit-card {
+  background: linear-gradient(135deg, #564ffd 0%, #7c3aed 100%);
+  color: white;
+  border-radius: 8px;
+  padding: 20px;
+  width: 100%;
+  max-width: 300px;
+  height: 160px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ae-card-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.ae-visa-logo {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.ae-card-number {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.ae-copy-icon {
+  position: absolute;
+  right: 20px;
+  top: 80px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ae-card-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.ae-card-detail-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+}
+
+.ae-card-indicators {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.ae-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.ae-indicator.active {
+  background-color: #ff6636;
+}
+
+.ae-indicator.inactive {
+  background-color: rgba(140, 148, 163, 0.3);
+}
+
+.ae-card-navigation {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.ae-nav-arrow {
+  color: #8c94a3;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.ae-add-card-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ff6636;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-top: 24px;
+}
+
+/* Withdraw Section */
+.ae-withdraw-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 0 24px 24px;
+}
+
+.ae-withdraw-card,
+.ae-history-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.ae-withdraw-title,
+.ae-history-title {
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.ae-payment-method-label {
+  font-size: 14px;
+  color: #8c94a3;
+  margin-bottom: 12px;
+}
+
+.ae-payment-option {
+  border: 1px solid #e9eaf0;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ae-payment-option.selected {
+  border-color: #23bd33;
+}
+
+.ae-payment-info {
+  display: flex;
+  align-items: center;
+}
+
+.ae-payment-logo {
+  width: 40px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+}
+
+.ae-payment-logo.visa {
+  background-color: #564ffd;
+}
+
+.ae-payment-logo.mastercard {
+  background: linear-gradient(to right, #e6a540, #e34444);
+}
+
+.ae-payment-logo.paypal {
+  background-color: #253b80;
+}
+
+.ae-payment-details {
+  display: flex;
+  align-items: center;
+}
+
+.ae-payment-details span {
+  font-size: 14px;
+  margin-right: 16px;
+}
+
+.ae-expiry {
+  font-size: 12px;
+  color: #8c94a3;
+}
+
+.ae-payment-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #e1f7e3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ae-paypal-text {
+  font-size: 14px;
+  color: #8c94a3;
+}
+
+.ae-current-balance {
+  margin-top: 24px;
+}
+
+.ae-balance-amount {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.ae-balance-label {
+  font-size: 14px;
+  color: #8c94a3;
+}
+
+.ae-withdraw-btn {
+  background-color: #ff6636;
+  color: white;
+  border-radius: 6px;
+  padding: 12px 24px;
+  margin-top: 24px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Withdraw History Table */
+.ae-history-table {
+  width: 100%;
+  font-size: 14px;
+  overflow-x: auto;
+}
+
+.ae-history-table thead tr {
+  color: #8c94a3;
+  border-bottom: 1px solid #e9eaf0;
+}
+
+.ae-history-table th {
+  text-align: left;
+  padding-bottom: 12px;
+  font-weight: 500;
+}
+
+.ae-history-table tbody tr {
+  border-bottom: 1px solid #e9eaf0;
+}
+
+.ae-history-table td {
+  padding: 12px 0;
+}
+
+.ae-status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.ae-status-pending {
+  background-color: #ffeee8;
+  color: #ff6636;
+}
+
+.ae-status-completed {
+  background-color: #e1f7e3;
+  color: #23bd33;
+}
+
+.ae-status-cancelled {
+  background-color: #fff0f0;
+  color: #e34444;
+}
+
+.ae-more-btn {
+  background: none;
+  border: none;
+  color: #8c94a3;
+  cursor: pointer;
+}
+
+.ae-cancel-popup {
+  width: 10rem;
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  padding: 12px;
+  z-index: 10;
+}
+
+.ae-cancel-btn {
+  font-size: 14px;
+  color: #8c94a3;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.ae-cancel-btn:hover {
+  color: #1d2026;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .ae-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ae-charts-grid,
+  .ae-withdraw-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .ae-dashboard {
+    flex-direction: column;
+  }
+
+  .ae-sidebar {
+    width: 100%;
+    height: auto;
+  }
+
+  .ae-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ae-header-right {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .ae-search-input {
+    width: 200px;
+  }
+}
