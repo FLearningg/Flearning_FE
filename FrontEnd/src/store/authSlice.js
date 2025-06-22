@@ -4,7 +4,7 @@ import {
     loginUser as loginApi, 
     googleLogin as googleApi, 
     logoutUser as logoutApi 
-} from '../services/api/authService';
+} from '../services/authService';
 
 // Lấy state ban đầu từ localStorage để giữ trạng thái đăng nhập khi tải lại trang
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));

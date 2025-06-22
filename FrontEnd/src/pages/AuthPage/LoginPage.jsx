@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, googleLogin } from '../../store/authSlice';
 import { GoogleLogin } from '@react-oauth/google';
-import { resendVerificationLink } from '../../services/api/authService';
+import { resendVerificationLink } from '../../services/authService';
 
 
 const { Title, Text } = Typography;
