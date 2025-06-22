@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, googleLogin } from '../../store/authSlice';
 import { GoogleLogin } from '@react-oauth/google';
 import { resendVerificationLink } from '../../services/api/authService';
+import { resendVerificationLink } from '../../services/api/authService';
 
 const { Title, Text } = Typography;
 const F_LEARNING_ORANGE = '#FF6B00';
