@@ -1,0 +1,493 @@
+/* AdminManageUser Component Styles */
+
+/* Stats Grid */
+.amu-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.amu-stat-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.amu-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.1), 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+}
+
+.amu-stat-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.amu-stat-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Icon Colors */
+.amu-stat-icon-wrapper.amu-color-purple {
+  background-color: #edecff;
+  color: #564ffd;
+}
+
+.amu-stat-icon-wrapper.amu-color-green {
+  background-color: #e9f9ec;
+  color: #23bd33;
+}
+
+.amu-stat-icon-wrapper.amu-color-red {
+  background-color: #ffe9e9;
+  color: #e34444;
+}
+
+.amu-stat-icon-wrapper.amu-color-orange {
+  background-color: #fff1e9;
+  color: #ff6636;
+}
+
+.amu-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.amu-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.amu-stat-label {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.amu-container {
+  padding: 32px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", sans-serif;
+}
+
+/* Toolbar Styles */
+.amu-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.amu-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.amu-search-container {
+  position: relative;
+}
+
+.amu-search-input {
+  padding: 12px 16px 12px 44px;
+  width: 280px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.amu-search-input:focus {
+  outline: none;
+  border-color: #ff6636;
+  box-shadow: 0 0 0 3px rgba(255, 102, 54, 0.1);
+}
+
+.amu-search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  width: 20px;
+  height: 20px;
+}
+
+.amu-filter-select {
+  padding: 12px 40px 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: white;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.amu-filter-select:focus {
+  outline: none;
+  border-color: #ff6636;
+  box-shadow: 0 0 0 3px rgba(255, 102, 54, 0.1);
+}
+
+.amu-add-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background-color: #ff6636;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.amu-add-button:hover {
+  background-color: #e05c2f;
+}
+
+.amu-add-button:active {
+  transform: translateY(1px);
+}
+
+.amu-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.amu-date-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.amu-filter-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  white-space: nowrap;
+}
+
+/* Date Filter Styles */
+.amu-date-filter {
+  display: flex;
+  background-color: #e2e8f0;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.amu-date-filter-btn {
+  padding: 8px 16px;
+  border: none;
+  background-color: transparent;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.amu-date-filter-btn:hover:not(.active) {
+  background-color: #f1f5f9;
+}
+
+.amu-date-filter-btn.active {
+  background-color: white;
+  color: #ff6636;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.amu-date-range-filter {
+  display: flex;
+  align-items: center;
+}
+
+/* Table Styles */
+.amu-table-container {
+  background-color: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.amu-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.amu-table-header {
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.amu-table-header th {
+  padding: 16px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.amu-table-header th:first-child {
+  width: 60px;
+  text-align: center;
+}
+
+.amu-table-row {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.2s ease;
+}
+
+.amu-row-number {
+  text-align: center;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.amu-table-row:hover {
+  background-color: #f8fafc;
+}
+
+.amu-table-row:last-child {
+  border-bottom: none;
+}
+
+.amu-table-cell {
+  padding: 16px;
+  font-size: 14px;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.amu-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.amu-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f1f5f9;
+}
+
+.amu-user-name {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.amu-user-email {
+  color: #64748b;
+}
+
+.amu-status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.amu-status-active {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.amu-status-banned {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.amu-date-joined {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.amu-action-button {
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.amu-action-button.unban {
+  color: #059669;
+}
+
+.amu-action-button.unban:hover {
+  background-color: #ecfdf5;
+  color: #047857;
+}
+
+.amu-action-button.ban {
+  color: #dc2626;
+}
+
+.amu-action-button.ban:hover {
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+/* Pagination Styles */
+.amu-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding: 16px 0;
+}
+
+.amu-pagination-info {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.amu-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.amu-pagination-button {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background-color: white;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 40px;
+  text-align: center;
+}
+
+.amu-pagination-button:hover:not(:disabled) {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.amu-pagination-button.active {
+  background-color: #ff6636;
+  color: white;
+  border-color: #ff6636;
+}
+
+.amu-pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Empty State */
+.amu-empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #64748b;
+  font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .amu-container {
+    padding: 24px 16px;
+  }
+
+  .amu-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .amu-toolbar-left {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .amu-search-input {
+    width: 100%;
+  }
+
+  .amu-add-button {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .amu-table-container {
+    overflow-x: auto;
+  }
+
+  .amu-table {
+    min-width: 600px;
+  }
+
+  .amu-pagination {
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .amu-pagination-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .amu-container {
+    padding: 16px 12px;
+  }
+
+  .amu-table-header th,
+  .amu-table-cell {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+
+  .amu-user-info {
+    gap: 8px;
+  }
+
+  .amu-user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+}
