@@ -1,7 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { registerUser as registerApi, loginUser as loginApi, googleLogin as googleApi, logoutUser as logoutApi } from '../services/authService';
+import { 
+    registerUser as registerApi, 
+    loginUser as loginApi, 
+    googleLogin as googleApi, 
+    logoutUser as logoutApi 
+} from '../services/api/authService';
 
-// Lấy state ban đầu từ localStorage
+// Lấy state ban đầu từ localStorage để giữ trạng thái đăng nhập khi tải lại trang
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 const token = localStorage.getItem('accessToken');
 
@@ -13,20 +18,20 @@ const initialState = {
   error: null,
 };
 
-// --- Tạo các Async Thunks để xử lý API calls ---
-
+// Async Thunk cho việc đăng ký
 export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
       const response = await registerApi(userData);
-      return response.data; // payload của action fulfilled
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data); // payload của action rejected
+      return rejectWithValue(error.response.data);
     }
   }
 );
 
+// Async Thunk cho việc đăng nhập
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
@@ -34,11 +39,18 @@ export const loginUser = createAsyncThunk(
       const response = await loginApi(credentials);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      // Đóng gói payload lỗi để chứa các thông tin cần thiết
+      const errorPayload = {
+        message: error.response?.data?.message || 'Lỗi không xác định',
+        status: error.response?.status,
+        errorCode: error.response?.data?.errorCode,
+      };
+      return rejectWithValue(errorPayload);
     }
   }
 );
 
+// Async Thunk cho việc đăng nhập bằng Google
 export const googleLogin = createAsyncThunk(
   'auth/googleLogin',
   async (tokenId, { rejectWithValue }) => {
@@ -46,17 +58,20 @@ export const googleLogin = createAsyncThunk(
       const response = await googleApi(tokenId);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      const errorPayload = {
+        message: error.response?.data?.message || 'Lỗi không xác định',
+        status: error.response?.status,
+        errorCode: error.response?.data?.errorCode,
+      };
+      return rejectWithValue(errorPayload);
     }
   }
 );
 
-// --- Tạo Slice ---
-
+// Tạo Slice
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  // Reducers cho các action đồng bộ (synchronous)
   reducers: {
     logout: (state) => {
       localStorage.removeItem('currentUser');
@@ -64,48 +79,38 @@ const authSlice = createSlice({
       state.currentUser = null;
       state.token = null;
       state.isAuthenticated = false;
-      logoutApi(); // Vẫn gọi API để xóa cookie ở backend
+      state.error = null;
+      logoutApi().catch(err => console.error("API logout failed", err));
     },
   },
-  // ExtraReducers cho các action bất đồng bộ (từ createAsyncThunk)
   extraReducers: (builder) => {
+    const handlePending = (state) => {
+        state.isLoading = true;
+        state.error = null;
+    };
+    const handleFulfilled = (state, action) => {
+        state.isLoading = false;
+        state.currentUser = action.payload.user;
+        state.token = action.payload.accessToken;
+        state.isAuthenticated = true;
+        localStorage.setItem('currentUser', JSON.stringify(action.payload.user));
+        localStorage.setItem('accessToken', action.payload.accessToken);
+    };
+    const handleRejected = (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+    };
+
     builder
-      // Xử lý Login
-      .addCase(loginUser.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.currentUser = action.payload.user;
-        state.token = action.payload.accessToken;
-        state.isAuthenticated = true;
-        localStorage.setItem('currentUser', JSON.stringify(action.payload.user));
-        localStorage.setItem('accessToken', action.payload.accessToken);
-      })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
-      })
-      // GG login
-      .addCase(googleLogin.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(googleLogin.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.currentUser = action.payload.user;
-        state.token = action.payload.accessToken;
-        state.isAuthenticated = true;
-        localStorage.setItem('currentUser', JSON.stringify(action.payload.user));
-        localStorage.setItem('accessToken', action.payload.accessToken);
-      })
-      .addCase(googleLogin.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
-      })
-       // Xử lý Register (chỉ loading và error, không tự động login)
-       .addCase(registerUser.pending, (state) => {
+      // Xử lý Login & Google Login
+      .addCase(loginUser.pending, handlePending)
+      .addCase(loginUser.fulfilled, handleFulfilled)
+      .addCase(loginUser.rejected, handleRejected)
+      .addCase(googleLogin.pending, handlePending)
+      .addCase(googleLogin.fulfilled, handleFulfilled)
+      .addCase(googleLogin.rejected, handleRejected)
+      // Xử lý Register
+      .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })

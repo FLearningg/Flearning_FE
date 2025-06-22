@@ -5,8 +5,12 @@ import BestSellingCourse from './BestSellingCourse'
 import RecentlyAddedCourse from './RecentlyAddedCourse'
 import TrustedCompanies from './TrustedCompanies'
 import StartLearning from './StartLearning'
+import {useSelector} from 'react-redux'
 
 function HomePage() {
+  const { token, currentUser } = useSelector((state) => state.auth);
+  console.log(token);
+  console.log(currentUser);
   return (
     <>
         <Advertisement/>
