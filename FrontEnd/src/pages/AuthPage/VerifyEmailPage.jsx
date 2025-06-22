@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react'; // 1. Thêm useRef
+import React, { useEffect, useState, useRef } from 'react'; 
 import { useParams, Link } from 'react-router-dom';
 import { Spin, Result, Button } from 'antd';
-import { verifyEmail } from '../../services/authService';
+import { verifyEmail } from '../../services/authService'; 
 
 const VerifyEmailPage = () => {
     const { token } = useParams();
@@ -35,8 +35,7 @@ const VerifyEmailPage = () => {
             effectRan.current = true;
         }
     }, [token]); // Phụ thuộc vào token
-
-    // ... phần JSX không thay đổi ...
+    
     if (status === 'loading') {
         return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><Spin size="large" /></div>;
     }

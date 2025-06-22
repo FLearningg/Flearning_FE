@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-// Bỏ 'message' khỏi import
-import { Form, Input, Button, Checkbox, Typography, Row, Col, Divider, Space } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Form, Input, Button, Checkbox, Typography, Row, Col, Divider, Space, Spin } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,9 +13,16 @@ const illustrationSvgUrl = 'https://www.sauravsharan.com/_next/static/media/hero
 function SignUpPage() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { isLoading } = useSelector((state) => state.auth);
+    const { isLoading, isAuthenticated } = useSelector((state) => state.auth);
     // State mới để quản lý thông báo lỗi
     const [apiError, setApiError] = useState('');
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            // Nếu đã đăng nhập, chuyển về trang chủ
+            navigate('/');
+        }
+    }, [isAuthenticated, navigate]);
 
     const onFinish = (values) => {
         setApiError(''); // Xóa lỗi cũ khi submit lại
@@ -38,6 +44,10 @@ function SignUpPage() {
                 setApiError(error.message || 'Đăng ký thất bại, vui lòng thử lại.');
             });
     };
+
+    if (isAuthenticated) {
+        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><Spin size="large" /></div>;
+    }
 
     return (
         <Row style={{ minHeight: '100vh', backgroundColor: '#fff' }}>
