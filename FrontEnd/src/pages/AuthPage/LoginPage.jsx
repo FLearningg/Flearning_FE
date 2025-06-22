@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Checkbox, Typography, Row, Col, Divider, Space } from 'antd';
+import { Form, Input, Button, Checkbox, Typography, Row, Col, Divider, Space, Spin } from 'antd';
 import { UserOutlined, LockOutlined, GoogleOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, googleLogin } from '../../store/authSlice';
 import { GoogleLogin } from '@react-oauth/google';
+import { resendVerificationLink } from '../../services/api/authService';
 import { resendVerificationLink } from '../../services/api/authService';
 
 const { Title, Text } = Typography;
@@ -15,7 +16,7 @@ const illustrationLoginSvgUrl = 'https://user-images.githubusercontent.com/49222
 function LoginPage() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { isLoading } = useSelector((state) => state.auth);
+    const { isLoading, isAuthenticated } = useSelector((state) => state.auth);
     const [unverifiedEmail, setUnverifiedEmail] = useState(null);
 
     // --- State mới để quản lý tất cả các thông báo API ---
@@ -24,6 +25,13 @@ function LoginPage() {
     // State cho countdown
     const [countdown, setCountdown] = useState(0);
     const [isResendCooldown, setIsResendCooldown] = useState(false);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            // Nếu đã đăng nhập, chuyển về trang chủ
+            navigate('/');
+        }
+    }, [isAuthenticated, navigate]);
 
     useEffect(() => {
         let timer;
@@ -78,6 +86,10 @@ function LoginPage() {
                 setApiAlert({ show: true, type: 'danger', message: error.message || 'Đăng nhập Google thất bại.' });
             });
     };
+
+    if (isAuthenticated) {
+        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><Spin size="large" /></div>;
+    }
 
     return (
         <Row style={{ minHeight: '100vh', backgroundColor: '#fff' }}>
