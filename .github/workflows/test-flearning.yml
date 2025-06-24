@@ -28,14 +28,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          # Sửa lại đường dẫn, trỏ vào thư mục con `Flearning_FE`
-          cache-dependency-path: 'Flearning_FE/package-lock.json'
+          # ĐÃ XÓA CACHE VÌ KHÔNG CÓ PACKAGE-LOCK.JSON
 
       # Bước 3: Cài đặt các dependencies
-      # Thêm `working-directory` để chạy lệnh trong thư mục con
+      # Đổi `npm ci` thành `npm install`
       - name: Install dependencies
-        run: npm ci
+        run: npm install
         working-directory: ./Flearning_FE
 
       # Bước 4: Kiểm tra định dạng code bằng Prettier
