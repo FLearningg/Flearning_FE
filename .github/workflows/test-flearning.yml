@@ -24,39 +24,27 @@ jobs:
         uses: actions/checkout@v4
 
       # Bước 2: Thiết lập môi trường Node.js (chọn phiên bản bạn dùng)
-      # Giúp đảm bảo môi trường chạy nhất quán và tăng tốc bằng cache
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Hoặc phiên bản Node.js bạn đang sử dụng
+          node-version: '20'
           cache: 'npm'
-          # !!! QUAN TRỌNG: Thay `FrontEnd` bằng tên thư mục đúng của bạn
-          cache-dependency-path: 'FrontEnd/package-lock.json'
+          # Sửa lại đường dẫn cache, trỏ đến file package-lock.json ở thư mục gốc
+          cache-dependency-path: package-lock.json
 
       # Bước 3: Cài đặt các dependencies
-      # `npm ci` nhanh và ổn định hơn `npm install` cho môi trường CI
+      # Chạy lệnh ở thư mục gốc, không cần 'working-directory'
       - name: Install dependencies
         run: npm ci
-        # !!! QUAN TRỌNG: Thay `FrontEnd` bằng tên thư mục đúng của bạn
-        working-directory: ./FrontEnd
 
       # Bước 4: Kiểm tra định dạng code bằng Prettier
-      # Chạy script `format:check` bạn đã thêm vào package.json
       - name: Check code formatting
         run: npm run format:check
-        # !!! QUAN TRỌNG: Thay `FrontEnd` bằng tên thư mục đúng của bạn
-        working-directory: ./FrontEnd
 
       # Bước 5: Chạy các bài test tự động (Unit Test)
-      # Thêm `-- --watchAll=false` để Jest chạy 1 lần rồi thoát, không chạy ở chế độ watch
       - name: Run tests
         run: npm test -- --watchAll=false
-        # !!! QUAN TRỌNG: Thay `FrontEnd` bằng tên thư mục đúng của bạn
-        working-directory: ./FrontEnd
-      
+
       # Bước 6: Chạy build production để kiểm tra toàn diện
-      # Bước này cũng sẽ bắt các lỗi từ ESLint vì nó được tích hợp trong `react-scripts build`
       - name: Run build
         run: npm run build
-        # !!! QUAN TRỌNG: Thay `FrontEnd` bằng tên thư mục đúng của bạn
-        working-directory: ./FrontEnd
