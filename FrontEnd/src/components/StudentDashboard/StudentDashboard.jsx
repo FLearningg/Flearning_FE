@@ -1,74 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPlay, FaBook, FaTrophy, FaUsers } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 import ProfileSection from '../CourseList/ProfileSection';
+import { getEnrolledCourses } from '../../services/profileService';
 import '../../assets/StudentDashboard/StudentDashboard.css';
-
-const STATS_DATA = [
-  {
-    id: 1,
-    icon: <FaBook />,
-    count: 957,
-    label: 'Enrolled Courses',
-    color: '#ff6b38'
-  },
-  {
-    id: 2,
-    icon: <FaPlay />,
-    count: 6,
-    label: 'Active Courses',
-    color: '#6366f1'
-  },
-  {
-    id: 3,
-    icon: <FaTrophy />,
-    count: 951,
-    label: 'Completed Courses',
-    color: '#22c55e'
-  },
-  {
-    id: 4,
-    icon: <FaUsers />,
-    count: 241,
-    label: 'Course Instructors',
-    color: '#f59e0b'
-  }
-];
-
-const LEARNING_DATA = [
-  {
-    id: 1,
-    title: 'React Level 1: # and Master/Teacher Program',
-    thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97',
-    chapter: '1. Introductions',
-    progress: 0,
-    status: 'not-started'
-  },
-  {
-    id: 2,
-    title: 'The Complete 2021 Web Development Bootcamp',
-    thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085',
-    chapter: '167. What You\'ll Need to Get Started - Setup',
-    progress: 61,
-    status: 'in-progress'
-  },
-  {
-    id: 3,
-    title: 'Copywriting - Become a Freelance Copywriter',
-    thumbnail: 'https://images.unsplash.com/photo-1455390582262-044cdead277a',
-    chapter: '1. How to get started with figma',
-    progress: 0,
-    status: 'not-started'
-  },
-  {
-    id: 4,
-    title: '2021 Complete Python Bootcamp From Zero to Hero',
-    thumbnail: 'https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2',
-    chapter: '9. Advanced CSS - Selector Priority',
-    progress: 12,
-    status: 'in-progress'
-  }
-];
 
 const StatCard = ({ icon, count, label, color }) => (
   <div className="dashboard-stat-card">
@@ -113,6 +48,103 @@ const LearningCard = ({ thumbnail, title, chapter, progress, status }) => (
 
 const StudentDashboard = () => {
   const location = useLocation();
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const coursesPerPage = 4;
+
+  useEffect(() => {
+    fetchEnrolledCourses();
+  }, []);
+
+  const fetchEnrolledCourses = async () => {
+    try {
+      setLoading(true);
+      const { data } = await getEnrolledCourses();
+      setEnrolledCourses(data.data);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to fetch courses");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const statsData = [
+    {
+      id: 1,
+      icon: <FaBook />,
+      count: enrolledCourses.length,
+      label: 'Enrolled Courses',
+      color: '#ff6b38'
+    },
+    {
+      id: 2,
+      icon: <FaPlay />,
+      count: enrolledCourses.filter(course => course.progress > 0 && course.progress < 100).length,
+      label: 'Active Courses',
+      color: '#6366f1'
+    },
+    {
+      id: 3,
+      icon: <FaTrophy />,
+      count: enrolledCourses.filter(course => course.progress === 100).length,
+      label: 'Completed Courses',
+      color: '#22c55e'
+    },
+    {
+      id: 4,
+      icon: <FaUsers />,
+      count: [...new Set(enrolledCourses.map(course => course.course.instructor))].length,
+      label: 'Course Instructors',
+      color: '#f59e0b'
+    }
+  ];
+
+  const handlePrevPage = () => {
+    setCurrentPage(prev => Math.max(0, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => 
+      Math.min(prev + 1, Math.ceil(enrolledCourses.length / coursesPerPage) - 1)
+    );
+  };
+
+  const currentCourses = enrolledCourses.slice(
+    currentPage * coursesPerPage,
+    (currentPage + 1) * coursesPerPage
+  );
+
+  if (loading) {
+    return (
+      <ProfileSection
+        avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
+        name="Loading..."
+        title="Loading..."
+        activePath={location.pathname}
+      >
+        <div className="dashboard-content">
+          <div>Loading dashboard...</div>
+        </div>
+      </ProfileSection>
+    );
+  }
+
+  if (error) {
+    return (
+      <ProfileSection
+        avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
+        name="Error"
+        title="Error"
+        activePath={location.pathname}
+      >
+        <div className="dashboard-content">
+          <div>Error: {error}</div>
+        </div>
+      </ProfileSection>
+    );
+  }
 
   return (
     <ProfileSection 
@@ -127,7 +159,7 @@ const StudentDashboard = () => {
         </div>
 
         <div className="stats-grid">
-          {STATS_DATA.map(stat => (
+          {statsData.map(stat => (
             <StatCard key={stat.id} {...stat} />
           ))}
         </div>
@@ -136,19 +168,41 @@ const StudentDashboard = () => {
           <div className="learning-section-header">
             <h3>Let's start learning, Kevin</h3>
             <div className="learning-nav-buttons">
-              <button className="learning-nav-btn learning-nav-prev" aria-label="Previous courses">
+              <button 
+                className="learning-nav-btn learning-nav-prev" 
+                aria-label="Previous courses"
+                onClick={handlePrevPage}
+                disabled={currentPage === 0}
+              >
                 ←
               </button>
-              <button className="learning-nav-btn learning-nav-next" aria-label="Next courses">
+              <button 
+                className="learning-nav-btn learning-nav-next" 
+                aria-label="Next courses"
+                onClick={handleNextPage}
+                disabled={currentPage >= Math.ceil(enrolledCourses.length / coursesPerPage) - 1}
+              >
                 →
               </button>
             </div>
           </div>
 
           <div className="learning-grid">
-            {LEARNING_DATA.map(course => (
-              <LearningCard key={course.id} {...course} />
+            {currentCourses.map(enrollment => (
+              <LearningCard
+                key={enrollment.enrollmentId}
+                thumbnail={enrollment.course.thumbnail}
+                title={enrollment.course.title}
+                chapter={`${enrollment.course.category || 'General'} Course`}
+                progress={enrollment.progress || 0}
+                status={enrollment.progress === 100 ? "completed" : "in-progress"}
+              />
             ))}
+            {currentCourses.length === 0 && (
+              <div className="no-courses-message">
+                No courses found. Start learning by enrolling in a course!
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,110 +1,55 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { FaStar } from 'react-icons/fa';
 import ProfileSection from '../CourseList/ProfileSection';
+import { getPurchaseHistory } from '../../services/profileService';
 import '../../assets/PurchaseHistory/PurchaseHistory.css';
-
-const PURCHASE_HISTORY = [
-  {
-    id: 1,
-    date: '1st September, 2021 at 11:30 PM',
-    courses: [
-      {
-        id: 1,
-        title: 'Learn Ethical Hacking From Scratch',
-        instructor: 'Marvin McKinney',
-        rating: 4.7,
-        reviews: 451444,
-        price: 13.99,
-        image: 'https://images.unsplash.com/photo-1550439062-609e1531270e?auto=format&fit=crop&w=800&q=80'
-      },
-      {
-        id: 2,
-        title: 'Mega Digital Marketing Course A-Z: 12 Courses in 1 + Updates',
-        instructor: 'Esther Howard',
-        rating: 4.7,
-        reviews: 451444,
-        price: 49.00,
-        image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=800&q=80'
-      }
-    ],
-    totalCourses: 2,
-    totalAmount: 75.00,
-    paymentMethod: 'Credit Card',
-    cardNumber: '4142 **** **** ****',
-    expiryDate: '04/24'
-  },
-  {
-    id: 2,
-    date: '31st August, 2021 at 11:30 PM',
-    totalCourses: 52,
-    totalAmount: 507.00,
-    paymentMethod: 'Credit Card'
-  },
-  {
-    id: 3,
-    date: '24th August, 2021 at 6:24 PM',
-    totalCourses: 1,
-    totalAmount: 89.00,
-    paymentMethod: 'Credit Card'
-  },
-  {
-    id: 4,
-    date: '1st September, 2021 at 8:47 PM',
-    totalCourses: 1,
-    totalAmount: 25.00,
-    paymentMethod: 'Credit Card'
-  },
-  {
-    id: 5,
-    date: '1st September, 2021 at 11:30 PM',
-    totalCourses: 5,
-    totalAmount: 89.00,
-    paymentMethod: 'Credit Card'
-  },
-  {
-    id: 6,
-    date: '17th July, 2021 at 10:51 AM',
-    totalCourses: 2,
-    totalAmount: 140.00,
-    paymentMethod: 'Credit Card'
-  }
-];
 
 const CourseItem = ({ course }) => (
   <div className="flearning-course-item">
     <div className="flearning-course-image">
-      <img src={course.image} alt={course.title} />
+      <img src={course.thumbnail} alt={course.title} />
     </div>
     <div className="flearning-course-info">
       <div className="flearning-course-rating">
         <FaStar className="flearning-star-icon" />
-        <span className="flearning-rating-value">{course.rating}</span>
-        <span className="flearning-review-count">({course.reviews.toLocaleString()} Review)</span>
+        <span className="flearning-rating-value">{course.rating || 0}</span>
       </div>
       <h4>{course.title}</h4>
-      <p className="flearning-course-instructor">Course by: {course.instructor}</p>
+      <p className="flearning-course-category">Category: {course.category || 'Uncategorized'}</p>
     </div>
     <div className="flearning-course-price">
-      ${course.price.toFixed(2)}
+      ${course.price?.toFixed(2) || '0.00'}
     </div>
   </div>
 );
 
-const PurchaseCard = ({ purchase, isExpanded }) => {
+const PurchaseCard = ({ purchase, isExpanded, onToggle }) => {
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    });
+  };
+
   return (
     <div className={`flearning-purchase-card ${isExpanded ? 'flearning-purchase-card-expanded' : ''}`}>
       <div className="flearning-purchase-header">
         <div className="flearning-purchase-info">
-          <div className="flearning-purchase-date">{purchase.date}</div>
+          <div className="flearning-purchase-date">{formatDate(purchase.paymentDate)}</div>
           <div className="flearning-purchase-meta">
             <span className="flearning-meta-item">
-              <img src="/icons/PlayCircle.png" alt="Courses" className="flearning-meta-icon" />
-              {purchase.totalCourses} Courses
+              <img src="/icons/PlayCircle.png" alt="Course" className="flearning-meta-icon" />
+              1 Course
             </span>
             <span className="flearning-meta-item">
               <img src="/icons/CurrencyDollarSimple.png" alt="Amount" className="flearning-meta-icon" />
-              ${purchase.totalAmount.toFixed(2)} USD
+              ${purchase.amount?.toFixed(2)} USD
             </span>
             <span className="flearning-meta-item">
               <img src="/icons/CreditCard.png" alt="Payment" className="flearning-meta-icon" />
@@ -112,45 +57,47 @@ const PurchaseCard = ({ purchase, isExpanded }) => {
             </span>
           </div>
         </div>
-        <button className="flearning-purchase-toggle" aria-label="Toggle purchase details">
+        <button 
+          className="flearning-purchase-toggle" 
+          onClick={() => onToggle(purchase.paymentId)}
+          aria-label="Toggle purchase details"
+        >
           {isExpanded ? '↑' : '↓'}
         </button>
       </div>
 
-      {isExpanded && (
+      {isExpanded && purchase.course && (
         <div className="flearning-purchase-details">
           <div className="flearning-purchase-details-grid">
             <div className="flearning-courses-list">
-              {purchase.courses.map(course => (
-                <CourseItem key={course.id} course={course} />
-              ))}
+              <CourseItem course={purchase.course} />
             </div>
             
             <div className="flearning-purchase-summary">
               <div className="flearning-summary-date">
-                {purchase.date}
+                {formatDate(purchase.paymentDate)}
               </div>
               <div className="flearning-summary-details">
                 <div className="flearning-summary-item">
-                  <img src="/icons/PlayCircle.png" alt="Courses" className="flearning-summary-icon" />
-                  <span>{purchase.totalCourses} Courses</span>
+                  <img src="/icons/PlayCircle.png" alt="Course" className="flearning-summary-icon" />
+                  <span>1 Course</span>
                 </div>
                 <div className="flearning-summary-item">
                   <img src="/icons/CurrencyDollarSimple.png" alt="Amount" className="flearning-summary-icon" />
-                  <span>${purchase.totalAmount.toFixed(2)} USD</span>
+                  <span>${purchase.amount?.toFixed(2)} USD</span>
                 </div>
                 <div className="flearning-summary-item">
                   <img src="/icons/CreditCard.png" alt="Payment" className="flearning-summary-icon" />
                   <span>{purchase.paymentMethod}</span>
                 </div>
               </div>
-              {purchase.cardNumber && (
-                <div className="flearning-card-info">
-                  <div className="flearning-card-number">
-                    <img src="/icons/CreditCard.png" alt="Card" className="flearning-card-icon" />
-                    <span>{purchase.cardNumber}</span>
+              {purchase.transaction && (
+                <div className="flearning-transaction-info">
+                  <div className="flearning-transaction-id">
+                    <img src="/icons/CreditCard.png" alt="Transaction" className="flearning-transaction-icon" />
+                    <span>Transaction ID: {purchase.transaction.gatewayTransactionId}</span>
                   </div>
-                  <span className="flearning-card-expiry">{purchase.expiryDate}</span>
+                  <span className="flearning-transaction-status">Status: {purchase.transaction.status}</span>
                 </div>
               )}
             </div>
@@ -163,12 +110,48 @@ const PurchaseCard = ({ purchase, isExpanded }) => {
 
 const PurchaseHistory = () => {
   const location = useLocation();
+  const [purchases, setPurchases] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    hasNext: false,
+    hasPrev: false
+  });
+
+  const fetchPurchases = async (page = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await getPurchaseHistory(page);
+      setPurchases(response.data.data);
+      setPagination(response.data.pagination);
+      if (response.data.data.length > 0) {
+        setExpandedId(response.data.data[0].paymentId);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to load purchase history');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPurchases();
+  }, []);
+
+  const handlePageChange = (newPage) => {
+    fetchPurchases(newPage);
+  };
+
+  const handleToggle = (purchaseId) => {
+    setExpandedId(expandedId === purchaseId ? null : purchaseId);
+  };
 
   return (
     <ProfileSection 
-      avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
-      name="Kevin Gilbert"
-      title="Web Designer & Best-Selling Instructor"
       activePath={location.pathname}
     >
       <div className="flearning-purchase-content">
@@ -176,19 +159,62 @@ const PurchaseHistory = () => {
           <h2>Purchase History</h2>
         </div>
 
-        <div className="flearning-purchase-list">
-          {PURCHASE_HISTORY.map((purchase, index) => (
-            <PurchaseCard 
-              key={purchase.id} 
-              purchase={purchase} 
-              isExpanded={index === 0} 
-            />
-          ))}
-        </div>
+        {loading && (
+          <div className="flearning-loading">Loading purchase history...</div>
+        )}
 
-        <div className="flearning-purchase-footer">
-          <p>Yay! You have seen all your purchase history. 😎</p>
-        </div>
+        {error && (
+          <div className="flearning-error">{error}</div>
+        )}
+
+        {!loading && !error && (
+          <>
+            <div className="flearning-purchase-list">
+              {purchases.length > 0 ? (
+                purchases.map((purchase) => (
+                  <PurchaseCard 
+                    key={purchase.paymentId} 
+                    purchase={purchase} 
+                    isExpanded={expandedId === purchase.paymentId}
+                    onToggle={handleToggle}
+                  />
+                ))
+              ) : (
+                <div className="flearning-no-purchases">
+                  No purchase history found.
+                </div>
+              )}
+            </div>
+
+            {purchases.length > 0 && (
+              <div className="flearning-pagination">
+                <button 
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  disabled={!pagination.hasPrev}
+                  className="flearning-pagination-btn"
+                >
+                  Previous
+                </button>
+                <span className="flearning-pagination-info">
+                  Page {pagination.currentPage} of {pagination.totalPages}
+                </span>
+                <button 
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  disabled={!pagination.hasNext}
+                  className="flearning-pagination-btn"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+
+            {purchases.length > 0 && (
+              <div className="flearning-purchase-footer">
+                <p>Showing {purchases.length} of {pagination.totalPayments} purchases</p>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </ProfileSection>
   );
