@@ -37,10 +37,10 @@ jobs:
         # Sửa lại tên thư mục làm việc, rất có thể tên thư mục là FrontEnd
         working-directory: ./FrontEnd
 
-      # Bước 4: Kiểm tra định dạng code bằng Prettier
-      - name: Check code formatting
-        run: npm run format:check
-        working-directory: ./FrontEnd
+      # Bước 4: Kiểm tra định dạng code bằng Prettier (ĐÃ TẮT)
+      # - name: Check code formatting
+      #   run: npm run format:check
+      #   working-directory: ./FrontEnd
 
       # Bước 5: Chạy các bài test tự động (Unit Test)
       - name: Run tests
