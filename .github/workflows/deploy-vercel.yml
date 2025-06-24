@@ -1,0 +1,37 @@
+# Tên của workflow, sẽ hiển thị trong tab "Actions" trên GitHub
+name: Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy-to-vercel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      # CHỈ ĐỊNH THƯ MỤC LÀM VIỆC CHO CÁC LỆNH CỦA VERCEL
+      - name: Pull Vercel Project Settings
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: ./FrontEnd  # <--- THÊM DÒNG NÀY
+
+      - name: Build Project
+        run: vercel build ${{ github.ref_name == 'main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: ./FrontEnd  # <--- THÊM DÒNG NÀY
+
+      - name: Deploy Project to Vercel
+        run: vercel deploy --prebuilt ${{ github.ref_name == 'main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: ./FrontEnd  # <--- THÊM DÒNG NÀY
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

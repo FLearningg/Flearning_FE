@@ -39,12 +39,15 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "format": "prettier --write \"src/**/*.{js,jsx,css,scss,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,css,scss,json,md}\""
   },
   "eslintConfig": {
     "extends": [
       "react-app",
-      "react-app/jest"
+      "react-app/jest",
+      "prettier"
     ]
   },
   "browserslist": {
@@ -61,7 +64,9 @@
   },
   "devDependencies": {
     "css-loader": "^7.1.2",
+    "eslint-config-prettier": "^10.1.5",
     "postcss-loader": "^8.1.1",
+    "prettier": "^3.6.0",
     "resolve-url-loader": "^5.0.0",
     "sass": "^1.89.0",
     "sass-loader": "^16.0.5"

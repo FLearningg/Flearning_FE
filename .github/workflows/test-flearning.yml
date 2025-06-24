@@ -1,0 +1,62 @@
+# Tên của workflow, sẽ hiển thị trong tab "Actions" trên GitHub
+name: Check FLearning Branch
+
+# Điều kiện để kích hoạt workflow
+on:
+  # Chạy khi có push code lên nhánh `FLearning`
+  push:
+    branches:
+      - FLearning
+  # Chạy khi có Pull Request được mở hoặc cập nhật nhắm vào nhánh `FLearning`
+  pull_request:
+    branches:
+      - FLearning
+
+# Các công việc sẽ được thực hiện
+jobs:
+  test-build-and-format:
+    name: Test, Build and Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+      # Bước 1: Lấy code từ repo về
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Bước 2: Thiết lập môi trường Node.js (chọn phiên bản bạn dùng)
+      # Giúp đảm bảo môi trường chạy nhất quán và tăng tốc bằng cache
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Hoặc phiên bản Node.js bạn đang sử dụng
+          cache: 'npm'
+          # !!! QUAN TRỌNG: Thay `FrontEnd` bằng tên thư mục đúng của bạn
+          cache-dependency-path: 'FrontEnd/package-lock.json'
+
+      # Bước 3: Cài đặt các dependencies
+      # `npm ci` nhanh và ổn định hơn `npm install` cho môi trường CI
+      - name: Install dependencies
+        run: npm ci
+        # !!! QUAN TRỌNG: Thay `FrontEnd` bằng tên thư mục đúng của bạn
+        working-directory: ./FrontEnd
+
+      # Bước 4: Kiểm tra định dạng code bằng Prettier
+      # Chạy script `format:check` bạn đã thêm vào package.json
+      - name: Check code formatting
+        run: npm run format:check
+        # !!! QUAN TRỌNG: Thay `FrontEnd` bằng tên thư mục đúng của bạn
+        working-directory: ./FrontEnd
+
+      # Bước 5: Chạy các bài test tự động (Unit Test)
+      # Thêm `-- --watchAll=false` để Jest chạy 1 lần rồi thoát, không chạy ở chế độ watch
+      - name: Run tests
+        run: npm test -- --watchAll=false
+        # !!! QUAN TRỌNG: Thay `FrontEnd` bằng tên thư mục đúng của bạn
+        working-directory: ./FrontEnd
+      
+      # Bước 6: Chạy build production để kiểm tra toàn diện
+      # Bước này cũng sẽ bắt các lỗi từ ESLint vì nó được tích hợp trong `react-scripts build`
+      - name: Run build
+        run: npm run build
+        # !!! QUAN TRỌNG: Thay `FrontEnd` bằng tên thư mục đúng của bạn
+        working-directory: ./FrontEnd
