@@ -34,19 +34,20 @@ jobs:
       # Đổi `npm ci` thành `npm install`
       - name: Install dependencies
         run: npm install
-        working-directory: ./Flearning_FE
+        # Sửa lại tên thư mục làm việc, rất có thể tên thư mục là FrontEnd
+        working-directory: ./FrontEnd
 
       # Bước 4: Kiểm tra định dạng code bằng Prettier
       - name: Check code formatting
         run: npm run format:check
-        working-directory: ./Flearning_FE
+        working-directory: ./FrontEnd
 
       # Bước 5: Chạy các bài test tự động (Unit Test)
       - name: Run tests
         run: npm test -- --watchAll=false
-        working-directory: ./Flearning_FE
+        working-directory: ./FrontEnd
 
       # Bước 6: Chạy build production để kiểm tra toàn diện
       - name: Run build
         run: npm run build
-        working-directory: ./Flearning_FE
+        working-directory: ./FrontEnd
