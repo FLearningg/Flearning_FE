@@ -37,6 +37,20 @@ jobs:
         # Sửa lại tên thư mục làm việc, rất có thể tên thư mục là FrontEnd
         working-directory: ./FrontEnd
 
+      # BƯỚC MỚI: KIỂM TRA VIỆC CÀI ĐẶT
+      - name: Verify react-router-dom installation
+        run: |
+          echo "Kiểm tra sự tồn tại của react-router-dom trong node_modules..."
+          if [ -d "node_modules/react-router-dom" ]; then
+            echo "Đã tìm thấy react-router-dom."
+            echo "Phiên bản đã cài đặt:"
+            cat node_modules/react-router-dom/package.json | grep version
+          else
+            echo "Lỗi: react-router-dom đã không được cài đặt thành công."
+            exit 1
+          fi
+        working-directory: ./FrontEnd
+
       # Bước 4: Kiểm tra định dạng code bằng Prettier (ĐÃ TẮT)
       # - name: Check code formatting
       #   run: npm run format:check
