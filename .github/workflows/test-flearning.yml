@@ -29,22 +29,26 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          # Sửa lại đường dẫn cache, trỏ đến file package-lock.json ở thư mục gốc
-          cache-dependency-path: package-lock.json
+          # Sửa lại đường dẫn, trỏ vào thư mục con `Flearning_FE`
+          cache-dependency-path: 'Flearning_FE/package-lock.json'
 
       # Bước 3: Cài đặt các dependencies
-      # Chạy lệnh ở thư mục gốc, không cần 'working-directory'
+      # Thêm `working-directory` để chạy lệnh trong thư mục con
       - name: Install dependencies
         run: npm ci
+        working-directory: ./Flearning_FE
 
       # Bước 4: Kiểm tra định dạng code bằng Prettier
       - name: Check code formatting
         run: npm run format:check
+        working-directory: ./Flearning_FE
 
       # Bước 5: Chạy các bài test tự động (Unit Test)
       - name: Run tests
         run: npm test -- --watchAll=false
+        working-directory: ./Flearning_FE
 
       # Bước 6: Chạy build production để kiểm tra toàn diện
       - name: Run build
         run: npm run build
+        working-directory: ./Flearning_FE
