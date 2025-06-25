@@ -12,6 +12,8 @@ import {
   ListOrdered,
   Plus,
   ImageIcon,
+  X,
+  Trash2,
 } from "lucide-react";
 import "../../assets/CRUDCourseAndLesson/CourseFormAdvance.css";
 import ProgressTabs from "./ProgressTabs";
@@ -57,15 +59,23 @@ export default function CourseForm({
   const [description, setDescription] = useState(
     initialData.detail?.description || ""
   );
+
+  // Media states
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [trailerFile, setTrailerFile] = useState(null);
-  const [thumbnailPreview, setThumbnailPreview] = useState(
-    initialData.thumbnail || null
+  const [thumbnailUrl, setThumbnailUrl] = useState(
+    initialData.uploadedFiles?.image?.url || initialData.thumbnail || null
   );
-  const [trailerPreview, setTrailerPreview] = useState(
-    initialData.trailer || null
+  const [trailerUrl, setTrailerUrl] = useState(
+    initialData.uploadedFiles?.video?.url || initialData.trailer || null
   );
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [trailerPreview, setTrailerPreview] = useState(null);
+
+  // Loading states
   const [loading, setLoading] = useState(false);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [uploadingTrailer, setUploadingTrailer] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const MAX_INPUTS = 8;
@@ -97,8 +107,23 @@ export default function CourseForm({
     }
     // Always set description, even if empty
     setDescription(initialData.detail?.description || "");
-    setThumbnailPreview(initialData.thumbnail || null);
-    setTrailerPreview(initialData.trailer || null);
+
+    // Set media URLs from initialData
+    const newThumbnailUrl =
+      initialData.uploadedFiles?.image?.url || initialData.thumbnail || null;
+    const newTrailerUrl =
+      initialData.uploadedFiles?.video?.url || initialData.trailer || null;
+
+    setThumbnailUrl(newThumbnailUrl);
+    setTrailerUrl(newTrailerUrl);
+
+    // Set preview from URLs if they exist (for when coming back from next page)
+    if (newThumbnailUrl) {
+      setThumbnailPreview(newThumbnailUrl);
+    }
+    if (newTrailerUrl) {
+      setTrailerPreview(newTrailerUrl);
+    }
   }, [initialData]);
 
   const updateInput = (index, value, type) => {
@@ -127,16 +152,76 @@ export default function CourseForm({
     }
   };
 
-  const handleThumbnailChange = (e) => {
+  const handleThumbnailChange = async (e) => {
     const file = e.target.files[0];
-    setThumbnailFile(file);
-    setThumbnailPreview(file ? URL.createObjectURL(file) : null);
+    if (file) {
+      setThumbnailFile(file);
+      setThumbnailPreview(URL.createObjectURL(file));
+      setError("");
+
+      // Auto upload immediately
+      setUploadingThumbnail(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await apiClient.post("/admin/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        if (!res.data || !res.data.url) {
+          throw new Error(res.data?.message || "Failed to upload thumbnail");
+        }
+        setThumbnailUrl(res.data.url);
+        setThumbnailFile(null);
+        setSuccess("Thumbnail uploaded successfully!");
+        setTimeout(() => setSuccess(""), 3000);
+      } catch (err) {
+        setError(err.message || "Failed to upload thumbnail");
+      } finally {
+        setUploadingThumbnail(false);
+      }
+    }
   };
 
-  const handleTrailerChange = (e) => {
+  const handleTrailerChange = async (e) => {
     const file = e.target.files[0];
-    setTrailerFile(file);
-    setTrailerPreview(file ? URL.createObjectURL(file) : null);
+    if (file) {
+      setTrailerFile(file);
+      setTrailerPreview(URL.createObjectURL(file));
+      setError("");
+
+      // Auto upload immediately
+      setUploadingTrailer(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await apiClient.post("/admin/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        if (!res.data || !res.data.url) {
+          throw new Error(res.data?.message || "Failed to upload trailer");
+        }
+        setTrailerUrl(res.data.url);
+        setTrailerFile(null);
+        setSuccess("Trailer uploaded successfully!");
+        setTimeout(() => setSuccess(""), 3000);
+      } catch (err) {
+        setError(err.message || "Failed to upload trailer");
+      } finally {
+        setUploadingTrailer(false);
+      }
+    }
+  };
+
+  const removeThumbnail = () => {
+    setThumbnailUrl(null);
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
+  };
+
+  const removeTrailer = () => {
+    setTrailerUrl(null);
+    setTrailerFile(null);
+    setTrailerPreview(null);
   };
 
   const handleSaveNext = async () => {
@@ -144,32 +229,18 @@ export default function CourseForm({
     setError("");
     setSuccess("");
     try {
-      let thumbnail, trailer;
+      // Upload any pending files first
       if (thumbnailFile) {
-        const formData = new FormData();
-        formData.append("file", thumbnailFile);
-        const res = await apiClient.post("/admin/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        if (!res.data || !res.data.url) {
-          throw new Error(res.data?.message || "Failed to upload file");
-        }
-        thumbnail = res.data.url;
+        await handleThumbnailChange({ target: { files: [thumbnailFile] } });
       }
       if (trailerFile) {
-        const formData = new FormData();
-        formData.append("file", trailerFile);
-        const res = await apiClient.post("/admin/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        if (!res.data || !res.data.url) {
-          throw new Error(res.data?.message || "Failed to upload file");
-        }
-        trailer = res.data.url;
+        await handleTrailerChange({ target: { files: [trailerFile] } });
       }
+
       let uploadedFiles = {};
-      if (thumbnail) uploadedFiles.image = { url: thumbnail };
-      if (trailer) uploadedFiles.video = { url: trailer };
+      if (thumbnailUrl) uploadedFiles.image = { url: thumbnailUrl };
+      if (trailerUrl) uploadedFiles.video = { url: trailerUrl };
+
       const data = {
         detail: {
           description,
@@ -227,6 +298,84 @@ export default function CourseForm({
     </div>
   );
 
+  const renderMediaUpload = (
+    type,
+    title,
+    description,
+    icon,
+    accept,
+    file,
+    preview,
+    url,
+    onChange,
+    onRemove,
+    uploading
+  ) => {
+    // Use URL as preview if available, otherwise use preview state
+    const displayUrl = url || preview;
+    const isUploaded = !!url;
+
+    return (
+      <div className="media-card">
+        <h3>{title}</h3>
+        <p>{description}</p>
+
+        {/* Show existing media or preview */}
+        {displayUrl && (
+          <div className="media-preview-container">
+            <div className="media-preview">
+              {type === "image" ? (
+                <img
+                  src={displayUrl}
+                  alt="Preview"
+                  className="media-preview-image"
+                />
+              ) : (
+                <video
+                  src={displayUrl}
+                  controls
+                  className="media-preview-video"
+                />
+              )}
+              <button className="media-remove-btn" onClick={onRemove}>
+                <Trash2 size={16} />
+              </button>
+            </div>
+            <p className="media-status">
+              {isUploaded ? "✓ Uploaded successfully" : "📁 Uploading..."}
+            </p>
+          </div>
+        )}
+
+        {/* Upload area - show if no URL or when uploading */}
+        {(!displayUrl || uploading) && (
+          <div className="upload-card">
+            {icon}
+            <input
+              type="file"
+              accept={accept}
+              id={`${type}-upload`}
+              style={{ display: "none" }}
+              onChange={onChange}
+              disabled={uploading}
+            />
+            <CustomButton
+              color="primary"
+              type="normal"
+              size="small"
+              onClick={() => document.getElementById(`${type}-upload`).click()}
+              disabled={uploading}
+            >
+              {uploading
+                ? "Uploading..."
+                : `Upload ${type === "image" ? "Image" : "Video"}`}
+            </CustomButton>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="cf-app-container">
       <div className="cf-content-area">
@@ -241,7 +390,7 @@ export default function CourseForm({
                   type="normal"
                   size="medium"
                   onClick={handleSaveNext}
-                  disabled={loading}
+                  disabled={loading || uploadingThumbnail || uploadingTrailer}
                 >
                   {loading ? "Saving..." : "Save & Next"}
                 </CustomButton>
@@ -251,80 +400,49 @@ export default function CourseForm({
               </div>
             </div>
 
+            {/* Error and Success Messages */}
+            {error && (
+              <div className="message-error">
+                <X size={16} />
+                <span>{error}</span>
+              </div>
+            )}
+            {success && (
+              <div className="message-success">
+                <Check size={16} />
+                <span>{success}</span>
+              </div>
+            )}
+
             {/* Media Uploads */}
             <div className="media-section">
-              {/* Thumbnail */}
-              <div className="media-card">
-                <h3>Course Thumbnail</h3>
-                <p>
-                  Upload your course Thumbnail here.{" "}
-                  <strong>Important guidelines:</strong> 1200x800 pixels.
-                  Supported:
-                  <strong>.jpg, .jpeg, .png</strong>
-                </p>
-                <div className="upload-card">
-                  <ImageIcon className="upload-icon" />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    id="thumbnail-upload"
-                    style={{ display: "none" }}
-                    onChange={handleThumbnailChange}
-                  />
-                  <CustomButton
-                    color="primary"
-                    type="normal"
-                    size="small"
-                    onClick={() =>
-                      document.getElementById("thumbnail-upload").click()
-                    }
-                    disabled={loading}
-                  >
-                    {loading ? "Uploading..." : "Upload Image"}
-                  </CustomButton>
-                  {thumbnailPreview && (
-                    <img
-                      src={thumbnailPreview}
-                      alt="Thumbnail Preview"
-                      style={{ maxWidth: 200, marginTop: 8 }}
-                    />
-                  )}
-                </div>
-              </div>
+              {renderMediaUpload(
+                "image",
+                "Course Thumbnail",
+                "Upload your course thumbnail here. Important guidelines: 1200x800 pixels. Supported: .jpg, .jpeg, .png",
+                <ImageIcon className="upload-icon" />,
+                "image/*",
+                thumbnailFile,
+                thumbnailPreview,
+                thumbnailUrl,
+                handleThumbnailChange,
+                removeThumbnail,
+                uploadingThumbnail
+              )}
 
-              {/* Trailer */}
-              <div className="media-card">
-                <h3>Course Trailer</h3>
-                <p>Promo videos increase enrollment 5–10X. Make it awesome!</p>
-                <div className="upload-card">
-                  <Play className="upload-icon" />
-                  <input
-                    type="file"
-                    accept="video/*"
-                    id="trailer-upload"
-                    style={{ display: "none" }}
-                    onChange={handleTrailerChange}
-                  />
-                  <CustomButton
-                    color="primary"
-                    type="normal"
-                    size="small"
-                    onClick={() =>
-                      document.getElementById("trailer-upload").click()
-                    }
-                    disabled={loading}
-                  >
-                    {loading ? "Uploading..." : "Upload Video"}
-                  </CustomButton>
-                  {trailerPreview && (
-                    <video
-                      src={trailerPreview}
-                      controls
-                      style={{ maxWidth: 300, marginTop: 8 }}
-                    />
-                  )}
-                </div>
-              </div>
+              {renderMediaUpload(
+                "video",
+                "Course Trailer",
+                "Promo videos increase enrollment 5–10X. Make it awesome!",
+                <Play className="upload-icon" />,
+                "video/*",
+                trailerFile,
+                trailerPreview,
+                trailerUrl,
+                handleTrailerChange,
+                removeTrailer,
+                uploadingTrailer
+              )}
             </div>
 
             {/* Description */}
@@ -373,13 +491,6 @@ export default function CourseForm({
               "requirement"
             )}
 
-            {error && (
-              <div style={{ color: "red", marginBottom: 8 }}>{error}</div>
-            )}
-            {success && (
-              <div style={{ color: "green", marginBottom: 8 }}>{success}</div>
-            )}
-
             <div className="acc-navigation-buttons">
               <CustomButton
                 color="transparent"
@@ -401,10 +512,8 @@ export default function CourseForm({
                       ),
                     },
                     uploadedFiles: {
-                      image: thumbnailPreview
-                        ? { url: thumbnailPreview }
-                        : null,
-                      video: trailerPreview ? { url: trailerPreview } : null,
+                      image: thumbnailUrl ? { url: thumbnailUrl } : null,
+                      video: trailerUrl ? { url: trailerUrl } : null,
                     },
                   };
                   onPrev(data);
@@ -417,7 +526,7 @@ export default function CourseForm({
                 type="normal"
                 size="large"
                 onClick={handleSaveNext}
-                disabled={loading}
+                disabled={loading || uploadingThumbnail || uploadingTrailer}
               >
                 {loading ? "Saving..." : "Save & Next"}
               </CustomButton>
