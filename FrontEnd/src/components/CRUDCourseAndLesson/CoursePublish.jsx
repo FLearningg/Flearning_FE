@@ -2,8 +2,45 @@ import "../../assets/CRUDCourseAndLesson/CourseForm.css";
 import "../../assets/CRUDCourseAndLesson/CoursePublish.css";
 import ProgressTabs from "./ProgressTabs";
 import CustomButton from "../common/CustomButton/CustomButton";
+import { useState, useEffect } from "react";
 
-const CoursePublish = () => {
+const CoursePublish = ({
+  onSubmit = () => {},
+  onPrev = () => {},
+  initialData = {},
+}) => {
+  const [welcomeMsg, setWelcomeMsg] = useState(
+    initialData.message?.welcome || ""
+  );
+  const [congratsMsg, setCongratsMsg] = useState(
+    initialData.message?.congrats || ""
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // Update state when initialData changes
+  useEffect(() => {
+    // Always set messages, even if empty
+    setWelcomeMsg(initialData.message?.welcome || "");
+    setCongratsMsg(initialData.message?.congrats || "");
+  }, [initialData]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    try {
+      await onSubmit({ welcome: welcomeMsg, congrats: congratsMsg });
+      setSuccess("Course published successfully!");
+    } catch (err) {
+      setError(err.message || "Failed to publish course");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="cf-app-container">
       <div className="cf-content-area">
@@ -14,8 +51,14 @@ const CoursePublish = () => {
             <div className="cf-form-header">
               <h2 className="cf-form-title">Publish Course</h2>
               <div className="cf-form-actions">
-                <CustomButton color="primary" size="medium" type="normal">
-                  Save
+                <CustomButton
+                  color="primary"
+                  size="medium"
+                  type="normal"
+                  onClick={handleSubmit}
+                  disabled={loading}
+                >
+                  {loading ? "Saving..." : "Save"}
                 </CustomButton>
                 <CustomButton color="transparent" size="medium" type="normal">
                   Save & Preview
@@ -24,41 +67,70 @@ const CoursePublish = () => {
             </div>
 
             {/* Message Section */}
-            <div className="cp-message-grid">
-              <div className="cf-form-group">
-                <label className="cf-form-label">Welcome Message</label>
-                <textarea
-                  placeholder="Enter course starting message here..."
-                  className="form-control"
-                  rows="5"
-                  style={{ minHeight: 120, marginBottom: 16 }}
-                ></textarea>
+            <form onSubmit={handleSubmit}>
+              <div className="cp-message-grid">
+                <div className="cf-form-group">
+                  <label className="cf-form-label">Welcome Message</label>
+                  <textarea
+                    placeholder="Enter course starting message here..."
+                    className="form-control"
+                    rows="5"
+                    style={{ minHeight: 120, marginBottom: 16 }}
+                    value={welcomeMsg}
+                    onChange={(e) => setWelcomeMsg(e.target.value)}
+                  ></textarea>
+                </div>
+                <div className="cf-form-group">
+                  <label className="cf-form-label">
+                    Congratulations Message
+                  </label>
+                  <textarea
+                    placeholder="Enter your course completed message here..."
+                    className="form-control"
+                    rows="5"
+                    style={{ minHeight: 120, marginBottom: 16 }}
+                    value={congratsMsg}
+                    onChange={(e) => setCongratsMsg(e.target.value)}
+                  ></textarea>
+                </div>
               </div>
-              <div className="cf-form-group">
-                <label className="cf-form-label">Congratulations Message</label>
-                <textarea
-                  placeholder="Enter your course completed message here..."
-                  className="form-control"
-                  rows="5"
-                  style={{ minHeight: 120, marginBottom: 16 }}
-                ></textarea>
-              </div>
-            </div>
+              {error && (
+                <div style={{ color: "red", marginBottom: 8 }}>{error}</div>
+              )}
+              {success && (
+                <div style={{ color: "green", marginBottom: 8 }}>{success}</div>
+              )}
 
-            {/* Navigation Buttons */}
-            <div className="cf-form-actions-bottom">
-              <CustomButton color="transparent" size="large" type="normal">
-                Previous
-              </CustomButton>
-              <CustomButton
-                color="primary"
-                size="large"
-                type="normal"
-                style={{ padding: "12px 32px" }}
-              >
-                Submit For Review
-              </CustomButton>
-            </div>
+              {/* Navigation Buttons */}
+              <div className="cf-form-actions-bottom">
+                <CustomButton
+                  color="transparent"
+                  size="large"
+                  type="normal"
+                  onClick={() => {
+                    // Save current data before going back
+                    const data = {
+                      message: {
+                        welcome: welcomeMsg,
+                        congrats: congratsMsg,
+                      },
+                    };
+                    onPrev(data);
+                  }}
+                >
+                  Previous
+                </CustomButton>
+                <CustomButton
+                  color="primary"
+                  size="large"
+                  type="normal"
+                  style={{ padding: "12px 32px" }}
+                  disabled={loading}
+                >
+                  {loading ? "Submitting..." : "Submit For Review"}
+                </CustomButton>
+              </div>
+            </form>
           </div>
         </div>
       </div>

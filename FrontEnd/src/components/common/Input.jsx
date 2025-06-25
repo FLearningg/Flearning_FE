@@ -39,6 +39,9 @@ const Input = ({
   const handleSelect = (option) => {
     setSelectedText(option);
     setShowDropdown(false);
+    if (onChange) {
+      onChange(option);
+    }
   };
 
   const renderInput = () => {
@@ -57,7 +60,9 @@ const Input = ({
     return (
       <input
         type={type}
-        className={`form-control ${error ? "is-invalid" : ""} ${success ? "is-valid" : ""}`}
+        className={`form-control ${error ? "is-invalid" : ""} ${
+          success ? "is-valid" : ""
+        }`}
         placeholder={placeholder || text}
         value={value}
         onChange={onChange}
@@ -149,20 +154,18 @@ const Input = ({
       <div className={`mb-3 ${className || ""}`}>
         {rightIcon && text && <label className="form-label mb-1">{text}</label>}
         <div className="position-relative">
-          {icon && (
-            <i className={`input-icon-left ${icon}`} />
-          )}
+          {icon && <i className={`input-icon-left ${icon}`} />}
           <input
             type="text"
-            className={`form-control ${icon ? "ps-5" : ""} ${rightIcon ? "pe-5" : ""}`}
+            className={`form-control ${icon ? "ps-5" : ""} ${
+              rightIcon ? "pe-5" : ""
+            }`}
             placeholder={placeholder || ""}
             value={value}
             onChange={onChange}
             {...props}
           />
-          {rightIcon && (
-            <i className={`input-icon-right ${rightIcon}`} />
-          )}
+          {rightIcon && <i className={`input-icon-right ${rightIcon}`} />}
         </div>
       </div>
     );
@@ -173,7 +176,8 @@ const Input = ({
       variant === "success"
         ? "fas fa-check-circle text-success"
         : "fas fa-exclamation-triangle text-danger";
-    const boxClass = variant === "success" ? "input-box-success" : "input-box-error";
+    const boxClass =
+      variant === "success" ? "input-box-success" : "input-box-error";
 
     return (
       <div className="mb-3">

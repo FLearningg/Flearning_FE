@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "../../assets/CRUDCourseAndLesson/CourseForm.css";
 import Input from "../common/Input";
 import ProgressTabs from "./ProgressTabs";
 import CustomButton from "../common/CustomButton/CustomButton";
+import { useNavigate } from "react-router-dom";
 
 const categoryOptions = ["Programming", "Design", "Business"];
 const subCategoryOptions = [
@@ -12,19 +13,100 @@ const subCategoryOptions = [
 ];
 const languageOptions = ["English", "Spanish", "French"];
 const levelOptions = ["Beginner", "Intermediate", "Advanced"];
-const durationUnitOptions = ["Day", "Week", "Month"];
+const durationUnitOptions = ["Hours"];
 
-const CourseForm = ({ title = "Create New Course" }) => {
-  const [titleState, setTitle] = React.useState("");
-  const [subtitle, setSubtitle] = React.useState("");
-  const [topic, setTopic] = React.useState("");
-  const [category, setCategory] = React.useState("");
-  const [subCategory, setSubCategory] = React.useState("");
-  const [language, setLanguage] = React.useState("");
-  const [subtitleLanguage, setSubtitleLanguage] = React.useState("");
-  const [level, setLevel] = React.useState("");
-  const [duration, setDuration] = React.useState("");
-  const [durationUnit, setDurationUnit] = React.useState("Day");
+const CourseForm = ({
+  title = "Create New Course",
+  onNext = () => {},
+  initialData = {},
+}) => {
+  const [titleState, setTitle] = React.useState(initialData.title || "");
+  const [subtitle, setSubtitle] = React.useState(
+    initialData.subTitle || initialData.subtitle || ""
+  );
+  const [topic, setTopic] = React.useState(initialData.topic || "");
+  const [category, setCategory] = React.useState(initialData.category || "");
+  const [subCategory, setSubCategory] = React.useState(
+    initialData.subCategory || ""
+  );
+  const [language, setLanguage] = React.useState(initialData.language || "");
+  const [subtitleLanguage, setSubtitleLanguage] = React.useState(
+    initialData.subtitleLanguage || ""
+  );
+  const [level, setLevel] = React.useState(initialData.level || "");
+  const [duration, setDuration] = React.useState(initialData.duration || "");
+  const [durationUnit, setDurationUnit] = React.useState(
+    initialData.durationUnit || "Hours"
+  );
+  const [price, setPrice] = React.useState(initialData.price || "");
+  const [dataLoaded, setDataLoaded] = React.useState(false);
+
+  const navigate = useNavigate();
+
+  // Update state when initialData changes
+  useEffect(() => {
+    // Set loading to false first
+    setDataLoaded(false);
+
+    // Always set from initialData, even if empty string
+    setTitle(initialData.title || "");
+    setSubtitle(initialData.subTitle || initialData.subtitle || "");
+    setTopic(initialData.topic || "");
+    setCategory(initialData.category || "");
+    setSubCategory(initialData.subCategory || "");
+    setLanguage(initialData.language || "");
+    setSubtitleLanguage(initialData.subtitleLanguage || "");
+    setLevel(initialData.level || "");
+    // Parse duration to extract number part (e.g., "123 Hours" -> "123")
+    const durationValue = initialData.duration
+      ? initialData.duration.toString().split(" ")[0]
+      : "";
+    setDuration(durationValue);
+    setDurationUnit("Hours");
+    setPrice(initialData.price || "");
+
+    // Use setTimeout to ensure all state updates are complete
+    setTimeout(() => {
+      setDataLoaded(true);
+    }, 50);
+  }, [initialData]);
+
+  const handleSaveNext = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const data = {
+      title: titleState,
+      subTitle: subtitle, // ← Fixed key name
+      topic,
+      category,
+      subCategory,
+      language: language?.toLowerCase() || "", // ← lowercase
+      subtitleLanguage,
+      level: level?.toLowerCase() || "", // ← lowercase
+      duration: duration ? `${duration} ${durationUnit}` : "", // ← format as "123 Hours"
+      price: parseFloat(price) || 0, // ← ensure number
+    };
+
+    onNext(data);
+  };
+
+  const handleCancel = () => {
+    navigate("/admin/courses/all");
+  };
+
+  const allFieldsFilled =
+    titleState?.trim() &&
+    subtitle?.trim() &&
+    topic?.trim() &&
+    category &&
+    category !== "Select..." &&
+    subCategory &&
+    subCategory !== "Select..." &&
+    language &&
+    language !== "Select..." &&
+    level &&
+    level !== "Select..." &&
+    duration &&
+    price;
 
   return (
     <div className="cf-app-container">
@@ -43,7 +125,7 @@ const CourseForm = ({ title = "Create New Course" }) => {
                 </CustomButton>
               </div>
             </div>
-            <form className="cf-course-form">
+            <form className="cf-course-form" onSubmit={handleSaveNext}>
               <div className="cf-form-group">
                 <label htmlFor="title" className="cf-form-label">
                   Title
@@ -51,7 +133,7 @@ const CourseForm = ({ title = "Create New Course" }) => {
                 <div className="cf-input-container">
                   <Input
                     id="title"
-                    placeholder="You course title"
+                    placeholder="Your course title"
                     maxLength={80}
                     value={titleState}
                     onChange={(e) => setTitle(e.target.value)}
@@ -65,32 +147,10 @@ const CourseForm = ({ title = "Create New Course" }) => {
                 <div className="cf-input-container">
                   <Input
                     id="subtitle"
-                    placeholder="You course subtitle"
+                    placeholder="Your course subtitle"
                     maxLength={120}
                     value={subtitle}
                     onChange={(e) => setSubtitle(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="cf-form-row">
-                <div className="cf-form-group">
-                  <label className="cf-form-label">Course Category</label>
-                  <Input
-                    variant="dropdown"
-                    options={categoryOptions}
-                    value={category}
-                    text={category || "Select..."}
-                    onChange={() => {}}
-                  />
-                </div>
-                <div className="cf-form-group">
-                  <label className="cf-form-label">Course Sub-category</label>
-                  <Input
-                    variant="dropdown"
-                    options={subCategoryOptions}
-                    value={subCategory}
-                    text={subCategory || "Select..."}
-                    onChange={() => {}}
                   />
                 </div>
               </div>
@@ -106,6 +166,28 @@ const CourseForm = ({ title = "Create New Course" }) => {
                   onChange={(e) => setTopic(e.target.value)}
                 />
               </div>
+              <div className="cf-form-row">
+                <div className="cf-form-group">
+                  <label className="cf-form-label">Course Category</label>
+                  <Input
+                    variant="dropdown"
+                    options={categoryOptions}
+                    value={category}
+                    text={category || "Select..."}
+                    onChange={(val) => setCategory(val)}
+                  />
+                </div>
+                <div className="cf-form-group">
+                  <label className="cf-form-label">Course Sub-category</label>
+                  <Input
+                    variant="dropdown"
+                    options={subCategoryOptions}
+                    value={subCategory}
+                    text={subCategory || "Select..."}
+                    onChange={(val) => setSubCategory(val)}
+                  />
+                </div>
+              </div>
               <div className="cf-form-row-4">
                 <div className="cf-form-group">
                   <label className="cf-form-label">Course Language</label>
@@ -114,7 +196,7 @@ const CourseForm = ({ title = "Create New Course" }) => {
                     options={languageOptions}
                     value={language}
                     text={language || "Select..."}
-                    onChange={() => {}}
+                    onChange={(val) => setLanguage(val)}
                   />
                 </div>
                 <div className="cf-form-group">
@@ -126,7 +208,7 @@ const CourseForm = ({ title = "Create New Course" }) => {
                     options={languageOptions}
                     value={subtitleLanguage}
                     text={subtitleLanguage || "Select..."}
-                    onChange={() => {}}
+                    onChange={(val) => setSubtitleLanguage(val)}
                   />
                 </div>
                 <div className="cf-form-group">
@@ -136,7 +218,7 @@ const CourseForm = ({ title = "Create New Course" }) => {
                     options={levelOptions}
                     value={level}
                     text={level || "Select..."}
-                    onChange={() => {}}
+                    onChange={(val) => setLevel(val)}
                   />
                 </div>
                 <div className="cf-form-group">
@@ -144,17 +226,30 @@ const CourseForm = ({ title = "Create New Course" }) => {
                   <div className="cf-duration-container">
                     <Input
                       placeholder="Course durations"
+                      type="number"
                       value={duration}
                       onChange={(e) => setDuration(e.target.value)}
                     />
-                    <Input
-                      variant="dropdown"
-                      options={durationUnitOptions}
-                      value={durationUnit}
-                      text={durationUnit}
-                      onChange={() => {}}
-                    />
+                    <span style={{ marginLeft: 8, lineHeight: "32px" }}>
+                      Hours
+                    </span>
                   </div>
+                </div>
+              </div>
+              <div className="cf-form-group">
+                <label htmlFor="price" className="cf-form-label">
+                  Course Price
+                </label>
+                <div className="cf-input-container">
+                  <Input
+                    id="price"
+                    placeholder="Enter course price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                  />
                 </div>
               </div>
               <div className="acc-navigation-buttons">
@@ -162,11 +257,17 @@ const CourseForm = ({ title = "Create New Course" }) => {
                   color="transparent"
                   type="normal"
                   size="large"
-                  onClick={() => {}}
+                  onClick={handleCancel}
                 >
                   Cancel
                 </CustomButton>
-                <CustomButton color="primary" type="normal" size="large">
+                <CustomButton
+                  color="primary"
+                  type="normal"
+                  size="large"
+                  onClick={handleSaveNext}
+                  disabled={!allFieldsFilled}
+                >
                   Save & Next
                 </CustomButton>
               </div>
