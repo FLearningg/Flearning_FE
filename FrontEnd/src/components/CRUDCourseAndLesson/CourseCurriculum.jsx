@@ -85,11 +85,11 @@ function Modal({ open, onClose, title, children }) {
 // Định nghĩa hàm defaultLesson để tránh lỗi no-undef
 function defaultLesson(order = 1) {
   return {
-    title: `Lecture ${order}`,
+    title: `Lesson ${order}`,
     videoUrl: "",
     captions: "",
     description: "",
-    lectureNotes: "",
+    lessonNotes: "",
     order,
   };
 }
@@ -474,7 +474,7 @@ export default function CourseCurriculum({
             <div>
               <label style={labelStyle}>Caption</label>
               <textarea
-                placeholder="Write your lecture caption here..."
+                placeholder="Write your lesson caption here..."
                 style={textareaStyle}
                 value={captionText}
                 onChange={(e) => setCaptionText(e.target.value)}
@@ -507,7 +507,7 @@ export default function CourseCurriculum({
             <div>
               <label style={labelStyle}>Description</label>
               <textarea
-                placeholder="Write your lecture description here..."
+                placeholder="Write your Lesson description here..."
                 style={textareaStyle}
                 value={descriptionText}
                 onChange={(e) => setDescriptionText(e.target.value)}
@@ -540,7 +540,7 @@ export default function CourseCurriculum({
             <div>
               <label style={labelStyle}>Notes</label>
               <textarea
-                placeholder="Write your lecture Notes here..."
+                placeholder="Write your Lesson Notes here..."
                 style={textareaStyle}
                 value={notesText}
                 onChange={(e) => setNotesText(e.target.value)}
@@ -568,7 +568,7 @@ export default function CourseCurriculum({
                 </label>
                 <div style={noteStyle}>
                   Drag an drop a file or{" "}
-                  <span style={{ color: "#564ffd", cursor: "pointer" }}>
+                  <span style={{ color: "##ff6636", cursor: "pointer" }}>
                     browse file
                   </span>
                 </div>
@@ -820,24 +820,81 @@ export default function CourseCurriculum({
                         <div className="acc-lecture-content">
                           <div className="acc-lecture-title-container">
                             <div className="acc-lecture-line"></div>
-                            <input
-                              className="acc-lecture-name"
-                              value={lesson.title}
-                              onChange={(e) =>
-                                handleLessonFieldChange(
-                                  sectionIdx,
-                                  lessonIdx,
-                                  "title",
-                                  e.target.value
-                                )
-                              }
+                            <div
                               style={{
-                                fontWeight: 500,
-                                fontSize: 15,
-                                border: "none",
-                                background: "transparent",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                flex: 1,
+                                padding: "8px 12px",
+                                borderRadius: "6px",
+                                background: lesson.title
+                                  ? "#f0fdf4"
+                                  : "#fafbfc",
+                                border: "1px solid #e9eaf0",
+                                transition: "all 0.2s ease",
                               }}
-                            />
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: "24px",
+                                  height: "24px",
+                                  borderRadius: "4px",
+                                  background: lesson.title
+                                    ? "#10b981"
+                                    : "#e5e7eb",
+                                  marginRight: "8px",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    color: lesson.title ? "#ffffff" : "#6b7280",
+                                    fontSize: "12px",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  {lessonIdx + 1}
+                                </span>
+                              </div>
+                              <input
+                                className="acc-lecture-name"
+                                value={lesson.title}
+                                onChange={(e) =>
+                                  handleLessonFieldChange(
+                                    sectionIdx,
+                                    lessonIdx,
+                                    "title",
+                                    e.target.value
+                                  )
+                                }
+                                style={{
+                                  fontWeight: 500,
+                                  fontSize: 15,
+                                  border: "none",
+                                  background: "transparent",
+                                  flex: 1,
+                                  color: lesson.title ? "#1d2026" : "#6b7280",
+                                }}
+                                placeholder="Enter lesson title..."
+                              />
+                              {lesson.title && (
+                                <span
+                                  style={{
+                                    color: "#10b981",
+                                    fontSize: "12px",
+                                    fontWeight: "500",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                  }}
+                                >
+                                  ✓ Title added
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className="acc-lecture-actions">
                             {section.lessons.length > 1 && (
@@ -864,42 +921,345 @@ export default function CourseCurriculum({
                             style={{
                               display: "flex",
                               flexDirection: "column",
-                              gap: 8,
+                              gap: 12,
                             }}
                           >
+                            {/* Video Field */}
                             <div
                               style={{
                                 display: "flex",
                                 alignItems: "center",
                                 cursor: "pointer",
+                                padding: "12px",
+                                borderRadius: "8px",
+                                border: "1px solid #e9eaf0",
+                                background: lesson.videoUrl
+                                  ? "#f0fdf4"
+                                  : "#fafbfc",
+                                transition: "all 0.2s ease",
                               }}
-                              onClick={() =>
-                                openFieldModal(
-                                  sectionIdx,
-                                  lessonIdx,
-                                  "videoUrl",
-                                  lesson.videoUrl
-                                )
-                              }
+                              onMouseEnter={(e) => {
+                                e.target.style.background = lesson.videoUrl
+                                  ? "#ecfdf5"
+                                  : "#f8fafc";
+                                e.target.style.borderColor = "#d1d5db";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.background = lesson.videoUrl
+                                  ? "#f0fdf4"
+                                  : "#fafbfc";
+                                e.target.style.borderColor = "#e9eaf0";
+                              }}
+                              onClick={(e) => {
+                                // Only open modal if not clicking on video preview
+                                if (!e.target.closest("[data-video-preview]")) {
+                                  openFieldModal(
+                                    sectionIdx,
+                                    lessonIdx,
+                                    "videoUrl",
+                                    lesson.videoUrl
+                                  );
+                                }
+                              }}
                             >
-                              <Video style={{ marginRight: 8 }} size={18} />
-                              <span style={{ fontWeight: 500 }}>Video</span>
-                              <span
+                              <div
                                 style={{
-                                  marginLeft: 12,
-                                  color: lesson.videoUrl
-                                    ? "#1d2026"
-                                    : "#8c94a3",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: "32px",
+                                  height: "32px",
+                                  borderRadius: "6px",
+                                  background: lesson.videoUrl
+                                    ? "#10b981"
+                                    : "#e5e7eb",
+                                  marginRight: "12px",
                                 }}
                               >
-                                {lesson.videoUrl ? "Đã nhập" : "Chưa nhập"}
-                              </span>
+                                <Video
+                                  size={16}
+                                  color={
+                                    lesson.videoUrl ? "#ffffff" : "#6b7280"
+                                  }
+                                />
+                              </div>
+                              <div
+                                style={{ flex: 1 }}
+                                onClick={(e) => {
+                                  // Only open modal if not clicking on video preview
+                                  if (
+                                    !e.target.closest("[data-video-preview]")
+                                  ) {
+                                    openFieldModal(
+                                      sectionIdx,
+                                      lessonIdx,
+                                      "videoUrl",
+                                      lesson.videoUrl
+                                    );
+                                  }
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontWeight: 600,
+                                    fontSize: "14px",
+                                    color: "#1d2026",
+                                    marginBottom: "2px",
+                                  }}
+                                >
+                                  Video
+                                </div>
+                                {lesson.videoUrl ? (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "12px",
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        color: "#10b981",
+                                        fontSize: "12px",
+                                        fontWeight: "500",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                        background: "#f0fdf4",
+                                        padding: "4px 8px",
+                                        borderRadius: "12px",
+                                        border: "1px solid #dcfce7",
+                                      }}
+                                    >
+                                      ✓ Added
+                                    </span>
+                                    {lesson.videoUrl.includes("blob:") ||
+                                    lesson.videoUrl.startsWith("http") ? (
+                                      <div
+                                        data-video-preview
+                                        style={{
+                                          position: "relative",
+                                          borderRadius: "8px",
+                                          overflow: "hidden",
+                                          border: "2px solid #e5e7eb",
+                                          background: "#f8fafc",
+                                          transition: "all 0.3s ease",
+                                          cursor: "pointer",
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          e.target.style.transform =
+                                            "scale(1.05)";
+                                          e.target.style.borderColor =
+                                            "#3b82f6";
+                                          e.target.style.boxShadow =
+                                            "0 4px 12px rgba(59, 130, 246, 0.15)";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.target.style.transform = "scale(1)";
+                                          e.target.style.borderColor =
+                                            "#e5e7eb";
+                                          e.target.style.boxShadow = "none";
+                                        }}
+                                        onClick={(e) => {
+                                          // Prevent event from bubbling up to parent
+                                          e.stopPropagation();
+                                          // Open video in new tab for preview
+                                          window.open(
+                                            lesson.videoUrl,
+                                            "_blank"
+                                          );
+                                        }}
+                                      >
+                                        <video
+                                          src={lesson.videoUrl}
+                                          style={{
+                                            width: "120px",
+                                            height: "68px",
+                                            objectFit: "cover",
+                                            display: "block",
+                                          }}
+                                          muted
+                                          onLoadedData={(e) => {
+                                            // Add a subtle play animation when video loads
+                                            e.target.style.opacity = "0.8";
+                                            setTimeout(() => {
+                                              e.target.style.opacity = "1";
+                                            }, 200);
+                                          }}
+                                        />
+                                        <div
+                                          style={{
+                                            position: "absolute",
+                                            top: "0",
+                                            left: "0",
+                                            right: "0",
+                                            bottom: "0",
+                                            background:
+                                              "linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(147, 51, 234, 0.8) 100%)",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            opacity: "0",
+                                            transition: "opacity 0.3s ease",
+                                          }}
+                                          onMouseEnter={(e) => {
+                                            e.target.style.opacity = "1";
+                                          }}
+                                          onMouseLeave={(e) => {
+                                            e.target.style.opacity = "0";
+                                          }}
+                                        >
+                                          <div
+                                            style={{
+                                              background:
+                                                "rgba(255, 255, 255, 0.9)",
+                                              borderRadius: "50%",
+                                              width: "32px",
+                                              height: "32px",
+                                              display: "flex",
+                                              alignItems: "center",
+                                              justifyContent: "center",
+                                              boxShadow:
+                                                "0 2px 8px rgba(0, 0, 0, 0.2)",
+                                            }}
+                                          >
+                                            <span
+                                              style={{
+                                                color: "#3b82f6",
+                                                fontSize: "14px",
+                                                fontWeight: "bold",
+                                                marginLeft: "2px",
+                                              }}
+                                            >
+                                              ▶
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <div
+                                          style={{
+                                            position: "absolute",
+                                            bottom: "4px",
+                                            right: "4px",
+                                            background: "rgba(0, 0, 0, 0.7)",
+                                            color: "#ffffff",
+                                            fontSize: "10px",
+                                            padding: "2px 6px",
+                                            borderRadius: "4px",
+                                            fontWeight: "500",
+                                          }}
+                                        >
+                                          Preview
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div
+                                        style={{
+                                          background: "#f8fafc",
+                                          border: "1px solid #e5e7eb",
+                                          borderRadius: "8px",
+                                          padding: "8px 12px",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: "8px",
+                                          maxWidth: "200px",
+                                        }}
+                                      >
+                                        <Video size={16} color="#6b7280" />
+                                        <span
+                                          style={{
+                                            color: "#6b7280",
+                                            fontSize: "12px",
+                                            fontFamily: "monospace",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                          }}
+                                        >
+                                          {lesson.videoUrl.substring(0, 20)}...
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "8px",
+                                      color: "#6b7280",
+                                      fontSize: "12px",
+                                      padding: "6px 10px",
+                                      background: "#f9fafb",
+                                      borderRadius: "6px",
+                                      border: "1px dashed #d1d5db",
+                                    }}
+                                  >
+                                    <Video size={14} />
+                                    <span>Click to add video content</span>
+                                  </div>
+                                )}
+                              </div>
+                              <div
+                                style={{
+                                  color: "#9ca3af",
+                                  fontSize: "12px",
+                                  fontWeight: "500",
+                                  cursor: "pointer",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  transition: "all 0.2s ease",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.target.style.background = "#f3f4f6";
+                                  e.target.style.color = "#6b7280";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.background = "transparent";
+                                  e.target.style.color = "#9ca3af";
+                                }}
+                                onClick={(e) => {
+                                  // Only open modal if not clicking on video preview
+                                  if (
+                                    !e.target.closest("[data-video-preview]")
+                                  ) {
+                                    openFieldModal(
+                                      sectionIdx,
+                                      lessonIdx,
+                                      "videoUrl",
+                                      lesson.videoUrl
+                                    );
+                                  }
+                                }}
+                              >
+                                Edit
+                              </div>
                             </div>
+
+                            {/* Captions Field */}
                             <div
                               style={{
                                 display: "flex",
                                 alignItems: "center",
                                 cursor: "pointer",
+                                padding: "12px",
+                                borderRadius: "8px",
+                                border: "1px solid #e9eaf0",
+                                background: lesson.captions
+                                  ? "#f0fdf4"
+                                  : "#fafbfc",
+                                transition: "all 0.2s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.background = lesson.captions
+                                  ? "#ecfdf5"
+                                  : "#f8fafc";
+                                e.target.style.borderColor = "#d1d5db";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.background = lesson.captions
+                                  ? "#f0fdf4"
+                                  : "#fafbfc";
+                                e.target.style.borderColor = "#e9eaf0";
                               }}
                               onClick={() =>
                                 openFieldModal(
@@ -910,24 +1270,119 @@ export default function CourseCurriculum({
                                 )
                               }
                             >
-                              <Type style={{ marginRight: 8 }} size={18} />
-                              <span style={{ fontWeight: 500 }}>Captions</span>
-                              <span
+                              <div
                                 style={{
-                                  marginLeft: 12,
-                                  color: lesson.captions
-                                    ? "#1d2026"
-                                    : "#8c94a3",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: "32px",
+                                  height: "32px",
+                                  borderRadius: "6px",
+                                  background: lesson.captions
+                                    ? "#10b981"
+                                    : "#e5e7eb",
+                                  marginRight: "12px",
                                 }}
                               >
-                                {lesson.captions ? "Đã nhập" : "Chưa nhập"}
-                              </span>
+                                <Type
+                                  size={16}
+                                  color={
+                                    lesson.captions ? "#ffffff" : "#6b7280"
+                                  }
+                                />
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <div
+                                  style={{
+                                    fontWeight: 600,
+                                    fontSize: "14px",
+                                    color: "#1d2026",
+                                    marginBottom: "2px",
+                                  }}
+                                >
+                                  Captions
+                                </div>
+                                {lesson.captions ? (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "8px",
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        color: "#10b981",
+                                        fontSize: "12px",
+                                        fontWeight: "500",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                      }}
+                                    >
+                                      ✓ Added
+                                    </span>
+                                    <span
+                                      style={{
+                                        color: "#4e5566",
+                                        fontSize: "12px",
+                                        maxWidth: "200px",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                        fontStyle: "italic",
+                                      }}
+                                    >
+                                      "{lesson.captions}"
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span
+                                    style={{
+                                      color: "#6b7280",
+                                      fontSize: "12px",
+                                    }}
+                                  >
+                                    Click to add captions
+                                  </span>
+                                )}
+                              </div>
+                              <div
+                                style={{
+                                  color: "#9ca3af",
+                                  fontSize: "12px",
+                                  fontWeight: "500",
+                                }}
+                              >
+                                Edit
+                              </div>
                             </div>
+
+                            {/* Description Field */}
                             <div
                               style={{
                                 display: "flex",
                                 alignItems: "center",
                                 cursor: "pointer",
+                                padding: "12px",
+                                borderRadius: "8px",
+                                border: "1px solid #e9eaf0",
+                                background: lesson.description
+                                  ? "#f0fdf4"
+                                  : "#fafbfc",
+                                transition: "all 0.2s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.background = lesson.description
+                                  ? "#ecfdf5"
+                                  : "#f8fafc";
+                                e.target.style.borderColor = "#d1d5db";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.background = lesson.description
+                                  ? "#f0fdf4"
+                                  : "#fafbfc";
+                                e.target.style.borderColor = "#e9eaf0";
                               }}
                               onClick={() =>
                                 openFieldModal(
@@ -938,53 +1393,213 @@ export default function CourseCurriculum({
                                 )
                               }
                             >
-                              <StickyNote
-                                style={{ marginRight: 8 }}
-                                size={18}
-                              />
-                              <span style={{ fontWeight: 500 }}>
-                                Description
-                              </span>
-                              <span
+                              <div
                                 style={{
-                                  marginLeft: 12,
-                                  color: lesson.description
-                                    ? "#1d2026"
-                                    : "#8c94a3",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: "32px",
+                                  height: "32px",
+                                  borderRadius: "6px",
+                                  background: lesson.description
+                                    ? "#10b981"
+                                    : "#e5e7eb",
+                                  marginRight: "12px",
                                 }}
                               >
-                                {lesson.description ? "Đã nhập" : "Chưa nhập"}
-                              </span>
+                                <StickyNote
+                                  size={16}
+                                  color={
+                                    lesson.description ? "#ffffff" : "#6b7280"
+                                  }
+                                />
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <div
+                                  style={{
+                                    fontWeight: 600,
+                                    fontSize: "14px",
+                                    color: "#1d2026",
+                                    marginBottom: "2px",
+                                  }}
+                                >
+                                  Description
+                                </div>
+                                {lesson.description ? (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "8px",
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        color: "#10b981",
+                                        fontSize: "12px",
+                                        fontWeight: "500",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                      }}
+                                    >
+                                      ✓ Added
+                                    </span>
+                                    <span
+                                      style={{
+                                        color: "#4e5566",
+                                        fontSize: "12px",
+                                        maxWidth: "200px",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                      }}
+                                    >
+                                      {lesson.description}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span
+                                    style={{
+                                      color: "#6b7280",
+                                      fontSize: "12px",
+                                    }}
+                                  >
+                                    Click to add description
+                                  </span>
+                                )}
+                              </div>
+                              <div
+                                style={{
+                                  color: "#9ca3af",
+                                  fontSize: "12px",
+                                  fontWeight: "500",
+                                }}
+                              >
+                                Edit
+                              </div>
                             </div>
+
+                            {/* Lecture Notes Field */}
                             <div
                               style={{
                                 display: "flex",
                                 alignItems: "center",
                                 cursor: "pointer",
+                                padding: "12px",
+                                borderRadius: "8px",
+                                border: "1px solid #e9eaf0",
+                                background: lesson.lessonNotes
+                                  ? "#f0fdf4"
+                                  : "#fafbfc",
+                                transition: "all 0.2s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.background = lesson.lessonNotes
+                                  ? "#ecfdf5"
+                                  : "#f8fafc";
+                                e.target.style.borderColor = "#d1d5db";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.background = lesson.lessonNotes
+                                  ? "#f0fdf4"
+                                  : "#fafbfc";
+                                e.target.style.borderColor = "#e9eaf0";
                               }}
                               onClick={() =>
                                 openFieldModal(
                                   sectionIdx,
                                   lessonIdx,
-                                  "lectureNotes",
-                                  lesson.lectureNotes
+                                  "lessonNotes",
+                                  lesson.lessonNotes
                                 )
                               }
                             >
-                              <FileText style={{ marginRight: 8 }} size={18} />
-                              <span style={{ fontWeight: 500 }}>
-                                Lecture Notes
-                              </span>
-                              <span
+                              <div
                                 style={{
-                                  marginLeft: 12,
-                                  color: lesson.lectureNotes
-                                    ? "#1d2026"
-                                    : "#8c94a3",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: "32px",
+                                  height: "32px",
+                                  borderRadius: "6px",
+                                  background: lesson.lessonNotes
+                                    ? "#10b981"
+                                    : "#e5e7eb",
+                                  marginRight: "12px",
                                 }}
                               >
-                                {lesson.lectureNotes ? "Đã nhập" : "Chưa nhập"}
-                              </span>
+                                <FileText
+                                  size={16}
+                                  color={
+                                    lesson.lessonNotes ? "#ffffff" : "#6b7280"
+                                  }
+                                />
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <div
+                                  style={{
+                                    fontWeight: 600,
+                                    fontSize: "14px",
+                                    color: "#1d2026",
+                                    marginBottom: "2px",
+                                  }}
+                                >
+                                  Lesson Notes
+                                </div>
+                                {lesson.lessonNotes ? (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "8px",
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        color: "#10b981",
+                                        fontSize: "12px",
+                                        fontWeight: "500",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                      }}
+                                    >
+                                      ✓ Added
+                                    </span>
+                                    <span
+                                      style={{
+                                        color: "#4e5566",
+                                        fontSize: "12px",
+                                        maxWidth: "200px",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                      }}
+                                    >
+                                      {lesson.lessonNotes}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span
+                                    style={{
+                                      color: "#6b7280",
+                                      fontSize: "12px",
+                                    }}
+                                  >
+                                    Click to add lesson notes
+                                  </span>
+                                )}
+                              </div>
+                              <div
+                                style={{
+                                  color: "#9ca3af",
+                                  fontSize: "12px",
+                                  fontWeight: "500",
+                                }}
+                              >
+                                Edit
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1046,49 +1661,263 @@ export default function CourseCurriculum({
         }}
         title={
           editing.field === "videoUrl"
-            ? "Lecture Video Upload"
+            ? "Lesson Video Upload"
             : editing.field === "captions"
-            ? "Lecture Captions"
+            ? "Lesson Captions"
             : editing.field === "description"
-            ? "Lecture Description"
-            : editing.field === "lectureNotes"
-            ? "Lecture Notes"
+            ? "Lesson Description"
+            : editing.field === "lessonNotes"
+            ? "Lesson Notes"
             : ""
         }
       >
         {editing.field === "videoUrl" ? (
           <>
-            <input
-              type="file"
-              accept="video/*"
-              onChange={handleSelectVideoFile}
-              style={{ marginBottom: 8 }}
-            />
-            {selectedVideoPreview && (
-              <video
-                src={selectedVideoPreview}
-                controls
-                style={{ maxWidth: 300, marginBottom: 8 }}
+            <div
+              style={{
+                border: "2px dashed #d1d5db",
+                borderRadius: "12px",
+                padding: "32px 24px",
+                textAlign: "center",
+                background: "#fafbfc",
+                marginBottom: "16px",
+                transition: "all 0.3s ease",
+                cursor: "pointer",
+                position: "relative",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.borderColor = "#3b82f6";
+                e.target.style.background = "#f0f9ff";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.borderColor = "#d1d5db";
+                e.target.style.background = "#fafbfc";
+              }}
+              onClick={() =>
+                document.getElementById("video-file-input").click()
+              }
+            >
+              <input
+                id="video-file-input"
+                type="file"
+                accept="video/*"
+                onChange={handleSelectVideoFile}
+                style={{
+                  position: "absolute",
+                  opacity: 0,
+                  pointerEvents: "none",
+                }}
               />
+              <div style={{ marginBottom: "16px" }}>
+                <Video
+                  size={48}
+                  color="#6b7280"
+                  style={{ marginBottom: "8px" }}
+                />
+              </div>
+              <div style={{ marginBottom: "8px" }}>
+                <h4
+                  style={{
+                    margin: "0 0 8px 0",
+                    fontSize: "16px",
+                    fontWeight: "600",
+                    color: "#1d2026",
+                  }}
+                >
+                  Upload Video File
+                </h4>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "14px",
+                    color: "#6b7280",
+                    lineHeight: "1.5",
+                  }}
+                >
+                  Click to browse or drag and drop your video file here
+                </p>
+                <p
+                  style={{
+                    margin: "8px 0 0 0",
+                    fontSize: "12px",
+                    color: "#9ca3af",
+                  }}
+                >
+                  Supports MP4, AVI, MOV, and other video formats
+                </p>
+              </div>
+            </div>
+
+            {selectedVideoFile && (
+              <div
+                style={{
+                  background: "#f0fdf4",
+                  border: "1px solid #dcfce7",
+                  borderRadius: "8px",
+                  padding: "16px",
+                  marginBottom: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <Video size={20} color="#10b981" />
+                  <div>
+                    <div
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        color: "#1d2026",
+                      }}
+                    >
+                      {selectedVideoFile.name}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "#6b7280",
+                      }}
+                    >
+                      {(selectedVideoFile.size / (1024 * 1024)).toFixed(2)} MB
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
+
+            {selectedVideoPreview && (
+              <div
+                style={{
+                  background: "#f8fafc",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "8px",
+                  padding: "16px",
+                  marginBottom: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "#1d2026",
+                    marginBottom: "12px",
+                  }}
+                >
+                  Video Preview
+                </div>
+                <div
+                  style={{
+                    position: "relative",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    border: "1px solid #e5e7eb",
+                  }}
+                >
+                  <video
+                    src={selectedVideoPreview}
+                    controls
+                    style={{
+                      width: "100%",
+                      maxHeight: "200px",
+                      objectFit: "contain",
+                      background: "#000",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             <CustomButton
               color="primary"
               onClick={handleUploadVideoFile}
               disabled={uploadingVideo || !selectedVideoFile}
-              style={{ marginBottom: 8 }}
+              style={{
+                width: "100%",
+                marginBottom: "16px",
+                padding: "12px 24px",
+                fontSize: "14px",
+                fontWeight: "600",
+              }}
             >
-              {uploadingVideo ? "Uploading..." : "Upload Video"}
+              {uploadingVideo ? (
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <div
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      border: "2px solid #ffffff",
+                      borderTop: "2px solid transparent",
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite",
+                    }}
+                  />
+                  Uploading...
+                </div>
+              ) : (
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <Video size={16} />
+                  Upload Video
+                </div>
+              )}
             </CustomButton>
+
             {videoUploadError && (
-              <div style={{ color: "red", marginBottom: 8 }}>
-                {videoUploadError}
+              <div
+                style={{
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  borderRadius: "8px",
+                  padding: "12px",
+                  marginBottom: "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <span style={{ color: "#dc2626", fontSize: "16px" }}>⚠</span>
+                <span style={{ color: "#dc2626", fontSize: "14px" }}>
+                  {videoUploadError}
+                </span>
               </div>
             )}
+
             {videoUploadSuccess && (
-              <div style={{ color: "green", marginBottom: 8 }}>
-                {videoUploadSuccess}
+              <div
+                style={{
+                  background: "#f0fdf4",
+                  border: "1px solid #dcfce7",
+                  borderRadius: "8px",
+                  padding: "12px",
+                  marginBottom: "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <span style={{ color: "#10b981", fontSize: "16px" }}>✓</span>
+                <span style={{ color: "#10b981", fontSize: "14px" }}>
+                  {videoUploadSuccess}
+                </span>
               </div>
             )}
+
+            <style>
+              {`
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}
+            </style>
           </>
         ) : (
           <textarea
@@ -1106,7 +1935,7 @@ export default function CourseCurriculum({
                 ? "Captions..."
                 : editing.field === "description"
                 ? "Description..."
-                : "Lecture notes..."
+                : "Lesson notes..."
             }
           />
         )}
