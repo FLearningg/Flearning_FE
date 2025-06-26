@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Check,
   Upload,
@@ -12,18 +12,119 @@ import {
   ListOrdered,
   Plus,
   ImageIcon,
+  X,
+  Trash2,
 } from "lucide-react";
 import "../../assets/CRUDCourseAndLesson/CourseFormAdvance.css";
 import ProgressTabs from "./ProgressTabs";
 import Input from "../common/Input";
 import CustomButton from "../common/CustomButton/CustomButton";
+import apiClient from "../../services/authService";
 
-export default function CourseForm() {
-  const [courseInputs, setCourseInputs] = useState(Array(4).fill(""));
-  const [audienceInputs, setAudienceInputs] = useState(Array(4).fill(""));
-  const [requirementInputs, setRequirementInputs] = useState(Array(4).fill(""));
-  const [description, setDescription] = useState("");
+export default function CourseForm({
+  onNext = () => {},
+  onPrev = () => {},
+  initialData = {},
+}) {
+  const [courseInputs, setCourseInputs] = useState(
+    initialData.detail?.willLearn?.length > 0
+      ? [
+          ...initialData.detail.willLearn,
+          ...Array(Math.max(0, 4 - initialData.detail.willLearn.length)).fill(
+            ""
+          ),
+        ]
+      : Array(4).fill("")
+  );
+  const [audienceInputs, setAudienceInputs] = useState(
+    initialData.detail?.targetAudience?.length > 0
+      ? [
+          ...initialData.detail.targetAudience,
+          ...Array(
+            Math.max(0, 4 - initialData.detail.targetAudience.length)
+          ).fill(""),
+        ]
+      : Array(4).fill("")
+  );
+  const [requirementInputs, setRequirementInputs] = useState(
+    initialData.detail?.requirement?.length > 0
+      ? [
+          ...initialData.detail.requirement,
+          ...Array(Math.max(0, 4 - initialData.detail.requirement.length)).fill(
+            ""
+          ),
+        ]
+      : Array(4).fill("")
+  );
+  const [description, setDescription] = useState(
+    initialData.detail?.description || ""
+  );
+
+  // Media states
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [trailerFile, setTrailerFile] = useState(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState(
+    initialData.uploadedFiles?.image?.url || initialData.thumbnail || null
+  );
+  const [trailerUrl, setTrailerUrl] = useState(
+    initialData.uploadedFiles?.video?.url || initialData.trailer || null
+  );
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [trailerPreview, setTrailerPreview] = useState(null);
+
+  // Loading states
+  const [loading, setLoading] = useState(false);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [uploadingTrailer, setUploadingTrailer] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const MAX_INPUTS = 8;
+
+  // Update state when initialData changes
+  useEffect(() => {
+    // Always update arrays, even if empty
+    if (initialData.detail?.willLearn?.length >= 0) {
+      setCourseInputs([
+        ...initialData.detail.willLearn,
+        ...Array(Math.max(0, 4 - initialData.detail.willLearn.length)).fill(""),
+      ]);
+    }
+    if (initialData.detail?.targetAudience?.length >= 0) {
+      setAudienceInputs([
+        ...initialData.detail.targetAudience,
+        ...Array(
+          Math.max(0, 4 - initialData.detail.targetAudience.length)
+        ).fill(""),
+      ]);
+    }
+    if (initialData.detail?.requirement?.length >= 0) {
+      setRequirementInputs([
+        ...initialData.detail.requirement,
+        ...Array(Math.max(0, 4 - initialData.detail.requirement.length)).fill(
+          ""
+        ),
+      ]);
+    }
+    // Always set description, even if empty
+    setDescription(initialData.detail?.description || "");
+
+    // Set media URLs from initialData
+    const newThumbnailUrl =
+      initialData.uploadedFiles?.image?.url || initialData.thumbnail || null;
+    const newTrailerUrl =
+      initialData.uploadedFiles?.video?.url || initialData.trailer || null;
+
+    setThumbnailUrl(newThumbnailUrl);
+    setTrailerUrl(newTrailerUrl);
+
+    // Set preview from URLs if they exist (for when coming back from next page)
+    if (newThumbnailUrl) {
+      setThumbnailPreview(newThumbnailUrl);
+    }
+    if (newTrailerUrl) {
+      setTrailerPreview(newTrailerUrl);
+    }
+  }, [initialData]);
 
   const updateInput = (index, value, type) => {
     const newInputs =
@@ -48,6 +149,112 @@ export default function CourseForm() {
       requirementInputs.length < MAX_INPUTS
     ) {
       setRequirementInputs([...requirementInputs, ""]);
+    }
+  };
+
+  const handleThumbnailChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setThumbnailFile(file);
+      setThumbnailPreview(URL.createObjectURL(file));
+      setError("");
+
+      // Auto upload immediately
+      setUploadingThumbnail(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await apiClient.post("/admin/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        if (!res.data || !res.data.url) {
+          throw new Error(res.data?.message || "Failed to upload thumbnail");
+        }
+        setThumbnailUrl(res.data.url);
+        setThumbnailFile(null);
+        setSuccess("Thumbnail uploaded successfully!");
+        setTimeout(() => setSuccess(""), 3000);
+      } catch (err) {
+        setError(err.message || "Failed to upload thumbnail");
+      } finally {
+        setUploadingThumbnail(false);
+      }
+    }
+  };
+
+  const handleTrailerChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setTrailerFile(file);
+      setTrailerPreview(URL.createObjectURL(file));
+      setError("");
+
+      // Auto upload immediately
+      setUploadingTrailer(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await apiClient.post("/admin/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        if (!res.data || !res.data.url) {
+          throw new Error(res.data?.message || "Failed to upload trailer");
+        }
+        setTrailerUrl(res.data.url);
+        setTrailerFile(null);
+        setSuccess("Trailer uploaded successfully!");
+        setTimeout(() => setSuccess(""), 3000);
+      } catch (err) {
+        setError(err.message || "Failed to upload trailer");
+      } finally {
+        setUploadingTrailer(false);
+      }
+    }
+  };
+
+  const removeThumbnail = () => {
+    setThumbnailUrl(null);
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
+  };
+
+  const removeTrailer = () => {
+    setTrailerUrl(null);
+    setTrailerFile(null);
+    setTrailerPreview(null);
+  };
+
+  const handleSaveNext = async () => {
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    try {
+      // Upload any pending files first
+      if (thumbnailFile) {
+        await handleThumbnailChange({ target: { files: [thumbnailFile] } });
+      }
+      if (trailerFile) {
+        await handleTrailerChange({ target: { files: [trailerFile] } });
+      }
+
+      let uploadedFiles = {};
+      if (thumbnailUrl) uploadedFiles.image = { url: thumbnailUrl };
+      if (trailerUrl) uploadedFiles.video = { url: trailerUrl };
+
+      const data = {
+        detail: {
+          description,
+          willLearn: courseInputs.filter((item) => item.trim() !== ""),
+          targetAudience: audienceInputs.filter((item) => item.trim() !== ""),
+          requirement: requirementInputs.filter((item) => item.trim() !== ""),
+        },
+        uploadedFiles,
+      };
+      onNext(data);
+    } catch (err) {
+      setError(err.message || "Failed to save advance info");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,6 +298,84 @@ export default function CourseForm() {
     </div>
   );
 
+  const renderMediaUpload = (
+    type,
+    title,
+    description,
+    icon,
+    accept,
+    file,
+    preview,
+    url,
+    onChange,
+    onRemove,
+    uploading
+  ) => {
+    // Use URL as preview if available, otherwise use preview state
+    const displayUrl = url || preview;
+    const isUploaded = !!url;
+
+    return (
+      <div className="media-card">
+        <h3>{title}</h3>
+        <p>{description}</p>
+
+        {/* Show existing media or preview */}
+        {displayUrl && (
+          <div className="media-preview-container">
+            <div className="media-preview">
+              {type === "image" ? (
+                <img
+                  src={displayUrl}
+                  alt="Preview"
+                  className="media-preview-image"
+                />
+              ) : (
+                <video
+                  src={displayUrl}
+                  controls
+                  className="media-preview-video"
+                />
+              )}
+              <button className="media-remove-btn" onClick={onRemove}>
+                <Trash2 size={16} />
+              </button>
+            </div>
+            <p className="media-status">
+              {isUploaded ? "✓ Uploaded successfully" : "📁 Uploading..."}
+            </p>
+          </div>
+        )}
+
+        {/* Upload area - show if no URL or when uploading */}
+        {(!displayUrl || uploading) && (
+          <div className="upload-card">
+            {icon}
+            <input
+              type="file"
+              accept={accept}
+              id={`${type}-upload`}
+              style={{ display: "none" }}
+              onChange={onChange}
+              disabled={uploading}
+            />
+            <CustomButton
+              color="primary"
+              type="normal"
+              size="small"
+              onClick={() => document.getElementById(`${type}-upload`).click()}
+              disabled={uploading}
+            >
+              {uploading
+                ? "Uploading..."
+                : `Upload ${type === "image" ? "Image" : "Video"}`}
+            </CustomButton>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="cf-app-container">
       <div className="cf-content-area">
@@ -100,8 +385,14 @@ export default function CourseForm() {
             <div className="cf-form-header">
               <h2 className="cf-form-title">Advance Information</h2>
               <div className="cf-form-actions">
-                <CustomButton color="primary" type="normal" size="medium">
-                  Save
+                <CustomButton
+                  color="primary"
+                  type="normal"
+                  size="medium"
+                  onClick={handleSaveNext}
+                  disabled={loading || uploadingThumbnail || uploadingTrailer}
+                >
+                  {loading ? "Saving..." : "Save & Next"}
                 </CustomButton>
                 <CustomButton color="transparent" type="normal" size="medium">
                   Save & Preview
@@ -109,42 +400,49 @@ export default function CourseForm() {
               </div>
             </div>
 
+            {/* Error and Success Messages */}
+            {error && (
+              <div className="message-error">
+                <X size={16} />
+                <span>{error}</span>
+              </div>
+            )}
+            {success && (
+              <div className="message-success">
+                <Check size={16} />
+                <span>{success}</span>
+              </div>
+            )}
+
             {/* Media Uploads */}
             <div className="media-section">
-              {/* Thumbnail */}
-              <div className="media-card">
-                <h3>Course Thumbnail</h3>
-                <p>
-                  Upload your course Thumbnail here.{" "}
-                  <strong>Important guidelines:</strong> 1200x800 pixels.
-                  Supported:
-                  <strong>.jpg, .jpeg, .png</strong>
-                </p>
-                <div className="upload-card">
-                  <ImageIcon className="upload-icon" />
-                  <CustomButton color="primary" type="normal" size="small">
-                    <div className="acc-add-sections-container">
-                      <Upload className="icon-sm" />
-                      <span>Upload Image</span>
-                    </div>
-                  </CustomButton>
-                </div>
-              </div>
+              {renderMediaUpload(
+                "image",
+                "Course Thumbnail",
+                "Upload your course thumbnail here. Important guidelines: 1200x800 pixels. Supported: .jpg, .jpeg, .png",
+                <ImageIcon className="upload-icon" />,
+                "image/*",
+                thumbnailFile,
+                thumbnailPreview,
+                thumbnailUrl,
+                handleThumbnailChange,
+                removeThumbnail,
+                uploadingThumbnail
+              )}
 
-              {/* Trailer */}
-              <div className="media-card">
-                <h3>Course Trailer</h3>
-                <p>Promo videos increase enrollment 5–10X. Make it awesome!</p>
-                <div className="upload-card">
-                  <Play className="upload-icon" />
-                  <CustomButton color="primary" type="normal" size="small">
-                    <div className="acc-add-sections-container">
-                      <Upload className="icon-sm" />
-                      <span>Upload Video</span>
-                    </div>
-                  </CustomButton>
-                </div>
-              </div>
+              {renderMediaUpload(
+                "video",
+                "Course Trailer",
+                "Promo videos increase enrollment 5–10X. Make it awesome!",
+                <Play className="upload-icon" />,
+                "video/*",
+                trailerFile,
+                trailerPreview,
+                trailerUrl,
+                handleTrailerChange,
+                removeTrailer,
+                uploadingTrailer
+              )}
             </div>
 
             {/* Description */}
@@ -194,11 +492,43 @@ export default function CourseForm() {
             )}
 
             <div className="acc-navigation-buttons">
-              <CustomButton color="transparent" type="normal" size="large">
+              <CustomButton
+                color="transparent"
+                type="normal"
+                size="large"
+                onClick={() => {
+                  // Save current data before going back
+                  const data = {
+                    detail: {
+                      description,
+                      willLearn: courseInputs.filter(
+                        (item) => item.trim() !== ""
+                      ),
+                      targetAudience: audienceInputs.filter(
+                        (item) => item.trim() !== ""
+                      ),
+                      requirement: requirementInputs.filter(
+                        (item) => item.trim() !== ""
+                      ),
+                    },
+                    uploadedFiles: {
+                      image: thumbnailUrl ? { url: thumbnailUrl } : null,
+                      video: trailerUrl ? { url: trailerUrl } : null,
+                    },
+                  };
+                  onPrev(data);
+                }}
+              >
                 Previous
               </CustomButton>
-              <CustomButton color="primary" type="normal" size="large">
-                Save & Next
+              <CustomButton
+                color="primary"
+                type="normal"
+                size="large"
+                onClick={handleSaveNext}
+                disabled={loading || uploadingThumbnail || uploadingTrailer}
+              >
+                {loading ? "Saving..." : "Save & Next"}
               </CustomButton>
             </div>
           </div>

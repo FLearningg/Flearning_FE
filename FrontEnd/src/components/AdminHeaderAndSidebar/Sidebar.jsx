@@ -62,12 +62,10 @@ export function Sidebar({ open, setOpen }) {
               active={location.pathname.startsWith("/admin/dashboard")}
             />
             <NavItem
-              href="/admin/courses/basic-information"
+              href="/admin/courses/new"
               icon="plus-circle"
               label="Create New Course"
-              active={location.pathname.startsWith(
-                "/admin/courses/basic-information"
-              )}
+              active={location.pathname.startsWith("/admin/courses/new")}
             />
             <NavItem
               href="/admin/courses/all"
