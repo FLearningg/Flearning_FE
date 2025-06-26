@@ -49,12 +49,12 @@ function HeaderRight({ user: currentUser }) {
               aria-labelledby="userDropdown"
             >
               <li>
-                <Link to={"#"} className="dropdown-item dropdown-item-hover">
+                <Link to="/profile/dashboard" className="dropdown-item dropdown-item-hover">
                   <FontAwesomeIcon icon={faUser} className="me-2" /> Profile
                 </Link>
               </li>
               <li>
-                <Link to={"#"} className="dropdown-item dropdown-item-hover">
+                <Link to="/profile/settings" className="dropdown-item dropdown-item-hover">
                   <FontAwesomeIcon icon={faCog} className="me-2" />
                   Settings
                 </Link>

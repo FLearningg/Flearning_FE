@@ -5,9 +5,9 @@
 }
 
 .flearning-purchase-content {
+  padding: 20px;
   background: #fff;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -16,9 +16,8 @@
 }
 
 .flearning-purchase-header-main h2 {
-  color: #1a1d1f;
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 24px;
+  color: #1a1a1a;
   margin: 0;
 }
 
@@ -29,23 +28,22 @@
 }
 
 .flearning-purchase-card {
-  border: 1px solid #e6e8ec;
-  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
   overflow: hidden;
   transition: all 0.3s ease;
 }
 
-.flearning-purchase-card-expanded {
-  background: #fff;
+.flearning-purchase-card:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .flearning-purchase-header {
-  padding: 16px 24px;
+  padding: 16px;
+  background: #f8f9fa;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  background: #fff;
+  align-items: center;
 }
 
 .flearning-purchase-info {
@@ -53,59 +51,55 @@
 }
 
 .flearning-purchase-date {
-  color: #1a1d1f;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
   margin-bottom: 8px;
 }
 
 .flearning-purchase-meta {
   display: flex;
-  gap: 16px;
-  color: #6f767e;
-  font-size: 0.875rem;
+  gap: 24px;
+  align-items: center;
 }
 
 .flearning-meta-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  color: #666;
+  font-size: 14px;
 }
 
 .flearning-meta-icon {
-  width: 16px;
-  height: 16px;
-  opacity: 0.7;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
 .flearning-purchase-toggle {
-  width: 32px;
-  height: 32px;
-  border: 1px solid #e6e8ec;
-  border-radius: 8px;
   background: none;
-  color: #1a1d1f;
+  border: none;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  margin-left: 16px;
+  padding: 8px;
+  color: #666;
+  font-size: 18px;
+  transition: transform 0.3s ease;
 }
 
 .flearning-purchase-toggle:hover {
-  border-color: #ff6b38;
-  color: #ff6b38;
+  color: #1a1a1a;
 }
 
 .flearning-purchase-details {
-  border-top: 1px solid #e6e8ec;
-  padding: 24px;
+  padding: 16px;
+  border-top: 1px solid #e0e0e0;
 }
 
 .flearning-purchase-details-grid {
   display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 32px;
+  gap: 24px;
+  grid-template-columns: 2fr 1fr;
 }
 
 .flearning-courses-list {
@@ -116,19 +110,18 @@
 
 .flearning-course-item {
   display: flex;
-  gap: 20px;
-  padding: 20px;
-  border: 1px solid #e6e8ec;
-  border-radius: 12px;
-  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
 }
 
 .flearning-course-image {
-  width: 180px;
-  height: 100px;
-  border-radius: 8px;
+  width: 120px;
+  height: 80px;
+  border-radius: 4px;
   overflow: hidden;
-  flex-shrink: 0;
 }
 
 .flearning-course-image img {
@@ -139,174 +132,182 @@
 
 .flearning-course-info {
   flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
 }
 
 .flearning-course-rating {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: 0;
+  margin-bottom: 8px;
 }
 
 .flearning-star-icon {
   color: #ffc107;
-  font-size: 16px;
 }
 
 .flearning-rating-value {
-  color: #1a1d1f;
-  font-weight: 500;
-  font-size: 0.9375rem;
-}
-
-.flearning-review-count {
-  color: #6f767e;
-  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1a1a1a;
 }
 
 .flearning-course-info h4 {
-  color: #1a1d1f;
-  font-size: 1.0625rem;
-  font-weight: 500;
-  margin: 0;
-  line-height: 1.4;
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: #1a1a1a;
 }
 
-.flearning-course-instructor {
-  color: #6f767e;
-  font-size: 0.9375rem;
+.flearning-course-category {
   margin: 0;
+  color: #666;
+  font-size: 14px;
 }
 
 .flearning-course-price {
-  color: #ff6b38;
   font-weight: 600;
-  font-size: 1.125rem;
-  white-space: nowrap;
-  padding-left: 20px;
-  display: flex;
-  align-items: center;
-  border-left: 1px solid #e6e8ec;
+  color: #1a1a1a;
+  font-size: 16px;
 }
 
 .flearning-purchase-summary {
+  padding: 16px;
   background: #f8f9fa;
-  border-radius: 12px;
-  padding: 32px;
+  border-radius: 8px;
 }
 
 .flearning-summary-date {
-  color: #1a1d1f;
-  font-weight: 500;
-  margin-bottom: 24px;
-  font-size: 1.125rem;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
 }
 
 .flearning-summary-details {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 32px;
+  gap: 12px;
 }
 
 .flearning-summary-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: #6f767e;
-  font-size: 1rem;
+  gap: 8px;
+  color: #1a1a1a;
 }
 
 .flearning-summary-icon {
   width: 20px;
   height: 20px;
-  opacity: 0.7;
+  object-fit: contain;
 }
 
-.flearning-card-info {
-  border-top: 1px solid #e6e8ec;
+.flearning-transaction-info {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.flearning-transaction-id {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.flearning-transaction-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.flearning-transaction-status {
+  font-size: 14px;
+  color: #666;
+}
+
+.flearning-loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.flearning-error {
+  text-align: center;
+  padding: 20px;
+  color: #dc3545;
+  background: #f8d7da;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.flearning-no-purchases {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.flearning-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
   padding-top: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  border-top: 1px solid #e0e0e0;
 }
 
-.flearning-card-number {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: #6f767e;
-  font-size: 1rem;
+.flearning-pagination-btn {
+  padding: 8px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background: #fff;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.flearning-card-icon {
-  width: 24px;
-  height: 24px;
-  opacity: 0.7;
+.flearning-pagination-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #666;
 }
 
-.flearning-card-expiry {
-  color: #6f767e;
-  font-size: 1rem;
+.flearning-pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.flearning-pagination-info {
+  color: #666;
+  font-size: 14px;
 }
 
 .flearning-purchase-footer {
   text-align: center;
-  margin-top: 32px;
-  color: #6f767e;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e0e0e0;
+  color: #666;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 768px) {
   .flearning-purchase-details-grid {
     grid-template-columns: 1fr;
   }
 
-  .flearning-purchase-summary {
-    order: -1;
-  }
-}
-
-@media (max-width: 768px) {
-  .flearning-purchase-container {
-    padding: 16px;
-  }
-
   .flearning-purchase-meta {
     flex-direction: column;
+    align-items: flex-start;
     gap: 8px;
   }
 
   .flearning-course-item {
     flex-direction: column;
-    padding: 16px;
-    gap: 16px;
   }
 
   .flearning-course-image {
     width: 100%;
-    height: 180px;
-  }
-
-  .flearning-course-price {
-    padding: 16px 0 0 0;
-    border-left: none;
-    border-top: 1px solid #e6e8ec;
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .flearning-card-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .flearning-card-expiry {
-    margin-left: 36px;
+    height: 160px;
   }
 } 
