@@ -3,9 +3,11 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Spin } from "antd";
 
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useSelector((state) => state.auth);
+const RoleBasedRoute = ({ children, allowedRoles }) => {
   const location = useLocation();
+  const { isAuthenticated, isLoading, currentUser } = useSelector(
+    (state) => state.auth
+  );
 
   if (isLoading) {
     return (
@@ -23,12 +25,15 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    // Nếu chưa đăng nhập, chuyển về trang login
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Nếu đã đăng nhập, hiển thị nội dung trang
+  if (!allowedRoles.includes(currentUser.role)) {
+    return <Navigate to="/404-not-found" replace />; // Bạn có thể dùng bất kỳ đường dẫn nào không tồn tại
+  }
+
+  // Nếu hợp lệ, cho phép truy cập
   return children;
 };
 
-export default ProtectedRoute;
+export default RoleBasedRoute;
