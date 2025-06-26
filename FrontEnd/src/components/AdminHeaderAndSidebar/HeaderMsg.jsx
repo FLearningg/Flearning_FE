@@ -43,7 +43,7 @@ export function HeaderMsg({ onHamburgerClick, title = "Dashboard" }) {
           <Notification />
         </div>
         <div className="profile-image">
-          <img src="/placeholder.svg?height=40&width=40" alt="Profile" />
+          <img src="/images/defaultImageUser.png" alt="Profile" />
         </div>
       </div>
     </header>
