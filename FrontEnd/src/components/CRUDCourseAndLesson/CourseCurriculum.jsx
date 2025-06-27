@@ -25,6 +25,7 @@ import {
 import "../../assets/CRUDCourseAndLesson/CourseCurriculum.css";
 import ProgressTabs from "./ProgressTabs";
 import apiClient from "../../services/authService";
+import { toast } from "react-toastify";
 
 function Modal({ open, onClose, title, children }) {
   if (!open) return null;
@@ -98,6 +99,8 @@ export default function CourseCurriculum({
   onNext = () => {},
   onPrev = () => {},
   initialData = {},
+  completedTabs = [],
+  onTabClick = () => {},
 }) {
   const [expandedLecture, setExpandedLecture] = useState(1);
   const [modal, setModal] = useState({ open: false, type: null });
@@ -106,8 +109,6 @@ export default function CourseCurriculum({
   const [lessonFile, setLessonFile] = useState(null);
   const [lessonFilePreview, setLessonFilePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState("");
-  const [uploadSuccess, setUploadSuccess] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState(
     initialData.uploadedFiles || {}
   ); // Track uploaded files by type
@@ -142,8 +143,6 @@ export default function CourseCurriculum({
   });
   const [modalValue, setModalValue] = useState("");
   const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [videoUploadError, setVideoUploadError] = useState("");
-  const [videoUploadSuccess, setVideoUploadSuccess] = useState("");
   const [selectedVideoFile, setSelectedVideoFile] = useState(null);
   const [selectedVideoPreview, setSelectedVideoPreview] = useState(null);
   const [uploadedVideoUrl, setUploadedVideoUrl] = useState("");
@@ -226,8 +225,6 @@ export default function CourseCurriculum({
   // Handler for uploading lesson video/file and creating lesson
   const handleUploadLessonFile = async () => {
     setUploading(true);
-    setUploadError("");
-    setUploadSuccess("");
     try {
       let videoUrl, fileUrl;
       if (lessonVideoFile) {
@@ -259,13 +256,11 @@ export default function CourseCurriculum({
         }));
       }
 
-      setUploadSuccess("Lesson uploaded successfully!");
+      toast.success("Lesson uploaded successfully!");
 
       // Close modal after successful upload
       setTimeout(() => {
         setModal({ open: false, type: null });
-        setUploadSuccess("");
-        setUploadError("");
         // Clear file inputs
         setLessonVideoFile(null);
         setLessonVideoPreview(null);
@@ -273,7 +268,7 @@ export default function CourseCurriculum({
         setLessonFilePreview(null);
       }, 1500);
     } catch (err) {
-      setUploadError(
+      toast.error(
         err.response?.data?.message || err.message || "Failed to upload lesson"
       );
     } finally {
@@ -290,13 +285,11 @@ export default function CourseCurriculum({
       caption: { text: captionText.trim() },
     }));
 
-    setUploadSuccess("Caption added successfully!");
+    toast.success("Caption added successfully!");
 
     // Close modal after successful add
     setTimeout(() => {
       setModal({ open: false, type: null });
-      setUploadSuccess("");
-      setUploadError("");
       setCaptionText(""); // Clear caption text
     }, 1500);
   };
@@ -310,13 +303,11 @@ export default function CourseCurriculum({
       description: { text: descriptionText.trim() },
     }));
 
-    setUploadSuccess("Description added successfully!");
+    toast.success("Description added successfully!");
 
     // Close modal after successful add
     setTimeout(() => {
       setModal({ open: false, type: null });
-      setUploadSuccess("");
-      setUploadError("");
       setDescriptionText(""); // Clear description text
     }, 1500);
   };
@@ -330,13 +321,11 @@ export default function CourseCurriculum({
       notes: { text: notesText.trim() },
     }));
 
-    setUploadSuccess("Notes added successfully!");
+    toast.success("Notes added successfully!");
 
     // Close modal after successful add
     setTimeout(() => {
       setModal({ open: false, type: null });
-      setUploadSuccess("");
-      setUploadError("");
       setNotesText(""); // Clear notes text
     }, 1500);
   };
@@ -395,14 +384,6 @@ export default function CourseCurriculum({
                 {uploading ? "Uploading..." : "Upload Video"}
               </CustomButton>
             </div>
-            {uploadError && (
-              <div style={{ color: "red", marginTop: 8 }}>{uploadError}</div>
-            )}
-            {uploadSuccess && (
-              <div style={{ color: "green", marginTop: 8 }}>
-                {uploadSuccess}
-              </div>
-            )}
           </>
         );
       case "file":
@@ -458,14 +439,6 @@ export default function CourseCurriculum({
                 {uploading ? "Uploading..." : "Attach File"}
               </CustomButton>
             </div>
-            {uploadError && (
-              <div style={{ color: "red", marginTop: 8 }}>{uploadError}</div>
-            )}
-            {uploadSuccess && (
-              <div style={{ color: "green", marginTop: 8 }}>
-                {uploadSuccess}
-              </div>
-            )}
           </>
         );
       case "caption":
@@ -686,15 +659,11 @@ export default function CourseCurriculum({
     setSelectedVideoFile(file);
     setSelectedVideoPreview(file ? URL.createObjectURL(file) : null);
     setUploadedVideoUrl("");
-    setVideoUploadError("");
-    setVideoUploadSuccess("");
   };
 
   const handleUploadVideoFile = async () => {
     if (!selectedVideoFile) return;
     setUploadingVideo(true);
-    setVideoUploadError("");
-    setVideoUploadSuccess("");
     try {
       const formData = new FormData();
       formData.append("file", selectedVideoFile);
@@ -703,7 +672,7 @@ export default function CourseCurriculum({
         headers: { "Content-Type": "multipart/form-data" },
       });
       setUploadedVideoUrl(res.data.url);
-      setVideoUploadSuccess("Upload thành công!");
+      toast.success("Upload successful!");
       // Cập nhật luôn videoUrl vào lesson tương ứng trong sections
       if (editing.sectionIdx !== null && editing.lessonIdx !== null) {
         setSections((prev) =>
@@ -722,8 +691,8 @@ export default function CourseCurriculum({
         );
       }
     } catch (err) {
-      setVideoUploadError(
-        err.response?.data?.message || err.message || "Upload thất bại"
+      toast.error(
+        err.response?.data?.message || err.message || "Upload failed!"
       );
     } finally {
       setUploadingVideo(false);
@@ -745,15 +714,17 @@ export default function CourseCurriculum({
     setSelectedVideoFile(null);
     setSelectedVideoPreview(null);
     setUploadedVideoUrl("");
-    setVideoUploadError("");
-    setVideoUploadSuccess("");
   };
 
   return (
     <div className="cf-app-container">
       <div className="cf-content-area">
         <div className="cf-main-content">
-          <ProgressTabs activeIndex={2} progressText="7/12" />
+          <ProgressTabs
+            activeIndex={2}
+            completedTabs={completedTabs}
+            onTabClick={onTabClick}
+          />
           <div className="cf-form-content">
             <div className="cf-form-header">
               <h2 className="cf-form-title">Course Curriculum</h2>
@@ -1656,8 +1627,6 @@ export default function CourseCurriculum({
           setSelectedVideoFile(null);
           setSelectedVideoPreview(null);
           setUploadedVideoUrl("");
-          setVideoUploadError("");
-          setVideoUploadSuccess("");
         }}
         title={
           editing.field === "videoUrl"
@@ -1869,55 +1838,6 @@ export default function CourseCurriculum({
                 </div>
               )}
             </CustomButton>
-
-            {videoUploadError && (
-              <div
-                style={{
-                  background: "#fef2f2",
-                  border: "1px solid #fecaca",
-                  borderRadius: "8px",
-                  padding: "12px",
-                  marginBottom: "16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <span style={{ color: "#dc2626", fontSize: "16px" }}>⚠</span>
-                <span style={{ color: "#dc2626", fontSize: "14px" }}>
-                  {videoUploadError}
-                </span>
-              </div>
-            )}
-
-            {videoUploadSuccess && (
-              <div
-                style={{
-                  background: "#f0fdf4",
-                  border: "1px solid #dcfce7",
-                  borderRadius: "8px",
-                  padding: "12px",
-                  marginBottom: "16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <span style={{ color: "#10b981", fontSize: "16px" }}>✓</span>
-                <span style={{ color: "#10b981", fontSize: "14px" }}>
-                  {videoUploadSuccess}
-                </span>
-              </div>
-            )}
-
-            <style>
-              {`
-                @keyframes spin {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
-                }
-              `}
-            </style>
           </>
         ) : (
           <textarea
@@ -1956,8 +1876,6 @@ export default function CourseCurriculum({
               setSelectedVideoFile(null);
               setSelectedVideoPreview(null);
               setUploadedVideoUrl("");
-              setVideoUploadError("");
-              setVideoUploadSuccess("");
             }}
           >
             Cancel

@@ -7,3 +7,6 @@ export const getAllUsers = (params) =>
 // Update user status (ban/unban/verify)
 export const updateUserStatus = (userId, status) =>
   apiClient.put(`/admin/users/${userId}/status`, { status });
+
+// Get all categories
+export const getAllCategories = () => apiClient.get("/admin/categories");

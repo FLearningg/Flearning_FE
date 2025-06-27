@@ -193,6 +193,12 @@
   transform: scale(1.1);
 }
 
+.media-remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
 .media-status {
   margin: 0.5rem 0 0 0;
   font-size: 0.85rem;

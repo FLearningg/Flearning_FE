@@ -13,9 +13,10 @@
   gap: 8px;
   padding: 16px 0;
   color: #6e7485;
-  cursor: pointer;
+  cursor: default;
   border-bottom: 2px solid transparent;
   font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .cf-tab.cf-active {
@@ -25,6 +26,27 @@
 
 .cf-tab.cf-active svg {
   color: #ff6636;
+}
+
+.cf-tab.cf-completed {
+  color: #23bd33;
+}
+
+.cf-tab.cf-completed svg {
+  color: #23bd33;
+}
+
+.cf-tab.cf-clickable {
+  cursor: pointer;
+}
+
+.cf-tab.cf-clickable:hover {
+  color: #1d2026;
+  transform: translateY(-1px);
+}
+
+.cf-tab.cf-clickable.cf-completed:hover {
+  color: #1a8f28;
 }
 
 .cf-progress-indicator {
