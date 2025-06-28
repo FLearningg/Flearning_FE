@@ -3,11 +3,14 @@ import "../../assets/CRUDCourseAndLesson/CoursePublish.css";
 import ProgressTabs from "./ProgressTabs";
 import CustomButton from "../common/CustomButton/CustomButton";
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 const CoursePublish = ({
   onSubmit = () => {},
   onPrev = () => {},
   initialData = {},
+  completedTabs = [],
+  onTabClick = () => {},
 }) => {
   const [welcomeMsg, setWelcomeMsg] = useState(
     initialData.message?.welcome || ""
@@ -16,8 +19,6 @@ const CoursePublish = ({
     initialData.message?.congrats || ""
   );
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   // Update state when initialData changes
   useEffect(() => {
@@ -29,13 +30,11 @@ const CoursePublish = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccess("");
     try {
       await onSubmit({ welcome: welcomeMsg, congrats: congratsMsg });
-      setSuccess("Course published successfully!");
+      toast.success("Course published successfully!");
     } catch (err) {
-      setError(err.message || "Failed to publish course");
+      toast.error(err.message || "Failed to publish course");
     } finally {
       setLoading(false);
     }
@@ -45,7 +44,11 @@ const CoursePublish = ({
     <div className="cf-app-container">
       <div className="cf-content-area">
         <div className="cf-main-content">
-          <ProgressTabs activeIndex={3} />
+          <ProgressTabs
+            activeIndex={3}
+            completedTabs={completedTabs}
+            onTabClick={onTabClick}
+          />
           <div className="cf-form-content">
             {/* Header */}
             <div className="cf-form-header">
@@ -94,12 +97,6 @@ const CoursePublish = ({
                   ></textarea>
                 </div>
               </div>
-              {error && (
-                <div style={{ color: "red", marginBottom: 8 }}>{error}</div>
-              )}
-              {success && (
-                <div style={{ color: "green", marginBottom: 8 }}>{success}</div>
-              )}
 
               {/* Navigation Buttons */}
               <div className="cf-form-actions-bottom">

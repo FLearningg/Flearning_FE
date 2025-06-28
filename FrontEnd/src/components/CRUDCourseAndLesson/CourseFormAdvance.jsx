@@ -20,41 +20,29 @@ import ProgressTabs from "./ProgressTabs";
 import Input from "../common/Input";
 import CustomButton from "../common/CustomButton/CustomButton";
 import apiClient from "../../services/authService";
+import { toast } from "react-toastify";
 
 export default function CourseForm({
   onNext = () => {},
   onPrev = () => {},
   initialData = {},
+  completedTabs = [],
+  onTabClick = () => {},
 }) {
   const [courseInputs, setCourseInputs] = useState(
     initialData.detail?.willLearn?.length > 0
-      ? [
-          ...initialData.detail.willLearn,
-          ...Array(Math.max(0, 4 - initialData.detail.willLearn.length)).fill(
-            ""
-          ),
-        ]
-      : Array(4).fill("")
+      ? initialData.detail.willLearn
+      : [""]
   );
   const [audienceInputs, setAudienceInputs] = useState(
     initialData.detail?.targetAudience?.length > 0
-      ? [
-          ...initialData.detail.targetAudience,
-          ...Array(
-            Math.max(0, 4 - initialData.detail.targetAudience.length)
-          ).fill(""),
-        ]
-      : Array(4).fill("")
+      ? initialData.detail.targetAudience
+      : [""]
   );
   const [requirementInputs, setRequirementInputs] = useState(
     initialData.detail?.requirement?.length > 0
-      ? [
-          ...initialData.detail.requirement,
-          ...Array(Math.max(0, 4 - initialData.detail.requirement.length)).fill(
-            ""
-          ),
-        ]
-      : Array(4).fill("")
+      ? initialData.detail.requirement
+      : [""]
   );
   const [description, setDescription] = useState(
     initialData.detail?.description || ""
@@ -84,26 +72,25 @@ export default function CourseForm({
   useEffect(() => {
     // Always update arrays, even if empty
     if (initialData.detail?.willLearn?.length >= 0) {
-      setCourseInputs([
-        ...initialData.detail.willLearn,
-        ...Array(Math.max(0, 4 - initialData.detail.willLearn.length)).fill(""),
-      ]);
+      setCourseInputs(
+        initialData.detail.willLearn?.length > 0
+          ? initialData.detail.willLearn
+          : [""]
+      );
     }
     if (initialData.detail?.targetAudience?.length >= 0) {
-      setAudienceInputs([
-        ...initialData.detail.targetAudience,
-        ...Array(
-          Math.max(0, 4 - initialData.detail.targetAudience.length)
-        ).fill(""),
-      ]);
+      setAudienceInputs(
+        initialData.detail.targetAudience?.length > 0
+          ? initialData.detail.targetAudience
+          : [""]
+      );
     }
     if (initialData.detail?.requirement?.length >= 0) {
-      setRequirementInputs([
-        ...initialData.detail.requirement,
-        ...Array(Math.max(0, 4 - initialData.detail.requirement.length)).fill(
-          ""
-        ),
-      ]);
+      setRequirementInputs(
+        initialData.detail.requirement?.length > 0
+          ? initialData.detail.requirement
+          : [""]
+      );
     }
     // Always set description, even if empty
     setDescription(initialData.detail?.description || "");
@@ -117,13 +104,9 @@ export default function CourseForm({
     setThumbnailUrl(newThumbnailUrl);
     setTrailerUrl(newTrailerUrl);
 
-    // Set preview from URLs if they exist (for when coming back from next page)
-    if (newThumbnailUrl) {
-      setThumbnailPreview(newThumbnailUrl);
-    }
-    if (newTrailerUrl) {
-      setTrailerPreview(newTrailerUrl);
-    }
+    // Cập nhật preview từ url nếu có (khi quay lại tab)
+    if (newThumbnailUrl) setThumbnailPreview(newThumbnailUrl);
+    if (newTrailerUrl) setTrailerPreview(newTrailerUrl);
   }, [initialData]);
 
   const updateInput = (index, value, type) => {
@@ -172,10 +155,10 @@ export default function CourseForm({
         }
         setThumbnailUrl(res.data.url);
         setThumbnailFile(null);
-        setSuccess("Thumbnail uploaded successfully!");
-        setTimeout(() => setSuccess(""), 3000);
+        toast.success("Thumbnail uploaded successfully!");
       } catch (err) {
         setError(err.message || "Failed to upload thumbnail");
+        toast.error(err.message || "Failed to upload thumbnail");
       } finally {
         setUploadingThumbnail(false);
       }
@@ -202,10 +185,10 @@ export default function CourseForm({
         }
         setTrailerUrl(res.data.url);
         setTrailerFile(null);
-        setSuccess("Trailer uploaded successfully!");
-        setTimeout(() => setSuccess(""), 3000);
+        toast.success("Trailer uploaded successfully!");
       } catch (err) {
         setError(err.message || "Failed to upload trailer");
+        toast.error(err.message || "Failed to upload trailer");
       } finally {
         setUploadingTrailer(false);
       }
@@ -253,6 +236,7 @@ export default function CourseForm({
       onNext(data);
     } catch (err) {
       setError(err.message || "Failed to save advance info");
+      toast.error(err.message || "Failed to save advance info");
     } finally {
       setLoading(false);
     }
@@ -380,7 +364,11 @@ export default function CourseForm({
     <div className="cf-app-container">
       <div className="cf-content-area">
         <div className="cf-main-content">
-          <ProgressTabs activeIndex={1} progressText="7/12" />
+          <ProgressTabs
+            activeIndex={1}
+            completedTabs={completedTabs}
+            onTabClick={onTabClick}
+          />
           <div className="cf-form-content">
             <div className="cf-form-header">
               <h2 className="cf-form-title">Advance Information</h2>
@@ -399,20 +387,6 @@ export default function CourseForm({
                 </CustomButton>
               </div>
             </div>
-
-            {/* Error and Success Messages */}
-            {error && (
-              <div className="message-error">
-                <X size={16} />
-                <span>{error}</span>
-              </div>
-            )}
-            {success && (
-              <div className="message-success">
-                <Check size={16} />
-                <span>{success}</span>
-              </div>
-            )}
 
             {/* Media Uploads */}
             <div className="media-section">
