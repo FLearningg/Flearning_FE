@@ -89,7 +89,7 @@
 }
 
 .course-nav-link-active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -16px;
   left: 0;
@@ -133,4 +133,4 @@
   .course-nav-link-active::after {
     display: none;
   }
-} 
+}

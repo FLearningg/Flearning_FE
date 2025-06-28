@@ -1,27 +1,6 @@
 import { useState, useEffect } from "react";
 import CustomButton from "../common/CustomButton/CustomButton";
-import Input from "../common/Input";
-import {
-  BarChart3,
-  BookOpen,
-  DollarSign,
-  MessageSquare,
-  Settings,
-  LogOut,
-  Search,
-  Bell,
-  Plus,
-  Edit,
-  Trash2,
-  ChevronDown,
-  ChevronUp,
-  Check,
-  FileText,
-  Video,
-  Paperclip,
-  Type,
-  StickyNote,
-} from "lucide-react";
+import { Plus, Trash2, FileText, Video, Type, StickyNote } from "lucide-react";
 import "../../assets/CRUDCourseAndLesson/CourseCurriculum.css";
 import ProgressTabs from "./ProgressTabs";
 import apiClient from "../../services/authService";
