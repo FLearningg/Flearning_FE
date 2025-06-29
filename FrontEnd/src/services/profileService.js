@@ -1,7 +1,7 @@
-import apiClient from './authService';
+import apiClient from "./authService";
 
 // Profile Routes
-export const getProfile = () => apiClient.get('/profile');
+export const getProfile = () => apiClient.get("/profile");
 export const updateProfile = (profileData) => {
   const config = {};
   if (profileData instanceof FormData) {
@@ -11,9 +11,9 @@ export const updateProfile = (profileData) => {
 };
 
 // Purchase History Routes
-export const getPurchaseHistory = (page = 1, limit = 10) => 
+export const getPurchaseHistory = (page = 1, limit = 10) =>
   apiClient.get(`/profile/purchase-history?page=${page}&limit=${limit}`);
 
 // Enrolled Courses Routes
-export const getEnrolledCourses = () => 
-  apiClient.get('/profile/enrolled-courses'); 
+export const getEnrolledCourses = () =>
+  apiClient.get("/profile/enrolled-courses");
