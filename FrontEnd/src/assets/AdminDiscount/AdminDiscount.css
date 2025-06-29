@@ -697,6 +697,42 @@
   border-top: 1px solid #e2e8f0;
 }
 
+.admin-discount-cancel-btn {
+  background: #f8fafc;
+  color: #4a5568;
+  border: 2px solid #e2e8f0;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-discount-cancel-btn:hover {
+  background: #edf2f7;
+  border-color: #cbd5e0;
+}
+
+.admin-discount-submit-btn {
+  background: #ff6636;
+  color: white;
+  border: 2px solid #ff6636;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-discount-submit-btn:hover {
+  background: #e55a2e;
+  border-color: #e55a2e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 102, 54, 0.3);
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .admin-discount-stats-grid {
