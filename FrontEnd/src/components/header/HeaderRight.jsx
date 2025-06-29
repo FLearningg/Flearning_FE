@@ -8,13 +8,12 @@ import Notification from "./Notification";
 import WishList from "./WishList";
 
 function HeaderRight({ user: currentUser }) {
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     dispatch(logout());
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
@@ -36,10 +35,15 @@ function HeaderRight({ user: currentUser }) {
         {currentUser ? (
           <div className="ms-2 dropdown">
             <img
-              src={currentUser.userImage || '/images/defaultImageUser.png'}
+              src={currentUser.userImage || "/images/defaultImageUser.png"}
               alt=""
               className="rounded-circle"
-              style={{ width: "40px", height: "40px", cursor: "pointer", objectFit: 'cover' }}
+              style={{
+                width: "40px",
+                height: "40px",
+                cursor: "pointer",
+                objectFit: "cover",
+              }}
               id="userDropdown"
               data-bs-toggle="dropdown"
               aria-expanded="false"
@@ -49,12 +53,18 @@ function HeaderRight({ user: currentUser }) {
               aria-labelledby="userDropdown"
             >
               <li>
-                <Link to="/profile/dashboard" className="dropdown-item dropdown-item-hover">
+                <Link
+                  to="/profile/dashboard"
+                  className="dropdown-item dropdown-item-hover"
+                >
                   <FontAwesomeIcon icon={faUser} className="me-2" /> Profile
                 </Link>
               </li>
               <li>
-                <Link to="/profile/settings" className="dropdown-item dropdown-item-hover">
+                <Link
+                  to="/profile/settings"
+                  className="dropdown-item dropdown-item-hover"
+                >
                   <FontAwesomeIcon icon={faCog} className="me-2" />
                   Settings
                 </Link>
@@ -63,7 +73,10 @@ function HeaderRight({ user: currentUser }) {
                 <hr className="dropdown-divider" />
               </li>
               <li>
-                <button onClick={handleLogout} className="dropdown-item dropdown-item-hover">
+                <button
+                  onClick={handleLogout}
+                  className="dropdown-item dropdown-item-hover"
+                >
                   <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
                   Logout
                 </button>
