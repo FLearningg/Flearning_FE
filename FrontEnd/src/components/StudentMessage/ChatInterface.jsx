@@ -681,7 +681,7 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
                             </div>
                           )}
                           <div className="message-bubble">
-                            <p>{message.message}</p>
+                            <p className="m-0">{message.message}</p>
                           </div>
                           {isOwnMessage && (
                             <div className="message-time">
