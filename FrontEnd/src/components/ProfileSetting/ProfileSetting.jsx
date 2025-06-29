@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import ProfileSection from "../CourseList/ProfileSection";
+import { FaCamera } from 'react-icons/fa';
+import ProfileSection, { updateProfileSectionCache } from "../CourseList/ProfileSection";
 import CustomButton from "../common/CustomButton/CustomButton";
 import Input from "../common/Input";
 import { getProfile, updateProfile } from "../../services/profileService";
 import { changePassword } from "../../services/authService";
 import "../../assets/ProfileSetting/ProfileSetting.css";
 
-const DEFAULT_PROFILE_IMAGE = "https://lh3.googleusercontent.com/d/1TVCGnVdymo_X-21AV2bn1mhVRN0weMCn=s400";
+const DEFAULT_PROFILE_IMAGE = "/images/defaultImageUser.png";
 
 // Password Input wrapper component
 const PasswordInput = ({ value, onChange, placeholder, label, disabled }) => {
@@ -66,7 +67,7 @@ const Component = () => {
   // State for file upload
   const [selectedFile, setSelectedFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [imageKey, setImageKey] = useState(0); // Force image re-render
+  const [imageKey, setImageKey] = useState(0);
 
   // State for password change
   const [passwordData, setPasswordData] = useState({
@@ -79,6 +80,7 @@ const Component = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isLoadingPassword, setIsLoadingPassword] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
 
   // Error states
   const [profileError, setProfileError] = useState("");
@@ -88,13 +90,6 @@ const Component = () => {
   const [profileSuccess, setProfileSuccess] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
 
-  // State for showing/hiding actual password text
-  const [showPassword, setShowPassword] = useState({
-    currentPassword: false,
-    newPassword: false,
-    confirmPassword: false
-  });
-
   // Fetch profile data on component mount
   useEffect(() => {
     fetchProfileData();
@@ -103,38 +98,27 @@ const Component = () => {
   const fetchProfileData = async () => {
     try {
       setIsLoadingProfile(true);
-      setProfileError(""); // Clear any previous errors
+      setProfileError("");
 
       console.log("Fetching profile data...");
       const response = await getProfile();
       console.log("Profile response:", response);
 
-      // Backend trả về { success: true, data: {...} }
       const data = response.data.data;
       console.log("Profile data:", data);
 
       setProfileData({
         firstName: data.firstName || "",
         lastName: data.lastName || "",
-        username: data.userName || "", // Backend trả về userName
+        username: data.userName || "",
         email: data.email || "",
-        title: data.biography || "", // Backend trả về biography
-        userImage: data.userImage ? data.userImage.trim() : DEFAULT_PROFILE_IMAGE,
+        title: data.biography || "",
+        userImage: data.userImage || DEFAULT_PROFILE_IMAGE,
       });
 
-      // Debug: Log exact userImage URL from backend
-      console.log("Backend userImage URL:", data.userImage);
-      console.log("userImage type:", typeof data.userImage);
-      console.log("userImage length:", data.userImage?.length);
-
-      console.log("Profile data set successfully");
     } catch (error) {
       console.error("Error fetching profile:", error);
-      console.error("Error details:", error.response?.data);
-      console.error("Error status:", error.response?.status);
-
       let errorMessage = "Failed to load profile data";
-
       if (error.response?.status === 401) {
         errorMessage = "Authentication required. Please login again.";
       } else if (error.response?.data?.message) {
@@ -142,10 +126,14 @@ const Component = () => {
       } else if (error.message) {
         errorMessage = error.message;
       }
-
       setProfileError(errorMessage);
+      setProfileData(prev => ({
+        ...prev,
+        userImage: DEFAULT_PROFILE_IMAGE
+      }));
     } finally {
       setIsLoadingProfile(false);
+      setImageLoading(false);
     }
   };
 
@@ -175,25 +163,36 @@ const Component = () => {
       setProfileError("");
       setProfileSuccess("");
 
-      // Map frontend data to backend format
       const backendData = {
         firstName: profileData.firstName,
         lastName: profileData.lastName,
-        userName: profileData.username, // Frontend username -> backend userName
+        userName: profileData.username,
         email: profileData.email,
-        biography: profileData.title, // Frontend title -> backend biography
-        // userImage không được gửi vì user không thể edit từ form này
+        biography: profileData.title,
       };
 
       console.log("Sending profile data:", backendData);
       const response = await updateProfile(backendData);
       console.log("Update response:", response);
 
+      // Update success message
       setProfileSuccess("Profile updated successfully!");
 
-      // Force image re-render and refresh profile data
+      // Update profile section cache
+      updateProfileSectionCache({
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+        biography: profileData.title,
+        userImage: profileData.userImage
+      });
+
+      // Force update components and refresh data
       setImageKey(prev => prev + 1);
       await fetchProfileData();
+
+      // Reload the page after successful update
+      window.location.reload();
+
     } catch (error) {
       console.error("Error updating profile:", error);
       setProfileError(
@@ -296,13 +295,10 @@ const Component = () => {
       setIsLoading(true);
       setProfileError("");
       setProfileSuccess("");
+      setImageLoading(true);
 
-      // Create FormData for file upload
       const formData = new FormData();
-      // Backend multer expects 'userImage' field name
       formData.append("userImage", selectedFile);
-
-      // Add other profile data
       formData.append("firstName", profileData.firstName);
       formData.append("lastName", profileData.lastName);
       formData.append("userName", profileData.username);
@@ -310,50 +306,64 @@ const Component = () => {
       formData.append("biography", profileData.title);
 
       console.log("Uploading image...");
-
-      // Call API with FormData
       const response = await updateProfile(formData);
       console.log("Upload response:", response);
 
-      setProfileSuccess("Profile and image updated successfully!");
+      if (response.data?.data?.userImage) {
+        const imageUrl = response.data.data.userImage;
+        
+        // Clear existing states
+        setImagePreview(null);
+        setSelectedFile(null);
+        
+        // Update profile data with new image
+        setProfileData(prev => ({
+          ...prev,
+          userImage: imageUrl
+        }));
 
-      // Clear file selection
-      setSelectedFile(null);
-      setImagePreview(null);
+        // Update profile section cache with new image
+        updateProfileSectionCache({
+          userImage: imageUrl
+        });
+        
+        // Force update both components
+        setImageKey(prev => prev + 1);
+        setProfileSuccess("Profile and image updated successfully!");
 
-      // Force image re-render and refresh profile data to get new image URL
-      setImageKey(prev => prev + 1);
-      await fetchProfileData();
+        // Fetch profile data again to ensure everything is in sync
+        await fetchProfileData();
+
+        // Reload the page after successful update
+        window.location.reload();
+      }
+
     } catch (error) {
       console.error("Error uploading image:", error);
-      console.error("Error response:", error.response);
-      console.error("Error response data:", error.response?.data);
-      console.error("Error response status:", error.response?.status);
-      console.error("Error response headers:", error.response?.headers);
-      console.error("Error message:", error.message);
-      console.error(
-        "Full error object:",
-        JSON.stringify(error.response?.data, null, 2)
-      );
-
       setProfileError(
-        error.response?.data?.message || "Failed to upload image"
+        error.response?.data?.message || error.message || "Failed to upload image"
       );
     } finally {
       setIsLoading(false);
+      setImageLoading(false);
     }
   };
 
+  // Add this to fetch initial image
+  useEffect(() => {
+    const cachedImageUrl = localStorage.getItem('userProfileImage');
+    if (cachedImageUrl) {
+      setProfileData(prev => ({
+        ...prev,
+        userImage: cachedImageUrl
+      }));
+    }
+  }, []);
+
   return (
     <ProfileSection
-      avatar={profileData.userImage || "/images/defaultImageUser.png"}
-      name={
-        profileData.firstName || profileData.lastName
-          ? `${profileData.firstName} ${profileData.lastName}`.trim()
-          : "User"
-      }
-      title={profileData.title || "Student"}
       activePath={location.pathname}
+      forceUpdate={imageKey}
     >
       <div className="page-content">
         <div className="profile-card-wrapper">
@@ -374,101 +384,62 @@ const Component = () => {
               <div className="account-settings-section">
                 <h3 className="section-title">Account settings</h3>
                 <div className="account-settings-content">
-                  <div className="profile-picture-section">
-                    <div className="profile-picture-upload">
-                      <div className="profile-picture-preview">
+                  <div className="profile-picture-upload">
+                    <div className="profile-picture-preview">
+                      <div className="profile-image-container">
                         <img
-                          key={`${profileData.userImage || 'default'}-${imageKey}`} // Force re-render when URL changes
-                          src={
-                            imagePreview ||
-                            (profileData.userImage ? 
-                              `${profileData.userImage}${profileData.userImage.includes('?') ? '&' : '?'}t=${Date.now()}` : 
-                              DEFAULT_PROFILE_IMAGE)
-                          }
+                          key={`profile-image-${imageKey}`}
+                          src={imagePreview || profileData.userImage || DEFAULT_PROFILE_IMAGE}
                           alt="User profile"
-                          width={200}
-                          height={200}
-                          className="profile-picture-img"
-                          onLoad={(e) => {
-                            console.log('Image loaded successfully:', e.target.src);
-                          }}
+                          className={`profile-picture-img ${imageLoading ? 'loading' : ''}`}
                           onError={(e) => {
-                            console.error('Error loading image:', e.target.src);
-                            console.error('Original profileData.userImage:', profileData.userImage);
-                            console.error('Image src after processing:', e.target.src);
-                            console.error('Fallback to default image');
-                            e.target.src = DEFAULT_PROFILE_IMAGE;
-                            e.target.onerror = null; // Prevent infinite loop
+                            console.error("Failed to load image:", e.target.src);
+                            if (e.target.src !== DEFAULT_PROFILE_IMAGE) {
+                              e.target.src = DEFAULT_PROFILE_IMAGE;
+                              setProfileError("Failed to load profile image. Using default image instead.");
+                            }
+                            setImageLoading(false);
+                            e.target.onerror = null;
+                          }}
+                          onLoad={() => {
+                            setImageLoading(false);
+                            setProfileError("");
                           }}
                         />
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileSelect}
-                          style={{ display: "none" }}
-                          id="profile-image-input"
-                        />
-                        <button
-                          className="upload-overlay-btn"
-                          onClick={() =>
-                            document
-                              .getElementById("profile-image-input")
-                              .click()
-                          }
-                          disabled={isLoading}
-                        >
-                          📤 {selectedFile ? "Change Photo" : "Upload Photo"}
-                        </button>
+                        <div className="profile-upload-overlay">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileSelect}
+                            id="profile-image-input"
+                            className="profile-file-input"
+                          />
+                          <label htmlFor="profile-image-input" className="profile-camera-icon-wrapper">
+                            <FaCamera size={24} />
+                          </label>
+                        </div>
                       </div>
-                      <p className="upload-hint">
-                        Image size should be under 1MB and image ratio needs to
-                        be 1:1
+                      
+                      <p className="profile-upload-hint">
+                        Image size should be under 1MB and image ratio needs to be 1:1
                       </p>
 
-                      {/* File Selection Info */}
                       {selectedFile && (
-                        <div
-                          style={{
-                            marginTop: "10px",
-                            padding: "10px",
-                            background: "#f8f9fa",
-                            borderRadius: "4px",
-                          }}
-                        >
-                          <p
-                            style={{
-                              margin: "0 0 5px 0",
-                              fontSize: "14px",
-                              color: "#495057",
-                            }}
-                          >
-                            Selected: {selectedFile.name}
+                        <div className="profile-file-info">
+                          <p className="profile-file-size">
+                            Size: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                           </p>
-                          <p
-                            style={{
-                              margin: "0 0 10px 0",
-                              fontSize: "12px",
-                              color: "#6c757d",
-                            }}
-                          >
-                            Size: {(selectedFile.size / 1024 / 1024).toFixed(2)}{" "}
-                            MB
-                          </p>
-                          <div style={{ display: "flex", gap: "8px" }}>
+                          <div className="profile-file-actions">
                             <button
                               onClick={handleImageUpload}
                               disabled={isLoading}
-                              style={{
-                                background: "#28a745",
-                                color: "white",
-                                border: "none",
-                                padding: "6px 12px",
-                                borderRadius: "4px",
-                                fontSize: "12px",
-                                cursor: isLoading ? "not-allowed" : "pointer",
-                              }}
+                              className="profile-action-btn profile-upload-btn"
                             >
-                              {isLoading ? "Uploading..." : "✓ Upload & Save"}
+                              {isLoading ? (
+                                <span className="profile-loading-text">Uploading...</span>
+                              ) : (
+                                <>Upload</>
+                              )}
                             </button>
                             <button
                               onClick={() => {
@@ -476,17 +447,9 @@ const Component = () => {
                                 setImagePreview(null);
                               }}
                               disabled={isLoading}
-                              style={{
-                                background: "#6c757d",
-                                color: "white",
-                                border: "none",
-                                padding: "6px 12px",
-                                borderRadius: "4px",
-                                fontSize: "12px",
-                                cursor: isLoading ? "not-allowed" : "pointer",
-                              }}
+                              className="profile-action-btn profile-cancel-btn"
                             >
-                              ✕ Cancel
+                              Cancel
                             </button>
                           </div>
                         </div>

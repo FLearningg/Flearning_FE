@@ -5,6 +5,8 @@ import { FaBars, FaTimes } from "react-icons/fa";
 import { getProfile } from "../../services/profileService";
 import "../../assets/CourseList/ProfileSection.css";
 
+const DEFAULT_PROFILE_IMAGE = "/images/defaultImageUser.png";
+
 const NAV_ITEMS = [
   { path: "/profile/dashboard", label: "Dashboard" },
   { path: "/profile/courses", label: "My Courses" },
@@ -15,71 +17,71 @@ const NAV_ITEMS = [
   { path: "/profile/settings", label: "Settings" },
 ];
 
+// Cache for profile data
+let profileDataCache = null;
+
 const ProfileSection = ({
   activePath,
   wrapperBackground = "#FFEEE8",
   useFullWidthWrapper = true,
-  children,
+  children
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [profileData, setProfileData] = useState({
-    userImage: "/images/defaultImageUser.png",
+  const [profileData, setProfileData] = useState(profileDataCache || {
     firstName: "",
     lastName: "",
-    userName: "Loading...",
-    email: "",
-    biography: "Loading..."
+    biography: "",
+    userImage: DEFAULT_PROFILE_IMAGE
   });
+  const [isLoading, setIsLoading] = useState(!profileDataCache);
+  const [error, setError] = useState("");
 
+  // Fetch profile data
+  const fetchProfileData = async () => {
+    try {
+      setIsLoading(true);
+      setError("");
+
+      const response = await getProfile();
+      const data = response.data.data;
+
+      const newProfileData = {
+        firstName: data.firstName || "",
+        lastName: data.lastName || "",
+        biography: data.biography || "",
+        userImage: data.userImage || DEFAULT_PROFILE_IMAGE
+      };
+
+      setProfileData(newProfileData);
+      profileDataCache = newProfileData; // Update cache
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      setError("Failed to load profile data");
+      setProfileData(prev => ({
+        ...prev,
+        userImage: DEFAULT_PROFILE_IMAGE
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch data only if cache is empty
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await getProfile();
-        if (response.data.success) {
-          const { data } = response.data;
-          setProfileData({
-            userImage: data.userImage || "/images/defaultImageUser.png",
-            firstName: data.firstName || "",
-            lastName: data.lastName || "",
-            userName: data.userName || "No Username",
-            email: data.email || "",
-            biography: data.biography || "No biography available"
-          });
-        } else {
-          throw new Error(response.data.message || "Failed to fetch profile");
-        }
-      } catch (error) {
-        console.error("Failed to fetch profile:", error);
-        setProfileData({
-          userImage: "/images/defaultImageUser.png",
-          firstName: "",
-          lastName: "",
-          userName: "Error loading profile",
-          email: "",
-          biography: "Could not load profile information"
-        });
-      }
-    };
-
-    fetchProfile();
+    if (!profileDataCache) {
+      fetchProfileData();
+    }
   }, []);
 
-  // Tự động tạo mobile header title từ activePath
+  // Get mobile header title
   const getMobileHeaderTitle = () => {
     const currentItem = NAV_ITEMS.find((item) => item.path === activePath);
     return currentItem ? currentItem.label : "Profile";
   };
 
-  const getFullName = () => {
-    if (profileData.firstName && profileData.lastName) {
-      return `${profileData.firstName} ${profileData.lastName}`;
-    } else if (profileData.firstName) {
-      return profileData.firstName;
-    } else if (profileData.lastName) {
-      return profileData.lastName;
-    }
-    return profileData.userName;
-  };
+  const displayName = profileData.firstName || profileData.lastName
+    ? `${profileData.firstName} ${profileData.lastName}`.trim()
+    : "User";
 
   const profileContent = (
     <>
@@ -97,28 +99,36 @@ const ProfileSection = ({
       <div className="profile-section">
         <div className="profile-content">
           <div className="profile-info">
-            <img
-              src={profileData.userImage}
-              alt={getFullName()}
-              className="profile-avatar"
-              loading="lazy"
-              onError={(e) => {
-                e.target.src = "/images/defaultImageUser.png";
-              }}
-            />
-            <div>
-              <h4>{getFullName()}</h4>
-              <p>{profileData.biography}</p>
-            </div>
+            {isLoading ? (
+              <div className="profile-loading">Loading...</div>
+            ) : error ? (
+              <div className="profile-error">{error}</div>
+            ) : (
+              <>
+                <img
+                  src={profileData.userImage || DEFAULT_PROFILE_IMAGE}
+                  alt={displayName}
+                  className="profile-avatar"
+                  loading="lazy"
+                  onError={(e) => {
+                    if (e.target.src !== DEFAULT_PROFILE_IMAGE) {
+                      e.target.src = DEFAULT_PROFILE_IMAGE;
+                    }
+                  }}
+                />
+                <div>
+                  <h4>{displayName}</h4>
+                  <p>{profileData.biography || "Student"}</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
 
       <div className="course-nav-container">
         <nav
-          className={`course-nav ${
-            mobileMenuOpen ? "course-nav-mobile-open" : ""
-          }`}
+          className={`course-nav ${mobileMenuOpen ? "course-nav-mobile-open" : ""}`}
           role="navigation"
           aria-label="Main navigation"
         >
@@ -162,7 +172,15 @@ ProfileSection.propTypes = {
   activePath: PropTypes.string.isRequired,
   wrapperBackground: PropTypes.string,
   useFullWidthWrapper: PropTypes.bool,
-  children: PropTypes.node,
+  children: PropTypes.node
+};
+
+// Export function to update cache from outside
+export const updateProfileSectionCache = (newData) => {
+  profileDataCache = {
+    ...profileDataCache,
+    ...newData
+  };
 };
 
 export default ProfileSection;
