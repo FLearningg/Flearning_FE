@@ -86,6 +86,7 @@
 }
 
 .browse-all:hover {
+    color: #f97316;
     border-bottom: 2px solid #f97316;
 }
 

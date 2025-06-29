@@ -5,180 +5,20 @@ import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell } from '@fortawesome/free-regular-svg-icons';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { useDispatch, useSelector } from 'react-redux';
+import { getNotifications } from '../../services/notificationService';
 const PAGE_SIZE = 10; // number of notifications to render at a time
 const RENDER_STEP = 5; // number of notifications to render on each scroll
 function Notification() {
-    const notificationData = [
-        // Sample data, replace with actual notification data
-        {
-            title: "New Course Added",
-            date: "March 15, 2023",
-            time: "10:30 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2025",
-            time: "11:00 PM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available 3",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available5",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available here",
-            date: "March 16, 2028",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        },
-        {
-            title: "Course Update Available",
-            date: "March 16, 2023",
-            time: "11:00 AM",
-            sender: "Admin",
-            senderImage: "/images/defaultImageUser.png"
-        }
-    ];
+    const notificationData = useSelector((state) => state.notifications?.getNotifications?.notifications) || [];
+    const currentUser = useSelector((state) => state.auth.currentUser);
+    const dispatch = useDispatch();
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            await getNotifications(dispatch, currentUser?._id, 1, PAGE_SIZE);
+        };
+        fetchNotifications();
+    }, [dispatch]);
     const [notifications, setNotifications] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMoreApi, setHasMoreApi] = useState(true);
@@ -208,8 +48,16 @@ function Notification() {
     };
 
     useEffect(() => {
-        fetchNotifications(1);
-    }, []);
+        // Khi notificationData thay đổi và có dữ liệu, reset notifications
+        if (notificationData.length > 0) {
+            setNotifications([]);
+            setPage(1);
+            setHasMoreApi(true);
+            setVisibleCount(RENDER_STEP);
+            setShowInfinite(false);
+            fetchNotifications(1);
+        }
+    }, [notificationData]);
 
     // Function called when scrolling for infinite scroll
     const handleInfiniteScroll = () => {
@@ -229,6 +77,28 @@ function Notification() {
         setShowInfinite(true); // Enable infinite scroll
     };
 
+    function formatDateTime(isoString) {
+        const dateObj = new Date(isoString);
+        // Take date with format "Month Day, Year"
+        const date = dateObj.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        // Take time with format "hh:mm AM/PM"
+        const time = dateObj.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+        return { date, time };
+    }
+    // when map notification:
+    const notificationsWithDateTime = notifications.map(n => {
+        const { date, time } = formatDateTime(n.createdAt);
+        return { ...n, date, time };
+    });
+
     return (
         <>
             <div className="dropdown">
@@ -246,61 +116,104 @@ function Notification() {
                     </div>
                     <div>
                         <div className='dropdown-container' id="scrollableNotificationDiv">
-                            {!showInfinite ? (
-                                <>
-                                    {notifications.slice(0, visibleCount).map((notification, index) => (
-                                        <NotificationCard
-                                            key={index}
-                                            title={notification.title}
-                                            date={notification.date}
-                                            time={notification.time}
-                                            sender={notification.sender}
-                                            senderImage={notification.senderImage}
-                                        />
-                                    ))}
-                                    <div className='text-center mt-2 px-2'>
-                                        <button className='btn header-btn-show-more w-100' onClick={handleShowMore}>Show More Notifications</button>
-                                    </div>
-                                </>
-                            ) : (
-                                <InfiniteScroll
-                                    dataLength={Math.min(visibleCount, notifications.length)}
-                                    next={handleInfiniteScroll}
-                                    hasMore={hasMoreApi || visibleCount < notifications.length}
-                                    loader={
-                                        <div class="spinner-border" role="status">
-                                            <span class="sr-only">Loading...</span>
-                                        </div>
-                                    }
-                                    scrollableTarget={"scrollableNotificationDiv"}
-                                >
-                                    {notifications.slice(0, visibleCount).map((notification, index) => (
-                                        <NotificationCard
-                                            key={index}
-                                            title={notification.title}
-                                            date={notification.date}
-                                            time={notification.time}
-                                            sender={notification.sender}
-                                            senderImage={notification.senderImage}
-                                        />
-                                    ))}
-                                </InfiniteScroll>
-                            )}
-                            {notifications.length === 0 && !loading && (
+                            {notificationData.length === 0 ? (
                                 <div className='text-muted text-center p-3'>
                                     <FontAwesomeIcon icon={faBell} style={{ fontSize: '24px' }} />
                                     <p className='mb-0 mt-2'>No notifications yet</p>
                                 </div>
-                            )}
+                            ) : (
+                                <>
+                                    {!showInfinite ? (
+                                        <>
+                                            {notificationsWithDateTime.slice(0, visibleCount).map((notification, index) => (
+                                                <NotificationCard
+                                                    key={notification._id || index}
+                                                    title={notification.message}
+                                                    date={notification.date}
+                                                    time={notification.time}
+                                                    sender={notification.sender || 'Admin'}
+                                                    senderImage={notification.senderImage || '/images/defaultImageUser.png'}
+                                                />
+                                            ))}
+                                            {visibleCount < notificationsWithDateTime.length && (
+                                                <div className='text-center mt-2 px-2'>
+                                                    <button className='btn header-btn-show-more w-100' onClick={handleShowMore}>Show More Notifications</button>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <InfiniteScroll
+                                            dataLength={Math.min(visibleCount, notifications.length)}
+                                            next={handleInfiniteScroll}
+                                            hasMore={hasMoreApi || visibleCount < notifications.length}
+                                            loader={
+                                                <div class="spinner-border" role="status">
+                                                    <span class="sr-only">Loading...</span>
+                                                </div>
+                                            }
+                                            scrollableTarget={"scrollableNotificationDiv"}
+                                        >
+                                            {notificationsWithDateTime.slice(0, visibleCount).map((notification, index) => (
+                                                <NotificationCard
+                                                    key={notification._id || index}
+                                                    title={notification.message}
+                                                    date={notification.date}
+                                                    time={notification.time}
+                                                    sender={notification.sender || 'Unknown Sender'}
+                                                    senderImage={notification.senderImage || '/images/defaultImageUser.png'}
+                                                />
+                                            ))}
+                                        </InfiniteScroll>
+                                    )}
+                                </>
+                            )
+                                // {!showInfinite ? (
+                                //     <>
+                                //         {notifications.slice(0, visibleCount).map((notification, index) => (
+                                //             <NotificationCard
+                                //                 key={index}
+                                //                 title={notification.title}
+                                //                 date={notification.date}
+                                //                 time={notification.time}
+                                //                 sender={notification.sender}
+                                //                 senderImage={notification.senderImage}
+                                //             />
+                                //         ))}
+                                //         <div className='text-center mt-2 px-2'>
+                                //             <button className='btn header-btn-show-more w-100' onClick={handleShowMore}>Show More Notifications</button>
+                                //         </div>
+                                //     </>
+                                // ) : (
+                                //     <InfiniteScroll
+                                //         dataLength={Math.min(visibleCount, notifications.length)}
+                                //         next={handleInfiniteScroll}
+                                //         hasMore={hasMoreApi || visibleCount < notifications.length}
+                                //         loader={
+                                //             <div class="spinner-border" role="status">
+                                //                 <span class="sr-only">Loading...</span>
+                                //             </div>
+                                //         }
+                                //         scrollableTarget={"scrollableNotificationDiv"}
+                                //     >
+                                //         {notifications.slice(0, visibleCount).map((notification, index) => (
+                                //             <NotificationCard
+                                //                 key={index}
+                                //                 title={notification.title}
+                                //                 date={notification.date}
+                                //                 time={notification.time}
+                                //                 sender={notification.sender}
+                                //                 senderImage={notification.senderImage}
+                                //             />
+                                //         ))}
+                                //     </InfiniteScroll>
+                                // )}
+                            }
                         </div>
                     </div>
-                </ul>
-            </div>
+                </ul >
+            </div >
         </>
     )
 }
 
 export default Notification;
-
-
-

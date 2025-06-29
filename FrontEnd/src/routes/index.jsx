@@ -7,7 +7,7 @@ import mainRoutesContent from "./mainRoutes";
 import authRoutesContent from "./authRoutes";
 
 import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute";
-import RoleBasedRoute from "../components/ProtectedRouteRoleBasedRoute";
+import RoleBasedRoute from "../components/ProtectedRoute/RoleBasedRoute";
 
 import adminRoutesContent from "./adminRoutes";
 

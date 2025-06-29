@@ -1,7 +1,9 @@
 import React from 'react'
 import '../../assets/homepage/Adverisement.css';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 function Advertisement() {
+    const { currentUser } = useSelector((state) => state.auth);
     return (
         <>
             <div className="container-fluid desktop-homepage-view">
@@ -12,7 +14,9 @@ function Advertisement() {
                             <p className="advertisement-text">Learn with expert <br /> anytime anywhere</p>
                             <p className="text-secondary advertisement-text-2">Our mision is to help people to find the best course
                                 online and learn with expert anytime, anywhere.</p>
-                            <Link to="/signup" className="btn-create-account"><button className="">Create account</button></Link>
+                            {!currentUser && (
+                                <Link to="/signup" className="btn-create-account"><button className="">Create account</button></Link>
+                            )}
                         </div>
                     </div>
                     <div className="col-6 pe-0">
@@ -31,7 +35,9 @@ function Advertisement() {
                         </p>
                     </div>
                     <hr />
-                    <Link to="/signup" className="btn-create-account"><button className="">Create account</button></Link>
+                    {!currentUser && (
+                        <Link to="/signup" className="btn-create-account"><button className="">Create account</button></Link>
+                    )}
                 </div>
             </div>
         </>

@@ -1,6 +1,7 @@
 import React from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Link } from 'react-router-dom'
+import 'bootstrap-icons/font/bootstrap-icons.css';
 function TopCategoryCard({ icon, bgColor, iconColor, title, numberOfCourse, linkToCategory }) {
     return (
         <>
@@ -10,7 +11,8 @@ function TopCategoryCard({ icon, bgColor, iconColor, title, numberOfCourse, link
                         <div className="card-body card-body-category">
                             <div className="category-header">
                                 <div className='category-icon' style={{backgroundColor: iconColor}}>
-                                    <FontAwesomeIcon icon={icon} />
+                                    {/* <FontAwesomeIcon icon={icon} /> */}
+                                    <i className={`bi ${icon}`} style={{ fontSize: '1.2rem' }}></i>
                                 </div>
                                 <h5 className="card-title card-category-title">{title}</h5>
                             </div>
