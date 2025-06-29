@@ -37,7 +37,7 @@ function TopCategory() {
         };
         fetchTopCategories();
     }, [dispatch]);
-    if (isLoadding) return <LoaddingComponent/>;
+    if (isLoadding) return <LoaddingComponent />;
     return (
         <>
             <div className="container py-5">

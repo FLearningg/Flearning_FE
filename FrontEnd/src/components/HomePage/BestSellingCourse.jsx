@@ -54,7 +54,7 @@ function BestSellingCourse() {
             }
         }
     });
-    if(isLoading) return <LoaddingComponent></LoaddingComponent>
+    if (isLoading) return <LoaddingComponent></LoaddingComponent>
     return (
         <>
             <div style={{ backgroundColor: "#ecebeb7c" }}>

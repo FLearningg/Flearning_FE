@@ -57,7 +57,7 @@ function RecentlyAddedCourse() {
             }
         }
     });
-    if (isLoading) return <LoaddingComponent/>;
+    if (isLoading) return <LoaddingComponent />;
     return (
         <>
             <div className="container my-5">

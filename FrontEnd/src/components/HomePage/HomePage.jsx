@@ -5,7 +5,7 @@ import BestSellingCourse from './BestSellingCourse'
 import RecentlyAddedCourse from './RecentlyAddedCourse'
 import TrustedCompanies from './TrustedCompanies'
 import StartLearning from './StartLearning'
-import {useSelector} from 'react-redux'
+import { useSelector } from 'react-redux'
 
 function HomePage() {
   const { token, currentUser } = useSelector((state) => state.auth);
@@ -13,12 +13,12 @@ function HomePage() {
   console.log(currentUser);
   return (
     <>
-        <Advertisement/>
-        <TopCategory/>
-        <BestSellingCourse/>
-        <RecentlyAddedCourse/>
-        <TrustedCompanies/>
-        <StartLearning/>
+      <Advertisement />
+      <TopCategory />
+      <BestSellingCourse />
+      <RecentlyAddedCourse />
+      <TrustedCompanies />
+      <StartLearning />
     </>
   )
 }

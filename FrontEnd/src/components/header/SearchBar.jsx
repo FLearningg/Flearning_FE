@@ -19,7 +19,7 @@ function SearchBar() {
         label: course.title
     })) || [];
     if (isLoading) {
-        return <LoaddingComponent/>;
+        return <LoaddingComponent />;
     }
     return (
         <>
