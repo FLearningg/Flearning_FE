@@ -10,9 +10,6 @@ import { toast } from "react-toastify";
 const CourseWizard = () => {
   const [step, setStep] = useState(0);
   const [courseData, setCourseData] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [completedTabs, setCompletedTabs] = useState([]);
   const navigate = useNavigate();
 
@@ -54,9 +51,6 @@ const CourseWizard = () => {
 
   const handleSubmit = async (messages) => {
     console.log("Token:", localStorage.getItem("accessToken"));
-    setLoading(true);
-    setError("");
-    setSuccess("");
     try {
       // Format data according to API requirements
       const dataToSend = {
@@ -112,7 +106,6 @@ const CourseWizard = () => {
       if (res.data && res.data.data) {
         const courseId = res.data.data._id;
         console.log("Course created with ID:", courseId);
-        setSuccess("Course created successfully!");
 
         // Mark the final tab as completed
         setCompletedTabs((prev) => {
@@ -130,8 +123,6 @@ const CourseWizard = () => {
       toast.error(
         err.response?.data?.message || err.message || "Failed to create course"
       );
-    } finally {
-      setLoading(false);
     }
   };
 

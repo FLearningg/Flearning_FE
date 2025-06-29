@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  Check,
-  Upload,
   Play,
   Bold,
   Italic,
@@ -12,7 +10,6 @@ import {
   ListOrdered,
   Plus,
   ImageIcon,
-  X,
   Trash2,
 } from "lucide-react";
 import "../../assets/CRUDCourseAndLesson/CourseFormAdvance.css";
