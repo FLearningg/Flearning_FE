@@ -1,71 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CustomButton from "../common/CustomButton/CustomButton";
 import Input from "../common/Input";
 import SearchBox from "../common/search/SearchBox/SearchBox";
+import {
+  getAllDiscounts,
+  createDiscount,
+  updateDiscount,
+  deleteDiscount,
+  getDiscountStats
+} from '../../services/discountService';
 import "../../assets/AdminDiscount/AdminDiscount.css";
 
 const AdminDiscount = ({ title = "Discount Management" }) => {
-  // Sample data for UI display
-  const discounts = [
-    {
-      id: 1,
-      code: "SUMMER2024",
-      description: "Summer Sale Discount",
-      type: "percentage",
-      value: 25,
-      minOrder: 100,
-      maxDiscount: 50,
-      usageLimit: 100,
-      usedCount: 45,
-      startDate: "2024-06-01",
-      endDate: "2024-08-31",
-      status: "active",
-      category: "seasonal"
-    },
-    {
-      id: 2,
-      code: "NEWUSER10",
-      description: "New User Welcome Discount",
-      type: "fixed",
-      value: 10,
-      minOrder: 50,
-      maxDiscount: 10,
-      usageLimit: 500,
-      usedCount: 234,
-      startDate: "2024-01-01",
-      endDate: "2024-12-31",
-      status: "active",
-      category: "welcome"
-    },
-    {
-      id: 3,
-      code: "EXPIRED2023",
-      description: "End Year Sale",
-      type: "percentage",
-      value: 30,
-      minOrder: 200,
-      maxDiscount: 100,
-      usageLimit: 50,
-      usedCount: 50,
-      startDate: "2023-12-01",
-      endDate: "2023-12-31",
-      status: "expired",
-      category: "seasonal"
-    }
-  ];
-
-  // Simple search data for SearchBox
-  const searchData = [
-    { id: 1, label: "SUMMER2024", type: "code" },
-    { id: 2, label: "NEWUSER10", type: "code" },
-    { id: 3, label: "EXPIRED2023", type: "code" },
-    { id: 4, label: "Summer Sale Discount", type: "description" },
-    { id: 5, label: "seasonal", type: "category" },
-    { id: 6, label: "welcome", type: "category" }
-  ];
-
-  // Simple modal state
+  const [discounts, setDiscounts] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingDiscount, setEditingDiscount] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  // Fetch discounts and stats
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      
+      // Build filter parameters
+      const params = {};
+      if (searchQuery) params.search = searchQuery;
+      if (selectedStatus !== 'all') params.status = selectedStatus;
+      if (selectedType !== 'all') params.type = selectedType;
+      if (selectedCategory !== 'all') params.category = selectedCategory;
+      
+      const [discountsResponse, statsResponse] = await Promise.all([
+        getAllDiscounts(params),
+        getDiscountStats()
+      ]);
+      
+      setDiscounts(discountsResponse.data?.discounts || []);
+      setStats(statsResponse.data);
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+      // Set empty data if API fails to show UI without breaking
+      setDiscounts([]);
+      setStats({ overview: { total: 0, active: 0, expired: 0, inactive: 0 } });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [searchQuery, selectedStatus, selectedType, selectedCategory]);
 
   // Icons
   const FilterIcon = () => (
@@ -98,23 +86,67 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
     </svg>
   );
 
-  // Simple handlers for UI interactions (backend will implement logic)
+  // Handle search and filters
   const handleSearchSelect = (selectedItem) => {
-    console.log('Search selected:', selectedItem);
+    setSearchQuery(selectedItem.label);
   };
 
   const handleCategoryBrowse = () => {
     console.log('Category browse clicked');
   };
 
-  // Simple UI handlers (backend will implement actual logic)
+  // Handle form submission
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    
+    const discountData = {
+      discountCode: formData.get('discountCode'),
+      description: formData.get('description'),
+      category: formData.get('category'),
+      type: formData.get('type'),
+      value: Number(formData.get('value')),
+      usageLimit: Number(formData.get('usageLimit')) || 0,
+      minimumOrder: Number(formData.get('minimumOrder')) || 0,
+      maximumDiscount: Number(formData.get('maximumDiscount')) || 0,
+      startDate: formData.get('startDate') || null,
+      endDate: formData.get('endDate') || null,
+      status: formData.get('status') || 'active'
+    };
+
+    try {
+      if (editingDiscount) {
+        await updateDiscount(editingDiscount._id, discountData);
+        alert('Discount updated successfully!');
+      } else {
+        await createDiscount(discountData);
+        alert('Discount created successfully!');
+      }
+      setShowCreateModal(false);
+      setEditingDiscount(null);
+      fetchData();
+    } catch (error) {
+      console.error('Operation failed:', error);
+      alert(error.message || 'Operation failed');
+    }
+  };
+
   const handleEdit = (discount) => {
-    console.log('Edit discount:', discount);
+    setEditingDiscount(discount);
     setShowCreateModal(true);
   };
 
-  const handleDelete = (id) => {
-    console.log('Delete discount:', id);
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this discount?')) {
+      try {
+        await deleteDiscount(id);
+        alert('Discount deleted successfully!');
+        fetchData();
+      } catch (error) {
+        console.error('Delete failed:', error);
+        alert(error.message || 'Failed to delete discount');
+      }
+    }
   };
 
   const handleCopyCode = (code) => {
@@ -122,7 +154,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
     alert(`Discount code "${code}" copied to clipboard!`);
   };
 
-  // Get status badge class with proper prefix
+  // Get status badge class
   const getStatusBadge = (status) => {
     switch (status) {
       case "active":
@@ -130,6 +162,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
       case "expired":
         return "admin-discount-status-badge admin-discount-status-expired";
       case "inactive":
+      case "inActive":
         return "admin-discount-status-badge admin-discount-status-inactive";
       default:
         return "admin-discount-status-badge";
@@ -140,6 +173,19 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
   const getUsagePercentage = (used, limit) => {
     return limit > 0 ? Math.round((used / limit) * 100) : 0;
   };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  // Create search data from current discounts
+  const searchData = discounts.map(d => ({ 
+    id: d._id, 
+    label: d.discountCode, 
+    type: "code" 
+  }));
 
   return (
     <div className="admin-discount">
@@ -153,7 +199,10 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
           <CustomButton
             size="medium"
             color="primary"
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => {
+              setEditingDiscount(null);
+              setShowCreateModal(true);
+            }}
           >
             Create Discount
           </CustomButton>
@@ -167,7 +216,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
             <TagIcon />
           </div>
           <div className="admin-discount-stat-content">
-            <h3>{discounts.length}</h3>
+            <h3>{stats?.overview?.total || 0}</h3>
             <p>Total Discounts</p>
           </div>
         </div>
@@ -176,7 +225,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
             <TagIcon />
           </div>
           <div className="admin-discount-stat-content">
-            <h3>{discounts.filter(d => d.status === "active").length}</h3>
+            <h3>{stats?.overview?.active || 0}</h3>
             <p>Active Discounts</p>
           </div>
         </div>
@@ -185,8 +234,8 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
             <TagIcon />
           </div>
           <div className="admin-discount-stat-content">
-            <h3>{discounts.reduce((sum, d) => sum + d.usedCount, 0)}</h3>
-            <p>Total Uses</p>
+            <h3>{stats?.overview?.expired || 0}</h3>
+            <p>Expired Discounts</p>
           </div>
         </div>
         <div className="admin-discount-stat-card">
@@ -194,8 +243,8 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
             <TagIcon />
           </div>
           <div className="admin-discount-stat-content">
-            <h3>${discounts.reduce((sum, d) => sum + (d.usedCount * (d.type === "fixed" ? d.value : 0)), 0)}</h3>
-            <p>Total Saved</p>
+            <h3>{stats?.overview?.inactive || 0}</h3>
+            <p>Inactive Discounts</p>
           </div>
         </div>
       </div>
@@ -217,33 +266,51 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
         <div className="admin-discount-filter-controls">
           <div className="admin-discount-filter-group">
             <FilterIcon />
-            <select className="admin-discount-filter-select">
+            <select 
+              className="admin-discount-filter-select"
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+            >
               <option value="all">All Status</option>
               <option value="active">Active</option>
               <option value="expired">Expired</option>
-              <option value="inactive">Inactive</option>
+              <option value="inActive">Inactive</option>
             </select>
           </div>
 
           <div className="admin-discount-filter-group">
-            <select className="admin-discount-filter-select">
+            <select 
+              className="admin-discount-filter-select"
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+            >
               <option value="all">All Types</option>
-              <option value="percentage">Percentage</option>
-              <option value="fixed">Fixed Amount</option>
+              <option value="percent">Percentage</option>
+              <option value="fixedAmount">Fixed Amount</option>
             </select>
           </div>
 
           <div className="admin-discount-filter-group">
-            <select className="admin-discount-filter-select">
+            <select 
+              className="admin-discount-filter-select"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
               <option value="all">All Categories</option>
-              <option value="seasonal">Seasonal</option>
-              <option value="welcome">Welcome</option>
-              <option value="special">Special</option>
-              <option value="general">General</option>
+              <option value="course">Course</option>
+              <option value="subscription">Subscription</option>
             </select>
           </div>
 
-          <button className="admin-discount-clear-all-btn">
+          <button 
+            className="admin-discount-clear-all-btn"
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedStatus('all');
+              setSelectedType('all');
+              setSelectedCategory('all');
+            }}
+          >
             Clear All
           </button>
         </div>
@@ -252,7 +319,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
       {/* Search Results Info */}
       <div className="admin-discount-search-results-info">
         <span className="admin-discount-results-count">
-          {discounts.length} discounts
+          {discounts.length} discounts {loading && '(Loading...)'}
         </span>
       </div>
 
@@ -275,13 +342,13 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
             </thead>
             <tbody>
               {discounts.map((discount) => (
-                <tr key={discount.id}>
+                <tr key={discount._id}>
                   <td>
                     <div className="admin-discount-code">
-                      <span className="admin-discount-code-text">{discount.code}</span>
+                      <span className="admin-discount-code-text">{discount.discountCode}</span>
                       <button 
                         className="admin-discount-copy-btn"
-                        onClick={() => handleCopyCode(discount.code)}
+                        onClick={() => handleCopyCode(discount.discountCode)}
                         title="Copy code"
                       >
                         <CopyIcon />
@@ -292,8 +359,8 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                     <div className="admin-discount-description">
                       <span className="admin-discount-description-text">{discount.description}</span>
                       <div className="admin-discount-description-meta">
-                        Min order: ${discount.minOrder}
-                        {discount.maxDiscount && ` • Max: $${discount.maxDiscount}`}
+                        Min order: ${discount.minimumOrder || 0}
+                        {discount.maximumDiscount > 0 && ` • Max: $${discount.maximumDiscount}`}
                       </div>
                     </div>
                   </td>
@@ -304,23 +371,23 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                   </td>
                   <td>
                     <span className={`admin-discount-type-badge admin-discount-type-${discount.type}`}>
-                      {discount.type === "percentage" ? "%" : "$"}
+                      {discount.type === "percent" ? "%" : "$"}
                     </span>
                   </td>
                   <td>
                     <span className="admin-discount-value-text">
-                      {discount.type === "percentage" ? `${discount.value}%` : `$${discount.value}`}
+                      {discount.type === "percent" ? `${discount.value}%` : `$${discount.value}`}
                     </span>
                   </td>
                   <td>
                     <div className="admin-discount-usage-info">
                       <div className="admin-discount-usage-stats">
-                        <span>{discount.usedCount} / {discount.usageLimit}</span>
+                        <span>{discount.usage || 0} / {discount.usageLimit || '∞'}</span>
                       </div>
                       <div className="admin-discount-usage-bar">
                         <div 
                           className="admin-discount-usage-progress"
-                          style={{ width: `${getUsagePercentage(discount.usedCount, discount.usageLimit)}%` }}
+                          style={{ width: `${getUsagePercentage(discount.usage || 0, discount.usageLimit)}%` }}
                         ></div>
                       </div>
                     </div>
@@ -332,8 +399,8 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                   </td>
                   <td>
                     <div className="admin-discount-date-range">
-                      <div>{discount.startDate}</div>
-                      <div>{discount.endDate}</div>
+                      <div>{formatDate(discount.startDate)}</div>
+                      <div>{formatDate(discount.endDate)}</div>
                     </div>
                   </td>
                   <td>
@@ -348,7 +415,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                       </button>
                       <button 
                         className="admin-discount-action-btn admin-discount-delete-btn"
-                        onClick={() => handleDelete(discount.id)}
+                        onClick={() => handleDelete(discount._id)}
                         title="Delete discount"
                       >
                         <DeleteIcon />
@@ -362,7 +429,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
           </table>
         </div>
 
-        {discounts.length === 0 && (
+        {discounts.length === 0 && !loading && (
           <div className="admin-discount-empty-state">
             <TagIcon />
             <h3>No discounts found</h3>
@@ -376,106 +443,151 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
         <div className="admin-discount-modal-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="admin-discount-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="admin-discount-modal-header">
-              <h2>Create New Discount</h2>
+              <h2>{editingDiscount ? 'Edit Discount' : 'Create New Discount'}</h2>
               <button 
                 className="admin-discount-close-btn"
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setEditingDiscount(null);
+                }}
               >
                 ×
               </button>
             </div>
             
-            <div className="admin-discount-form">
+            <form className="admin-discount-form" onSubmit={handleSubmit}>
               <div className="admin-discount-form-grid">
                 <Input
                   variant="label"
                   text="Discount Code"
+                  name="discountCode"
                   placeholder="Enter discount code"
+                  defaultValue={editingDiscount?.discountCode}
+                  required
                 />
                 
                 <Input
                   variant="label"
                   text="Description"
+                  name="description"
                   placeholder="Enter description"
+                  defaultValue={editingDiscount?.description}
+                  required
                 />
                 
                 <div className="admin-discount-form-group">
                   <label>Category</label>
-                  <select className="admin-discount-form-control">
+                  <select 
+                    className="admin-discount-form-control"
+                    name="category"
+                    defaultValue={editingDiscount?.category || "general"}
+                    required
+                  >
                     <option value="general">General</option>
                     <option value="seasonal">Seasonal</option>
                     <option value="welcome">Welcome</option>
                     <option value="special">Special</option>
                   </select>
                 </div>
-                
+
                 <div className="admin-discount-form-group">
                   <label>Discount Type</label>
-                  <select className="admin-discount-form-control">
-                    <option value="percentage">Percentage</option>
-                    <option value="fixed">Fixed Amount</option>
+                  <select 
+                    className="admin-discount-form-control"
+                    name="type"
+                    defaultValue={editingDiscount?.type || "percent"}
+                    required
+                  >
+                    <option value="percent">Percentage</option>
+                    <option value="fixedAmount">Fixed Amount</option>
                   </select>
                 </div>
-                
+
                 <Input
                   variant="label"
                   text="Value"
+                  name="value"
                   type="number"
                   placeholder="Enter value"
+                  defaultValue={editingDiscount?.value}
+                  required
                 />
                 
                 <Input
                   variant="label"
                   text="Minimum Order ($)"
+                  name="minimumOrder"
                   type="number"
                   placeholder="Enter minimum order amount"
+                  defaultValue={editingDiscount?.minimumOrder}
                 />
                 
                 <Input
                   variant="label"
                   text="Maximum Discount ($)"
+                  name="maximumDiscount"
                   type="number"
                   placeholder="Enter maximum discount amount"
+                  defaultValue={editingDiscount?.maximumDiscount}
                 />
                 
                 <Input
                   variant="label"
                   text="Usage Limit"
+                  name="usageLimit"
                   type="number"
-                  placeholder="Enter usage limit"
+                  placeholder="Enter usage limit (0 for unlimited)"
+                  defaultValue={editingDiscount?.usageLimit}
                 />
-                
+
                 <Input
                   variant="label"
                   text="Start Date"
+                  name="startDate"
                   type="date"
+                  defaultValue={editingDiscount?.startDate ? new Date(editingDiscount.startDate).toISOString().split('T')[0] : ''}
                 />
                 
                 <Input
                   variant="label"
                   text="End Date"
+                  name="endDate"
                   type="date"
+                  defaultValue={editingDiscount?.endDate ? new Date(editingDiscount.endDate).toISOString().split('T')[0] : ''}
                 />
+
+                <div className="admin-discount-form-group">
+                  <label>Status</label>
+                  <select 
+                    className="admin-discount-form-control"
+                    name="status"
+                    defaultValue={editingDiscount?.status || "active"}
+                  >
+                    <option value="active">Active</option>
+                    <option value="inActive">Inactive</option>
+                  </select>
+                </div>
               </div>
               
               <div className="admin-discount-modal-footer">
-                <CustomButton
-                  color="gray"
-                  onClick={() => setShowCreateModal(false)}
-                >
-                  Cancel
-                </CustomButton>
-                <CustomButton
-                  color="primary"
+                <button
+                  className="admin-discount-cancel-btn"
+                  type="button"
                   onClick={() => {
-                    console.log('Create discount clicked');
                     setShowCreateModal(false);
+                    setEditingDiscount(null);
                   }}
                 >
-                  Create Discount
-                </CustomButton>
+                  Cancel
+                </button>
+                <button
+                  className="admin-discount-submit-btn"
+                  type="submit"
+                >
+                  {editingDiscount ? 'Update' : 'Create'} Discount
+                </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}
