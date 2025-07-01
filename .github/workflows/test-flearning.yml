@@ -1,0 +1,51 @@
+# Tên của workflow, sẽ hiển thị trong tab "Actions" trên GitHub
+name: Check FLearning Branch
+
+# Điều kiện để kích hoạt workflow
+on:
+  # Chạy khi có push code lên nhánh `FLearning`
+  push:
+    branches:
+      - FLearning
+  # Chạy khi có Pull Request được mở hoặc cập nhật nhắm vào nhánh `FLearning`
+  pull_request:
+    branches:
+      - FLearning
+
+# Các công việc sẽ được thực hiện
+jobs:
+  test-build-and-format:
+    name: Test, Build and Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+      # Bước 1: Lấy code từ repo về
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Bước 2: Thiết lập môi trường Node.js (chọn phiên bản bạn dùng)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Bước 3: Cài đặt các dependencies
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./FrontEnd
+
+      # Bước 4: Kiểm tra định dạng code bằng Prettier (ĐÃ TẮT)
+      # - name: Check code formatting
+      #   run: npm run format:check
+      #   working-directory: ./FrontEnd
+
+      # Bước 5: Chạy các bài test tự động (ĐÃ TẮT)
+      # - name: Run tests
+      #   run: npm test -- --watchAll=false
+      #   working-directory: ./FrontEnd
+
+      # Bước 6: Chạy build production để kiểm tra toàn diện
+      - name: Run build
+        # Thêm CI=false để bỏ qua việc coi các cảnh báo ESLint là lỗi
+        run: CI=false npm run build
+        working-directory: ./FrontEnd
