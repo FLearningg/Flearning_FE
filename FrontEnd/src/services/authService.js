@@ -4,7 +4,7 @@ import { logout } from '../store/authSlice';
 
 // Tạo một instance của axios với cấu hình chung
 const apiClient = axios.create({
-    baseURL: 'http://localhost:5000/api', // URL gốc của API backend
+    baseURL: 'https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api', // URL gốc của API backend
     withCredentials: true, // Cho phép trình duyệt tự động gửi cookie
 });
 
