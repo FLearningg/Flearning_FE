@@ -14,26 +14,33 @@ const CourseWizard = () => {
   const [completedTabs, setCompletedTabs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
 
-  // Use refs to prevent double toast calls in StrictMode
+  // Use refs to prevent double toast calls and track data loading
   const toastShownRef = useRef(false);
   const submitToastShownRef = useRef(false);
+  const currentCourseIdRef = useRef(null);
+
+  // Reset dataLoaded when switching to a different course
+  useEffect(() => {
+    if (currentCourseIdRef.current !== id) {
+      setDataLoaded(false);
+      toastShownRef.current = false;
+      currentCourseIdRef.current = id;
+    }
+  }, [id]);
 
   // Check if we're in edit mode
   useEffect(() => {
     const isEdit = id && location.pathname.includes("/edit/");
     setIsEditMode(isEdit);
 
-    // Reset refs when component mounts
-    toastShownRef.current = false;
-    submitToastShownRef.current = false;
-
-    if (isEdit && id) {
+    if (isEdit && id && !dataLoaded) {
       // Check if course data is passed via location state first
-      if (location.state?.courseData) {
+      if (location.state?.courseData && !courseData.title) {
         const course = location.state.courseData;
 
         console.log("=== COURSE DATA FROM LOCATION STATE ===");
@@ -120,17 +127,18 @@ const CourseWizard = () => {
 
         setCourseData(transformedData);
         setCompletedTabs([0, 1, 2, 3]);
-
+        setDataLoaded(true);
+        
         if (!toastShownRef.current) {
           toast.success("Course data loaded for editing");
           toastShownRef.current = true;
         }
-      } else {
-        // Fallback to API call if no data in location state
+      } else if (!courseData.title) {
+        // Fallback to API call if no data in location state and no existing course data
         fetchCourseData(id);
       }
     }
-  }, [id, location.pathname, location.state]);
+  }, [id, location.pathname, location.state, dataLoaded, courseData.title]);
 
   // Fetch course data for editing
   const fetchCourseData = async (courseId) => {
@@ -217,9 +225,9 @@ const CourseWizard = () => {
 
       // Mark all tabs as completed since we're editing an existing course
       setCompletedTabs([0, 1, 2, 3]);
+      setDataLoaded(true);
 
-      // Only show success toast if not using sample data and not already shown
-      if (!process.env.NODE_ENV === "development" && !toastShownRef.current) {
+      if (!toastShownRef.current) {
         toast.success("Course data loaded for editing");
         toastShownRef.current = true;
       }
@@ -304,8 +312,8 @@ const CourseWizard = () => {
 
         setCourseData(sampleCourseData);
         setCompletedTabs([0, 1, 2, 3]);
+        setDataLoaded(true);
 
-        // Only show toast once
         if (!toastShownRef.current) {
           toast.success("Course data loaded for editing (using sample data)");
           toastShownRef.current = true;
@@ -313,11 +321,7 @@ const CourseWizard = () => {
         return;
       }
 
-      // Only show error toast once
-      if (!toastShownRef.current) {
-        toast.error(errorMessage);
-        toastShownRef.current = true;
-      }
+      toast.error(errorMessage);
       navigate("/admin/courses/all");
     } finally {
       setIsLoading(false);
