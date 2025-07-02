@@ -95,18 +95,10 @@ export default function CourseCurriculum({
   const [descriptionText, setDescriptionText] = useState(""); // State for description text
   const [notesText, setNotesText] = useState(""); // State for notes text
   const [sections, setSections] = useState(
-    initialData.curriculum && Array.isArray(initialData.curriculum)
-      ? initialData.curriculum.map((section) => ({
-          ...section,
-          lessons:
-            section.lessons && section.lessons.length > 0
-              ? section.lessons.map((lesson, idx) => ({
-                  ...defaultLesson(idx + 1),
-                  ...lesson,
-                  order: idx + 1,
-                }))
-              : [defaultLesson(1)],
-        }))
+    (initialData.sections && Array.isArray(initialData.sections)
+      ? initialData.sections
+      : initialData.curriculum && Array.isArray(initialData.curriculum)
+      ? initialData.curriculum
       : [
           {
             name: "Section 1",
@@ -114,6 +106,17 @@ export default function CourseCurriculum({
             lessons: [defaultLesson(1)],
           },
         ]
+    ).map((section, idx) => {
+      const lessons =
+        Array.isArray(section.lessons) && section.lessons.length > 0
+          ? section.lessons
+          : [defaultLesson(1)];
+      return {
+        ...section,
+        lessons,
+        order: section.order || idx + 1,
+      };
+    })
   );
   const [editing, setEditing] = useState({
     sectionIdx: null,
@@ -125,6 +128,8 @@ export default function CourseCurriculum({
   const [selectedVideoFile, setSelectedVideoFile] = useState(null);
   const [selectedVideoPreview, setSelectedVideoPreview] = useState(null);
   const [uploadedVideoUrl, setUploadedVideoUrl] = useState("");
+  const [expandedSectionIdx, setExpandedSectionIdx] = useState(null);
+  const [expandedLessonIdx, setExpandedLessonIdx] = useState({}); // {sectionIdx: lessonIdx}
 
   useEffect(() => {
     if (initialData.uploadedFiles) {
@@ -559,7 +564,7 @@ export default function CourseCurriculum({
       {
         name: `Section ${prev.length + 1}`,
         order: prev.length + 1,
-        lessons: [],
+        lessons: [defaultLesson(1)],
       },
     ]);
   };
@@ -568,10 +573,10 @@ export default function CourseCurriculum({
     setSections((prev) => prev.filter((_, idx) => idx !== sectionIdx));
   };
 
-  const handleSectionNameChange = (sectionIdx, name) => {
+  const handleSectionNameChange = (sectionIdx, value) => {
     setSections((prev) =>
       prev.map((section, idx) =>
-        idx === sectionIdx ? { ...section, name } : section
+        idx === sectionIdx ? { ...section, name: value, title: value } : section
       )
     );
   };
@@ -622,7 +627,7 @@ export default function CourseCurriculum({
 
   const handleSaveNext = () => {
     onNext({
-      curriculum: sections,
+      sections: sections,
       uploadedFiles: uploadedFiles,
     });
   };
@@ -720,7 +725,15 @@ export default function CourseCurriculum({
             <div className="acc-course-structure">
               {sections.map((section, sectionIdx) => (
                 <div className="acc-section-card" key={sectionIdx}>
-                  <div className="acc-section-header">
+                  <div
+                    className="acc-section-header"
+                    style={{ cursor: "pointer" }}
+                    onClick={() =>
+                      setExpandedSectionIdx(
+                        expandedSectionIdx === sectionIdx ? null : sectionIdx
+                      )
+                    }
+                  >
                     <div className="acc-section-title-container">
                       <div className="acc-section-indicator">
                         <div className="acc-section-line"></div>
@@ -730,7 +743,7 @@ export default function CourseCurriculum({
                       </div>
                       <input
                         className="acc-section-name"
-                        value={section.name}
+                        value={section.title || section.name || ""}
                         onChange={(e) =>
                           handleSectionNameChange(sectionIdx, e.target.value)
                         }
@@ -740,6 +753,7 @@ export default function CourseCurriculum({
                           border: "none",
                           background: "transparent",
                         }}
+                        onClick={(e) => e.stopPropagation()}
                       />
                     </div>
                     <div className="acc-section-actions">
@@ -748,7 +762,10 @@ export default function CourseCurriculum({
                         variant="ghost"
                         className="acc-action-button"
                         color="transparent"
-                        onClick={() => handleAddLesson(sectionIdx)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddLesson(sectionIdx);
+                        }}
                       >
                         <Plus className="acc-icon-xs" />
                       </CustomButton>
@@ -757,805 +774,739 @@ export default function CourseCurriculum({
                         variant="ghost"
                         className="acc-action-button"
                         color="transparent"
-                        onClick={() => handleDeleteSection(sectionIdx)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSection(sectionIdx);
+                        }}
                       >
                         <Trash2 className="acc-icon-xs" />
                       </CustomButton>
                     </div>
                   </div>
                   {/* Lectures */}
-                  <div className="acc-lectures-container">
-                    {section.lessons.map((lesson, lessonIdx) => (
-                      <div className="acc-lecture-item" key={lessonIdx}>
-                        <div className="acc-lecture-content">
-                          <div className="acc-lecture-title-container">
-                            <div className="acc-lecture-line"></div>
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                                flex: 1,
-                                padding: "8px 12px",
-                                borderRadius: "6px",
-                                background: lesson.title
-                                  ? "#f0fdf4"
-                                  : "#fafbfc",
-                                border: "1px solid #e9eaf0",
-                                transition: "all 0.2s ease",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  width: "24px",
-                                  height: "24px",
-                                  borderRadius: "4px",
-                                  background: lesson.title
-                                    ? "#10b981"
-                                    : "#e5e7eb",
-                                  marginRight: "8px",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    color: lesson.title ? "#ffffff" : "#6b7280",
-                                    fontSize: "12px",
-                                    fontWeight: "bold",
-                                  }}
-                                >
-                                  {lessonIdx + 1}
-                                </span>
-                              </div>
-                              <input
-                                className="acc-lecture-name"
-                                value={lesson.title}
-                                onChange={(e) =>
-                                  handleLessonFieldChange(
-                                    sectionIdx,
-                                    lessonIdx,
-                                    "title",
-                                    e.target.value
-                                  )
-                                }
-                                style={{
-                                  fontWeight: 500,
-                                  fontSize: 15,
-                                  border: "none",
-                                  background: "transparent",
-                                  flex: 1,
-                                  color: lesson.title ? "#1d2026" : "#6b7280",
-                                }}
-                                placeholder="Enter lesson title..."
-                              />
-                              {lesson.title && (
-                                <span
-                                  style={{
-                                    color: "#10b981",
-                                    fontSize: "12px",
-                                    fontWeight: "500",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "4px",
-                                  }}
-                                >
-                                  ✓ Title added
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="acc-lecture-actions">
-                            {section.lessons.length > 1 && (
-                              <CustomButton
-                                size="sm"
-                                variant="ghost"
-                                className="acc-action-button"
-                                color="transparent"
-                                onClick={() =>
-                                  handleDeleteLesson(sectionIdx, lessonIdx)
-                                }
-                              >
-                                <Trash2 className="acc-icon-xs" />
-                              </CustomButton>
-                            )}
-                          </div>
-                        </div>
-                        {/* Field list, click để mở modal */}
-                        <div
-                          className="acc-expanded-content"
-                          style={{ marginTop: 8, marginBottom: 8 }}
-                        >
+                  {expandedSectionIdx === sectionIdx && (
+                    <div className="acc-lectures-container">
+                      {section.lessons.map((lesson, lessonIdx) => (
+                        <div className="acc-lecture-item" key={lessonIdx}>
                           <div
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 12,
-                            }}
+                            className="acc-lecture-content"
+                            style={{ cursor: "pointer" }}
+                            onClick={() =>
+                              setExpandedLessonIdx((prev) => ({
+                                ...prev,
+                                [sectionIdx]:
+                                  prev[sectionIdx] === lessonIdx
+                                    ? null
+                                    : lessonIdx,
+                              }))
+                            }
                           >
-                            {/* Video Field */}
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                cursor: "pointer",
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #e9eaf0",
-                                background: lesson.videoUrl
-                                  ? "#f0fdf4"
-                                  : "#fafbfc",
-                                transition: "all 0.2s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.background = lesson.videoUrl
-                                  ? "#ecfdf5"
-                                  : "#f8fafc";
-                                e.target.style.borderColor = "#d1d5db";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.background = lesson.videoUrl
-                                  ? "#f0fdf4"
-                                  : "#fafbfc";
-                                e.target.style.borderColor = "#e9eaf0";
-                              }}
-                              onClick={(e) => {
-                                // Only open modal if not clicking on video preview
-                                if (!e.target.closest("[data-video-preview]")) {
-                                  openFieldModal(
-                                    sectionIdx,
-                                    lessonIdx,
-                                    "videoUrl",
-                                    lesson.videoUrl
-                                  );
-                                }
-                              }}
-                            >
+                            <div className="acc-lecture-title-container">
+                              <div className="acc-lecture-line"></div>
                               <div
                                 style={{
                                   display: "flex",
                                   alignItems: "center",
-                                  justifyContent: "center",
-                                  width: "32px",
-                                  height: "32px",
+                                  gap: 8,
+                                  flex: 1,
+                                  padding: "8px 12px",
                                   borderRadius: "6px",
-                                  background: lesson.videoUrl
-                                    ? "#10b981"
-                                    : "#e5e7eb",
-                                  marginRight: "12px",
-                                }}
-                              >
-                                <Video
-                                  size={16}
-                                  color={
-                                    lesson.videoUrl ? "#ffffff" : "#6b7280"
-                                  }
-                                />
-                              </div>
-                              <div
-                                style={{ flex: 1 }}
-                                onClick={(e) => {
-                                  // Only open modal if not clicking on video preview
-                                  if (
-                                    !e.target.closest("[data-video-preview]")
-                                  ) {
-                                    openFieldModal(
-                                      sectionIdx,
-                                      lessonIdx,
-                                      "videoUrl",
-                                      lesson.videoUrl
-                                    );
-                                  }
+                                  background: lesson.title
+                                    ? "#f0fdf4"
+                                    : "#fafbfc",
+                                  border: "1px solid #e9eaf0",
+                                  transition: "all 0.2s ease",
                                 }}
                               >
                                 <div
                                   style={{
-                                    fontWeight: 600,
-                                    fontSize: "14px",
-                                    color: "#1d2026",
-                                    marginBottom: "2px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    width: "24px",
+                                    height: "24px",
+                                    borderRadius: "4px",
+                                    background: lesson.title
+                                      ? "#10b981"
+                                      : "#e5e7eb",
+                                    marginRight: "8px",
                                   }}
                                 >
-                                  Video
+                                  <span
+                                    style={{
+                                      color: lesson.title
+                                        ? "#ffffff"
+                                        : "#6b7280",
+                                      fontSize: "12px",
+                                      fontWeight: "bold",
+                                    }}
+                                  >
+                                    {lessonIdx + 1}
+                                  </span>
                                 </div>
-                                {lesson.videoUrl ? (
+                                <span
+                                  className="acc-lecture-label"
+                                  style={{
+                                    fontWeight: 600,
+                                    color: "#64748b",
+                                    marginRight: 8,
+                                  }}
+                                >
+                                  Lesson{" "}
+                                  {String(lessonIdx + 1).padStart(2, "0")}:
+                                </span>
+                                <input
+                                  className="acc-lecture-name"
+                                  value={lesson.title}
+                                  onChange={(e) =>
+                                    handleLessonFieldChange(
+                                      sectionIdx,
+                                      lessonIdx,
+                                      "title",
+                                      e.target.value
+                                    )
+                                  }
+                                  style={{
+                                    fontWeight: 500,
+                                    fontSize: 15,
+                                    border: "none",
+                                    background: "transparent",
+                                    flex: 1,
+                                    color: lesson.title ? "#1d2026" : "#6b7280",
+                                    minWidth: 80,
+                                  }}
+                                  placeholder="Enter lesson title..."
+                                />
+                                {lesson.title && (
+                                  <span
+                                    style={{
+                                      color: "#10b981",
+                                      fontSize: "12px",
+                                      fontWeight: "500",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "4px",
+                                    }}
+                                  >
+                                    ✓ Title added
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="acc-lecture-actions">
+                              {section.lessons.length > 1 && (
+                                <CustomButton
+                                  size="sm"
+                                  variant="ghost"
+                                  className="acc-action-button"
+                                  color="transparent"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteLesson(sectionIdx, lessonIdx);
+                                  }}
+                                >
+                                  <Trash2 className="acc-icon-xs" />
+                                </CustomButton>
+                              )}
+                            </div>
+                          </div>
+                          {/* Field list, click để mở modal */}
+                          {expandedLessonIdx[sectionIdx] === lessonIdx && (
+                            <div
+                              className="acc-expanded-content"
+                              style={{ marginTop: 8, marginBottom: 8 }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: 12,
+                                }}
+                              >
+                                {/* Video Field */}
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    cursor: "pointer",
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #e9eaf0",
+                                    background: lesson.videoUrl
+                                      ? "#f0fdf4"
+                                      : "#fafbfc",
+                                    transition: "all 0.2s ease",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.target.style.background = lesson.videoUrl
+                                      ? "#ecfdf5"
+                                      : "#f8fafc";
+                                    e.target.style.borderColor = "#d1d5db";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.target.style.background = lesson.videoUrl
+                                      ? "#f0fdf4"
+                                      : "#fafbfc";
+                                    e.target.style.borderColor = "#e9eaf0";
+                                  }}
+                                  onClick={(e) => {
+                                    // Only open modal if not clicking on video preview
+                                    if (
+                                      !e.target.closest("[data-video-preview]")
+                                    ) {
+                                      openFieldModal(
+                                        sectionIdx,
+                                        lessonIdx,
+                                        "videoUrl",
+                                        lesson.videoUrl
+                                      );
+                                    }
+                                  }}
+                                >
                                   <div
                                     style={{
                                       display: "flex",
                                       alignItems: "center",
-                                      gap: "12px",
+                                      justifyContent: "center",
+                                      width: "32px",
+                                      height: "32px",
+                                      borderRadius: "6px",
+                                      background: lesson.videoUrl
+                                        ? "#10b981"
+                                        : "#e5e7eb",
+                                      marginRight: "12px",
                                     }}
                                   >
-                                    <span
+                                    <Video
+                                      size={16}
+                                      color={
+                                        lesson.videoUrl ? "#ffffff" : "#6b7280"
+                                      }
+                                    />
+                                  </div>
+                                  <div
+                                    style={{ flex: 1 }}
+                                    onClick={(e) => {
+                                      // Only open modal if not clicking on video preview
+                                      if (
+                                        !e.target.closest(
+                                          "[data-video-preview]"
+                                        )
+                                      ) {
+                                        openFieldModal(
+                                          sectionIdx,
+                                          lessonIdx,
+                                          "videoUrl",
+                                          lesson.videoUrl
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    <div
                                       style={{
-                                        color: "#10b981",
-                                        fontSize: "12px",
-                                        fontWeight: "500",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "4px",
-                                        background: "#f0fdf4",
-                                        padding: "4px 8px",
-                                        borderRadius: "12px",
-                                        border: "1px solid #dcfce7",
+                                        fontWeight: 600,
+                                        fontSize: "14px",
+                                        color: "#1d2026",
+                                        marginBottom: "2px",
                                       }}
                                     >
-                                      ✓ Added
-                                    </span>
-                                    {lesson.videoUrl.includes("blob:") ||
-                                    lesson.videoUrl.startsWith("http") ? (
+                                      Video
+                                    </div>
+                                    {lesson.videoUrl && (
                                       <div
-                                        data-video-preview
                                         style={{
-                                          position: "relative",
-                                          borderRadius: "8px",
-                                          overflow: "hidden",
-                                          border: "2px solid #e5e7eb",
-                                          background: "#f8fafc",
-                                          transition: "all 0.3s ease",
-                                          cursor: "pointer",
-                                        }}
-                                        onMouseEnter={(e) => {
-                                          e.target.style.transform =
-                                            "scale(1.05)";
-                                          e.target.style.borderColor =
-                                            "#3b82f6";
-                                          e.target.style.boxShadow =
-                                            "0 4px 12px rgba(59, 130, 246, 0.15)";
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          e.target.style.transform = "scale(1)";
-                                          e.target.style.borderColor =
-                                            "#e5e7eb";
-                                          e.target.style.boxShadow = "none";
-                                        }}
-                                        onClick={(e) => {
-                                          // Prevent event from bubbling up to parent
-                                          e.stopPropagation();
-                                          // Open video in new tab for preview
-                                          window.open(
-                                            lesson.videoUrl,
-                                            "_blank"
-                                          );
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: "12px",
                                         }}
                                       >
-                                        <video
-                                          src={lesson.videoUrl}
+                                        <span
                                           style={{
-                                            width: "120px",
-                                            height: "68px",
-                                            objectFit: "cover",
-                                            display: "block",
-                                          }}
-                                          muted
-                                          onLoadedData={(e) => {
-                                            // Add a subtle play animation when video loads
-                                            e.target.style.opacity = "0.8";
-                                            setTimeout(() => {
-                                              e.target.style.opacity = "1";
-                                            }, 200);
-                                          }}
-                                        />
-                                        <div
-                                          style={{
-                                            position: "absolute",
-                                            top: "0",
-                                            left: "0",
-                                            right: "0",
-                                            bottom: "0",
-                                            background:
-                                              "linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(147, 51, 234, 0.8) 100%)",
+                                            color: "#10b981",
+                                            fontSize: "12px",
+                                            fontWeight: "500",
                                             display: "flex",
                                             alignItems: "center",
-                                            justifyContent: "center",
-                                            opacity: "0",
-                                            transition: "opacity 0.3s ease",
-                                          }}
-                                          onMouseEnter={(e) => {
-                                            e.target.style.opacity = "1";
-                                          }}
-                                          onMouseLeave={(e) => {
-                                            e.target.style.opacity = "0";
+                                            gap: "4px",
+                                            background: "#f0fdf4",
+                                            padding: "4px 8px",
+                                            borderRadius: "12px",
+                                            border: "1px solid #dcfce7",
                                           }}
                                         >
+                                          ✓ Added
+                                        </span>
+                                        {(lesson.videoUrl.includes("blob:") ||
+                                          lesson.videoUrl.startsWith(
+                                            "http"
+                                          )) && (
                                           <div
+                                            data-video-preview
                                             style={{
-                                              background:
-                                                "rgba(255, 255, 255, 0.9)",
-                                              borderRadius: "50%",
-                                              width: "32px",
-                                              height: "32px",
-                                              display: "flex",
-                                              alignItems: "center",
-                                              justifyContent: "center",
-                                              boxShadow:
-                                                "0 2px 8px rgba(0, 0, 0, 0.2)",
+                                              position: "relative",
+                                              borderRadius: "8px",
+                                              overflow: "hidden",
+                                              border: "2px solid #e5e7eb",
+                                              background: "#f8fafc",
+                                              transition: "all 0.3s ease",
+                                              cursor: "pointer",
+                                            }}
+                                            onMouseEnter={(e) => {
+                                              e.target.style.transform =
+                                                "scale(1.05)";
+                                              e.target.style.borderColor =
+                                                "#3b82f6";
+                                              e.target.style.boxShadow =
+                                                "0 4px 12px rgba(59, 130, 246, 0.15)";
+                                            }}
+                                            onMouseLeave={(e) => {
+                                              e.target.style.transform =
+                                                "scale(1)";
+                                              e.target.style.borderColor =
+                                                "#e5e7eb";
+                                              e.target.style.boxShadow = "none";
+                                            }}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              window.open(
+                                                lesson.videoUrl,
+                                                "_blank"
+                                              );
                                             }}
                                           >
-                                            <span
+                                            <video
+                                              src={lesson.videoUrl}
                                               style={{
-                                                color: "#3b82f6",
-                                                fontSize: "14px",
-                                                fontWeight: "bold",
-                                                marginLeft: "2px",
+                                                width: "120px",
+                                                height: "68px",
+                                                objectFit: "cover",
                                               }}
-                                            >
-                                              ▶
-                                            </span>
+                                              muted
+                                            />
                                           </div>
-                                        </div>
-                                        <div
-                                          style={{
-                                            position: "absolute",
-                                            bottom: "4px",
-                                            right: "4px",
-                                            background: "rgba(0, 0, 0, 0.7)",
-                                            color: "#ffffff",
-                                            fontSize: "10px",
-                                            padding: "2px 6px",
-                                            borderRadius: "4px",
-                                            fontWeight: "500",
-                                          }}
-                                        >
-                                          Preview
-                                        </div>
+                                        )}
                                       </div>
-                                    ) : (
+                                    )}
+                                  </div>
+                                  <div
+                                    style={{
+                                      color: "#9ca3af",
+                                      fontSize: "12px",
+                                      fontWeight: "500",
+                                      cursor: "pointer",
+                                      padding: "4px 8px",
+                                      borderRadius: "4px",
+                                      transition: "all 0.2s ease",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.background = "#f3f4f6";
+                                      e.target.style.color = "#6b7280";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.background = "transparent";
+                                      e.target.style.color = "#9ca3af";
+                                    }}
+                                    onClick={(e) => {
+                                      // Only open modal if not clicking on video preview
+                                      if (
+                                        !e.target.closest(
+                                          "[data-video-preview]"
+                                        )
+                                      ) {
+                                        openFieldModal(
+                                          sectionIdx,
+                                          lessonIdx,
+                                          "videoUrl",
+                                          lesson.videoUrl
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    Edit
+                                  </div>
+                                </div>
+
+                                {/* Captions Field */}
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    cursor: "pointer",
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #e9eaf0",
+                                    background: lesson.captions
+                                      ? "#f0fdf4"
+                                      : "#fafbfc",
+                                    transition: "all 0.2s ease",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.target.style.background = lesson.captions
+                                      ? "#ecfdf5"
+                                      : "#f8fafc";
+                                    e.target.style.borderColor = "#d1d5db";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.target.style.background = lesson.captions
+                                      ? "#f0fdf4"
+                                      : "#fafbfc";
+                                    e.target.style.borderColor = "#e9eaf0";
+                                  }}
+                                  onClick={() =>
+                                    openFieldModal(
+                                      sectionIdx,
+                                      lessonIdx,
+                                      "captions",
+                                      lesson.captions
+                                    )
+                                  }
+                                >
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      width: "32px",
+                                      height: "32px",
+                                      borderRadius: "6px",
+                                      background: lesson.captions
+                                        ? "#10b981"
+                                        : "#e5e7eb",
+                                      marginRight: "12px",
+                                    }}
+                                  >
+                                    <Type
+                                      size={16}
+                                      color={
+                                        lesson.captions ? "#ffffff" : "#6b7280"
+                                      }
+                                    />
+                                  </div>
+                                  <div style={{ flex: 1 }}>
+                                    <div
+                                      style={{
+                                        fontWeight: 600,
+                                        fontSize: "14px",
+                                        color: "#1d2026",
+                                        marginBottom: "2px",
+                                      }}
+                                    >
+                                      Captions
+                                    </div>
+                                    {lesson.captions ? (
                                       <div
                                         style={{
-                                          background: "#f8fafc",
-                                          border: "1px solid #e5e7eb",
-                                          borderRadius: "8px",
-                                          padding: "8px 12px",
                                           display: "flex",
                                           alignItems: "center",
                                           gap: "8px",
-                                          maxWidth: "200px",
                                         }}
                                       >
-                                        <Video size={16} color="#6b7280" />
                                         <span
                                           style={{
-                                            color: "#6b7280",
+                                            color: "#10b981",
                                             fontSize: "12px",
-                                            fontFamily: "monospace",
+                                            fontWeight: "500",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "4px",
+                                          }}
+                                        >
+                                          ✓ Added
+                                        </span>
+                                        <span
+                                          style={{
+                                            color: "#4e5566",
+                                            fontSize: "12px",
+                                            maxWidth: "200px",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                            fontStyle: "italic",
+                                          }}
+                                        >
+                                          "{lesson.captions}"
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <span
+                                        style={{
+                                          color: "#6b7280",
+                                          fontSize: "12px",
+                                        }}
+                                      >
+                                        Click to add captions
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div
+                                    style={{
+                                      color: "#9ca3af",
+                                      fontSize: "12px",
+                                      fontWeight: "500",
+                                    }}
+                                  >
+                                    Edit
+                                  </div>
+                                </div>
+
+                                {/* Description Field */}
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    cursor: "pointer",
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #e9eaf0",
+                                    background: lesson.description
+                                      ? "#f0fdf4"
+                                      : "#fafbfc",
+                                    transition: "all 0.2s ease",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.target.style.background =
+                                      lesson.description
+                                        ? "#ecfdf5"
+                                        : "#f8fafc";
+                                    e.target.style.borderColor = "#d1d5db";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.target.style.background =
+                                      lesson.description
+                                        ? "#f0fdf4"
+                                        : "#fafbfc";
+                                    e.target.style.borderColor = "#e9eaf0";
+                                  }}
+                                  onClick={() =>
+                                    openFieldModal(
+                                      sectionIdx,
+                                      lessonIdx,
+                                      "description",
+                                      lesson.description
+                                    )
+                                  }
+                                >
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      width: "32px",
+                                      height: "32px",
+                                      borderRadius: "6px",
+                                      background: lesson.description
+                                        ? "#10b981"
+                                        : "#e5e7eb",
+                                      marginRight: "12px",
+                                    }}
+                                  >
+                                    <StickyNote
+                                      size={16}
+                                      color={
+                                        lesson.description
+                                          ? "#ffffff"
+                                          : "#6b7280"
+                                      }
+                                    />
+                                  </div>
+                                  <div style={{ flex: 1 }}>
+                                    <div
+                                      style={{
+                                        fontWeight: 600,
+                                        fontSize: "14px",
+                                        color: "#1d2026",
+                                        marginBottom: "2px",
+                                      }}
+                                    >
+                                      Description
+                                    </div>
+                                    {lesson.description ? (
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: "8px",
+                                        }}
+                                      >
+                                        <span
+                                          style={{
+                                            color: "#10b981",
+                                            fontSize: "12px",
+                                            fontWeight: "500",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "4px",
+                                          }}
+                                        >
+                                          ✓ Added
+                                        </span>
+                                        <span
+                                          style={{
+                                            color: "#4e5566",
+                                            fontSize: "12px",
+                                            maxWidth: "200px",
                                             overflow: "hidden",
                                             textOverflow: "ellipsis",
                                             whiteSpace: "nowrap",
                                           }}
                                         >
-                                          {lesson.videoUrl.substring(0, 20)}...
+                                          {lesson.description}
                                         </span>
                                       </div>
+                                    ) : (
+                                      <span
+                                        style={{
+                                          color: "#6b7280",
+                                          fontSize: "12px",
+                                        }}
+                                      >
+                                        Click to add description
+                                      </span>
                                     )}
                                   </div>
-                                ) : (
                                   <div
                                     style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: "8px",
-                                      color: "#6b7280",
+                                      color: "#9ca3af",
                                       fontSize: "12px",
-                                      padding: "6px 10px",
-                                      background: "#f9fafb",
-                                      borderRadius: "6px",
-                                      border: "1px dashed #d1d5db",
+                                      fontWeight: "500",
                                     }}
                                   >
-                                    <Video size={14} />
-                                    <span>Click to add video content</span>
+                                    Edit
                                   </div>
-                                )}
-                              </div>
-                              <div
-                                style={{
-                                  color: "#9ca3af",
-                                  fontSize: "12px",
-                                  fontWeight: "500",
-                                  cursor: "pointer",
-                                  padding: "4px 8px",
-                                  borderRadius: "4px",
-                                  transition: "all 0.2s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.target.style.background = "#f3f4f6";
-                                  e.target.style.color = "#6b7280";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.target.style.background = "transparent";
-                                  e.target.style.color = "#9ca3af";
-                                }}
-                                onClick={(e) => {
-                                  // Only open modal if not clicking on video preview
-                                  if (
-                                    !e.target.closest("[data-video-preview]")
-                                  ) {
+                                </div>
+
+                                {/* Lecture Notes Field */}
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    cursor: "pointer",
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #e9eaf0",
+                                    background: lesson.lessonNotes
+                                      ? "#f0fdf4"
+                                      : "#fafbfc",
+                                    transition: "all 0.2s ease",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.target.style.background =
+                                      lesson.lessonNotes
+                                        ? "#ecfdf5"
+                                        : "#f8fafc";
+                                    e.target.style.borderColor = "#d1d5db";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.target.style.background =
+                                      lesson.lessonNotes
+                                        ? "#f0fdf4"
+                                        : "#fafbfc";
+                                    e.target.style.borderColor = "#e9eaf0";
+                                  }}
+                                  onClick={() =>
                                     openFieldModal(
                                       sectionIdx,
                                       lessonIdx,
-                                      "videoUrl",
-                                      lesson.videoUrl
-                                    );
+                                      "lessonNotes",
+                                      lesson.lessonNotes
+                                    )
                                   }
-                                }}
-                              >
-                                Edit
-                              </div>
-                            </div>
-
-                            {/* Captions Field */}
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                cursor: "pointer",
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #e9eaf0",
-                                background: lesson.captions
-                                  ? "#f0fdf4"
-                                  : "#fafbfc",
-                                transition: "all 0.2s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.background = lesson.captions
-                                  ? "#ecfdf5"
-                                  : "#f8fafc";
-                                e.target.style.borderColor = "#d1d5db";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.background = lesson.captions
-                                  ? "#f0fdf4"
-                                  : "#fafbfc";
-                                e.target.style.borderColor = "#e9eaf0";
-                              }}
-                              onClick={() =>
-                                openFieldModal(
-                                  sectionIdx,
-                                  lessonIdx,
-                                  "captions",
-                                  lesson.captions
-                                )
-                              }
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  width: "32px",
-                                  height: "32px",
-                                  borderRadius: "6px",
-                                  background: lesson.captions
-                                    ? "#10b981"
-                                    : "#e5e7eb",
-                                  marginRight: "12px",
-                                }}
-                              >
-                                <Type
-                                  size={16}
-                                  color={
-                                    lesson.captions ? "#ffffff" : "#6b7280"
-                                  }
-                                />
-                              </div>
-                              <div style={{ flex: 1 }}>
-                                <div
-                                  style={{
-                                    fontWeight: 600,
-                                    fontSize: "14px",
-                                    color: "#1d2026",
-                                    marginBottom: "2px",
-                                  }}
                                 >
-                                  Captions
-                                </div>
-                                {lesson.captions ? (
                                   <div
                                     style={{
                                       display: "flex",
                                       alignItems: "center",
-                                      gap: "8px",
+                                      justifyContent: "center",
+                                      width: "32px",
+                                      height: "32px",
+                                      borderRadius: "6px",
+                                      background: lesson.lessonNotes
+                                        ? "#10b981"
+                                        : "#e5e7eb",
+                                      marginRight: "12px",
                                     }}
                                   >
-                                    <span
-                                      style={{
-                                        color: "#10b981",
-                                        fontSize: "12px",
-                                        fontWeight: "500",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "4px",
-                                      }}
-                                    >
-                                      ✓ Added
-                                    </span>
-                                    <span
-                                      style={{
-                                        color: "#4e5566",
-                                        fontSize: "12px",
-                                        maxWidth: "200px",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
-                                        fontStyle: "italic",
-                                      }}
-                                    >
-                                      "{lesson.captions}"
-                                    </span>
+                                    <FileText
+                                      size={16}
+                                      color={
+                                        lesson.lessonNotes
+                                          ? "#ffffff"
+                                          : "#6b7280"
+                                      }
+                                    />
                                   </div>
-                                ) : (
-                                  <span
-                                    style={{
-                                      color: "#6b7280",
-                                      fontSize: "12px",
-                                    }}
-                                  >
-                                    Click to add captions
-                                  </span>
-                                )}
-                              </div>
-                              <div
-                                style={{
-                                  color: "#9ca3af",
-                                  fontSize: "12px",
-                                  fontWeight: "500",
-                                }}
-                              >
-                                Edit
-                              </div>
-                            </div>
-
-                            {/* Description Field */}
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                cursor: "pointer",
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #e9eaf0",
-                                background: lesson.description
-                                  ? "#f0fdf4"
-                                  : "#fafbfc",
-                                transition: "all 0.2s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.background = lesson.description
-                                  ? "#ecfdf5"
-                                  : "#f8fafc";
-                                e.target.style.borderColor = "#d1d5db";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.background = lesson.description
-                                  ? "#f0fdf4"
-                                  : "#fafbfc";
-                                e.target.style.borderColor = "#e9eaf0";
-                              }}
-                              onClick={() =>
-                                openFieldModal(
-                                  sectionIdx,
-                                  lessonIdx,
-                                  "description",
-                                  lesson.description
-                                )
-                              }
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  width: "32px",
-                                  height: "32px",
-                                  borderRadius: "6px",
-                                  background: lesson.description
-                                    ? "#10b981"
-                                    : "#e5e7eb",
-                                  marginRight: "12px",
-                                }}
-                              >
-                                <StickyNote
-                                  size={16}
-                                  color={
-                                    lesson.description ? "#ffffff" : "#6b7280"
-                                  }
-                                />
-                              </div>
-                              <div style={{ flex: 1 }}>
-                                <div
-                                  style={{
-                                    fontWeight: 600,
-                                    fontSize: "14px",
-                                    color: "#1d2026",
-                                    marginBottom: "2px",
-                                  }}
-                                >
-                                  Description
-                                </div>
-                                {lesson.description ? (
+                                  <div style={{ flex: 1 }}>
+                                    <div
+                                      style={{
+                                        fontWeight: 600,
+                                        fontSize: "14px",
+                                        color: "#1d2026",
+                                        marginBottom: "2px",
+                                      }}
+                                    >
+                                      Lesson Notes
+                                    </div>
+                                    {lesson.lessonNotes ? (
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: "8px",
+                                        }}
+                                      >
+                                        <span
+                                          style={{
+                                            color: "#10b981",
+                                            fontSize: "12px",
+                                            fontWeight: "500",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "4px",
+                                          }}
+                                        >
+                                          ✓ Added
+                                        </span>
+                                        <span
+                                          style={{
+                                            color: "#4e5566",
+                                            fontSize: "12px",
+                                            maxWidth: "200px",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                          }}
+                                        >
+                                          {lesson.lessonNotes}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <span
+                                        style={{
+                                          color: "#6b7280",
+                                          fontSize: "12px",
+                                        }}
+                                      >
+                                        Click to add lesson notes
+                                      </span>
+                                    )}
+                                  </div>
                                   <div
                                     style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: "8px",
-                                    }}
-                                  >
-                                    <span
-                                      style={{
-                                        color: "#10b981",
-                                        fontSize: "12px",
-                                        fontWeight: "500",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "4px",
-                                      }}
-                                    >
-                                      ✓ Added
-                                    </span>
-                                    <span
-                                      style={{
-                                        color: "#4e5566",
-                                        fontSize: "12px",
-                                        maxWidth: "200px",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
-                                      }}
-                                    >
-                                      {lesson.description}
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <span
-                                    style={{
-                                      color: "#6b7280",
+                                      color: "#9ca3af",
                                       fontSize: "12px",
+                                      fontWeight: "500",
                                     }}
                                   >
-                                    Click to add description
-                                  </span>
-                                )}
-                              </div>
-                              <div
-                                style={{
-                                  color: "#9ca3af",
-                                  fontSize: "12px",
-                                  fontWeight: "500",
-                                }}
-                              >
-                                Edit
-                              </div>
-                            </div>
-
-                            {/* Lecture Notes Field */}
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                cursor: "pointer",
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #e9eaf0",
-                                background: lesson.lessonNotes
-                                  ? "#f0fdf4"
-                                  : "#fafbfc",
-                                transition: "all 0.2s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.background = lesson.lessonNotes
-                                  ? "#ecfdf5"
-                                  : "#f8fafc";
-                                e.target.style.borderColor = "#d1d5db";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.background = lesson.lessonNotes
-                                  ? "#f0fdf4"
-                                  : "#fafbfc";
-                                e.target.style.borderColor = "#e9eaf0";
-                              }}
-                              onClick={() =>
-                                openFieldModal(
-                                  sectionIdx,
-                                  lessonIdx,
-                                  "lessonNotes",
-                                  lesson.lessonNotes
-                                )
-                              }
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  width: "32px",
-                                  height: "32px",
-                                  borderRadius: "6px",
-                                  background: lesson.lessonNotes
-                                    ? "#10b981"
-                                    : "#e5e7eb",
-                                  marginRight: "12px",
-                                }}
-                              >
-                                <FileText
-                                  size={16}
-                                  color={
-                                    lesson.lessonNotes ? "#ffffff" : "#6b7280"
-                                  }
-                                />
-                              </div>
-                              <div style={{ flex: 1 }}>
-                                <div
-                                  style={{
-                                    fontWeight: 600,
-                                    fontSize: "14px",
-                                    color: "#1d2026",
-                                    marginBottom: "2px",
-                                  }}
-                                >
-                                  Lesson Notes
+                                    Edit
+                                  </div>
                                 </div>
-                                {lesson.lessonNotes ? (
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: "8px",
-                                    }}
-                                  >
-                                    <span
-                                      style={{
-                                        color: "#10b981",
-                                        fontSize: "12px",
-                                        fontWeight: "500",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "4px",
-                                      }}
-                                    >
-                                      ✓ Added
-                                    </span>
-                                    <span
-                                      style={{
-                                        color: "#4e5566",
-                                        fontSize: "12px",
-                                        maxWidth: "200px",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
-                                      }}
-                                    >
-                                      {lesson.lessonNotes}
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <span
-                                    style={{
-                                      color: "#6b7280",
-                                      fontSize: "12px",
-                                    }}
-                                  >
-                                    Click to add lesson notes
-                                  </span>
-                                )}
-                              </div>
-                              <div
-                                style={{
-                                  color: "#9ca3af",
-                                  fontSize: "12px",
-                                  fontWeight: "500",
-                                }}
-                              >
-                                Edit
                               </div>
                             </div>
-                          </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
               <CustomButton
@@ -1696,47 +1647,48 @@ export default function CourseCurriculum({
               </div>
             </div>
 
-            {selectedVideoFile && (
-              <div
-                style={{
-                  background: "#f0fdf4",
-                  border: "1px solid #dcfce7",
-                  borderRadius: "8px",
-                  padding: "16px",
-                  marginBottom: "16px",
-                }}
-              >
+            {!modal.open ||
+              (editing.field !== "videoUrl" && selectedVideoFile && (
                 <div
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    marginBottom: "12px",
+                    background: "#f0fdf4",
+                    border: "1px solid #dcfce7",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    marginBottom: "16px",
                   }}
                 >
-                  <Video size={20} color="#10b981" />
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "14px",
-                        fontWeight: "600",
-                        color: "#1d2026",
-                      }}
-                    >
-                      {selectedVideoFile.name}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "12px",
-                        color: "#6b7280",
-                      }}
-                    >
-                      {(selectedVideoFile.size / (1024 * 1024)).toFixed(2)} MB
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    <Video size={20} color="#10b981" />
+                    <div>
+                      <div
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: "600",
+                          color: "#1d2026",
+                        }}
+                      >
+                        {selectedVideoFile.name}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "#6b7280",
+                        }}
+                      >
+                        {(selectedVideoFile.size / (1024 * 1024)).toFixed(2)} MB
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              ))}
 
             {selectedVideoPreview && (
               <div

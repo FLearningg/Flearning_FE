@@ -164,12 +164,6 @@ const CourseForm = ({
     // Set loading to false first
     setDataLoaded(false);
 
-    console.log("=== COURSE FORM INITIAL DATA ===");
-    console.log("initialData:", initialData);
-
-    console.log("initialData.subCategory:", initialData.subCategory);
-    console.log("initialData.category:", initialData.category);
-
     // Always set from initialData, even if empty string
     setTitle(initialData.title || "");
     setSubtitle(initialData.subTitle || initialData.subtitle || "");

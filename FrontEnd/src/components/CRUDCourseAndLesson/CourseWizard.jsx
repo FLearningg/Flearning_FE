@@ -39,106 +39,9 @@ const CourseWizard = () => {
     setIsEditMode(isEdit);
 
     if (isEdit && id && !dataLoaded) {
-      // Check if course data is passed via location state first
-      if (location.state?.courseData && !courseData.title) {
-        const course = location.state.courseData;
-
-        console.log("=== COURSE DATA FROM LOCATION STATE ===");
-        console.log("Raw course data:", course);
-        console.log("All course fields:", Object.keys(course));
-
-        console.log("course.subCategory:", course.subCategory);
-        console.log("course.subcategory:", course.subcategory);
-        console.log("course.categoryIds:", course.categoryIds);
-        console.log("course.detail:", course.detail);
-
-        // Transform the course data to match the form structure based on Course model
-        const transformedData = {
-          title: course.title || "",
-          subTitle: course.subTitle || course.subtitle || "",
-
-          // Handle categoryIds array - get first category name if populated
-          category: course.categoryIds?.[0]?.name || course.category || "",
-          subCategory:
-            course.categoryIds?.[1]?.name ||
-            course.subCategory ||
-            course.subcategory ||
-            "",
-          // Store category IDs for API calls
-          categoryId: course.categoryIds?.[0]?._id || course.categoryId || "",
-          subCategoryId:
-            course.categoryIds?.[1]?._id ||
-            course.subCategoryId ||
-            course.subcategoryId ||
-            "",
-          // Convert language enum values to display format
-          language:
-            course.language === "vietnam"
-              ? "Vietnamese"
-              : course.language === "english"
-              ? "English"
-              : course.language || "",
-          subtitleLanguage:
-            course.subtitleLanguage === "vietnam"
-              ? "Vietnamese"
-              : course.subtitleLanguage === "english"
-              ? "English"
-              : course.subtitleLanguage || "",
-          // Convert level enum values to display format
-          level:
-            course.level === "beginner"
-              ? "Beginner"
-              : course.level === "intermediate"
-              ? "Intermediate"
-              : course.level === "advanced"
-              ? "Advanced"
-              : course.level || "",
-          duration: course.duration || "",
-          price: course.price ? course.price.toString() : "",
-          detail: {
-            description: course.detail?.description || "",
-            willLearn: course.detail?.willLearn || [],
-            targetAudience: course.detail?.targetAudience || [],
-            requirement: course.detail?.requirement || [],
-          },
-          uploadedFiles: {
-            image: course.thumbnail ? { url: course.thumbnail } : null,
-            video: course.trailer ? { url: course.trailer } : null,
-          },
-          thumbnail: course.thumbnail || "",
-          trailer: course.trailer || "",
-          // Handle sections array - convert to curriculum format if needed
-          curriculum: course.sections || course.curriculum || [],
-          message: course.message || { welcome: "", congrats: "" },
-          // Store additional fields from model
-          materials: course.materials || [],
-          studentsEnrolled: course.studentsEnrolled || [],
-          discountId: course.discountId || null,
-          rating: course.rating || 0,
-        };
-
-        console.log("=== TRANSFORMED DATA ===");
-
-        console.log(
-          "transformedData.subCategory:",
-          transformedData.subCategory
-        );
-        console.log("transformedData.category:", transformedData.category);
-
-        setCourseData(transformedData);
-        setCompletedTabs([0, 1, 2, 3]);
-        setDataLoaded(true);
-        
-        if (!toastShownRef.current) {
-          toast.success("Course data loaded for editing");
-          toastShownRef.current = true;
-        }
-      } else if (!courseData.title) {
-        // Fallback to API call if no data in location state and no existing course data
-        fetchCourseData(id);
-      }
+      fetchCourseData(id); // Luôn gọi API khi vào trang edit
     }
-  }, [id, location.pathname, location.state, dataLoaded, courseData.title]);
+  }, [id, location.pathname, dataLoaded]);
 
   // Fetch course data for editing
   const fetchCourseData = async (courseId) => {
@@ -160,22 +63,18 @@ const CourseWizard = () => {
       const transformedData = {
         title: course.title || "",
         subTitle: course.subTitle || course.subtitle || "",
-
-        // Handle categoryIds array - get first category name if populated
         category: course.categoryIds?.[0]?.name || course.category || "",
         subCategory:
           course.categoryIds?.[1]?.name ||
           course.subCategory ||
           course.subcategory ||
           "",
-        // Store category IDs for API calls
         categoryId: course.categoryIds?.[0]?._id || course.categoryId || "",
         subCategoryId:
           course.categoryIds?.[1]?._id ||
           course.subCategoryId ||
           course.subcategoryId ||
           "",
-        // Convert language enum values to display format
         language:
           course.language === "vietnam"
             ? "Vietnamese"
@@ -188,7 +87,6 @@ const CourseWizard = () => {
             : course.subtitleLanguage === "english"
             ? "English"
             : course.subtitleLanguage || "",
-        // Convert level enum values to display format
         level:
           course.level === "beginner"
             ? "Beginner"
@@ -211,10 +109,8 @@ const CourseWizard = () => {
         },
         thumbnail: course.thumbnail || "",
         trailer: course.trailer || "",
-        // Handle sections array - convert to curriculum format if needed
-        curriculum: course.sections || course.curriculum || [],
+        sections: Array.isArray(course.sections) ? course.sections : [],
         message: course.message || { welcome: "", congrats: "" },
-        // Store additional fields from model
         materials: course.materials || [],
         studentsEnrolled: course.studentsEnrolled || [],
         discountId: course.discountId || null,
@@ -289,7 +185,7 @@ const CourseWizard = () => {
           thumbnail:
             "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=200&fit=crop",
           trailer: "https://sample-video-url.com/trailer.mp4",
-          curriculum: [
+          sections: [
             {
               title: "Introduction",
               lessons: [
@@ -421,10 +317,10 @@ const CourseWizard = () => {
         ...(courseData.thumbnail && { thumbnail: courseData.thumbnail }),
         ...(courseData.trailer && { trailer: courseData.trailer }),
         // Add sections/lessons structure if available
-        ...(courseData.curriculum &&
-        Array.isArray(courseData.curriculum) &&
-        courseData.curriculum.length > 0
-          ? { sections: courseData.curriculum }
+        ...(courseData.sections &&
+        Array.isArray(courseData.sections) &&
+        courseData.sections.length > 0
+          ? { sections: courseData.sections }
           : {}),
         // Include additional fields from model
         ...(courseData.materials && { materials: courseData.materials }),
@@ -434,10 +330,8 @@ const CourseWizard = () => {
 
       let res;
       if (isEditMode) {
-        // Update existing course
         res = await apiClient.put(`/admin/courses/${id}`, dataToSend);
       } else {
-        // Create new course
         res = await apiClient.post("/admin/courses", dataToSend);
       }
 
