@@ -22,6 +22,10 @@ const AppRouter = () => {
 
         {/* Nhúng trực tiếp JSX của authRoutesContent */}
         {authRoutesContent}
+        <Route
+          path="*"
+          element={<ErrorPage />}
+        />
       </Route>
       <Route
         path="/admin/*" // Dùng wildcard '*' để khớp với tất cả các đường dẫn con
