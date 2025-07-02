@@ -32,7 +32,6 @@ const CoursePublish = ({
     setLoading(true);
     try {
       await onSubmit({ welcome: welcomeMsg, congrats: congratsMsg });
-      toast.success("Course published successfully!");
     } catch (err) {
       toast.error(err.message || "Failed to publish course");
     } finally {

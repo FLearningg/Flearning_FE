@@ -22,7 +22,7 @@ const CourseForm = ({
   const [subtitle, setSubtitle] = React.useState(
     initialData.subTitle || initialData.subtitle || ""
   );
-  const [topic, setTopic] = React.useState(initialData.topic || "");
+
   const [category, setCategory] = React.useState(initialData.category || "");
   const [subCategory, setSubCategory] = React.useState(
     initialData.subCategory || ""
@@ -72,6 +72,7 @@ const CourseForm = ({
     setCategoryError("");
     try {
       const response = await getAllCategories();
+
       if (response.data && response.data.success) {
         const categories = response.data.data.map((cat) => cat.name);
         setAllCategories(categories);
@@ -106,23 +107,12 @@ const CourseForm = ({
       categoryMap &&
       Object.keys(categoryMap).length > 0
     ) {
-      console.log("CourseForm - Categories loaded, checking ID mapping");
-      console.log(
-        "CourseForm - initialData.categoryId:",
-        initialData.categoryId
-      );
-      console.log(
-        "CourseForm - initialData.subCategoryId:",
-        initialData.subCategoryId
-      );
-
       // If we have category/subcategory IDs but no names, try to map them
       if (initialData.categoryId && !initialData.category) {
         // Find category name by ID
         const categoryName = Object.keys(categoryMap).find(
           (key) => categoryMap[key] === initialData.categoryId
         );
-        console.log("CourseForm - Found category name by ID:", categoryName);
         if (categoryName) {
           setCategory(categoryName);
         }
@@ -132,10 +122,6 @@ const CourseForm = ({
         // Find subcategory name by ID
         const subCategoryName = Object.keys(categoryMap).find(
           (key) => categoryMap[key] === initialData.subCategoryId
-        );
-        console.log(
-          "CourseForm - Found subcategory name by ID:",
-          subCategoryName
         );
         if (subCategoryName) {
           setSubCategory(subCategoryName);
@@ -178,20 +164,19 @@ const CourseForm = ({
     // Set loading to false first
     setDataLoaded(false);
 
-    console.log("CourseForm - initialData received:", initialData);
-    console.log("CourseForm - categoryMap:", categoryMap);
+    console.log("=== COURSE FORM INITIAL DATA ===");
+    console.log("initialData:", initialData);
+
+    console.log("initialData.subCategory:", initialData.subCategory);
+    console.log("initialData.category:", initialData.category);
 
     // Always set from initialData, even if empty string
     setTitle(initialData.title || "");
     setSubtitle(initialData.subTitle || initialData.subtitle || "");
-    setTopic(initialData.topic || "");
 
     // Handle category restoration - prioritize category names over IDs
     setCategory(initialData.category || "");
     setSubCategory(initialData.subCategory || "");
-
-    console.log("CourseForm - Setting category:", initialData.category);
-    console.log("CourseForm - Setting subCategory:", initialData.subCategory);
 
     // Handle language and level restoration - prioritize display format
     // If we have display format data, use it directly
@@ -200,16 +185,8 @@ const CourseForm = ({
       !initialData.language.includes("english") &&
       !initialData.language.includes("vietnam")
     ) {
-      console.log(
-        "CourseForm - Using display format language:",
-        initialData.language
-      );
       setLanguage(initialData.language);
     } else {
-      console.log(
-        "CourseForm - Converting backend language:",
-        initialData.language
-      );
       // Convert backend language format to display format
       setLanguage(convertLanguageToDisplay(initialData.language || ""));
     }
@@ -219,16 +196,8 @@ const CourseForm = ({
       !initialData.subtitleLanguage.includes("english") &&
       !initialData.subtitleLanguage.includes("vietnam")
     ) {
-      console.log(
-        "CourseForm - Using display format subtitleLanguage:",
-        initialData.subtitleLanguage
-      );
       setSubtitleLanguage(initialData.subtitleLanguage);
     } else {
-      console.log(
-        "CourseForm - Converting backend subtitleLanguage:",
-        initialData.subtitleLanguage
-      );
       setSubtitleLanguage(
         convertLanguageToDisplay(initialData.subtitleLanguage || "")
       );
@@ -241,13 +210,8 @@ const CourseForm = ({
       !initialData.level.includes("intermediate") &&
       !initialData.level.includes("advanced")
     ) {
-      console.log(
-        "CourseForm - Using display format level:",
-        initialData.level
-      );
       setLevel(initialData.level);
     } else {
-      console.log("CourseForm - Converting backend level:", initialData.level);
       // Convert backend level format to display format
       const levelValue = initialData.level || "";
       if (levelValue) {
@@ -256,7 +220,8 @@ const CourseForm = ({
           intermediate: "Intermediate",
           advanced: "Advanced",
         };
-        setLevel(levelMap[levelValue.toLowerCase()] || levelValue);
+        const displayLevel = levelMap[levelValue.toLowerCase()] || levelValue;
+        setLevel(displayLevel);
       } else {
         setLevel("");
       }
@@ -281,7 +246,7 @@ const CourseForm = ({
     const data = {
       title: titleState,
       subTitle: subtitle, // ← Fixed key name
-      topic,
+
       category: category, // ← Save category name for restoration
       subCategory: subCategory, // ← Save subcategory name for restoration
       categoryId: categoryMap[category] || "", // ← Send categoryId instead of category
@@ -298,28 +263,6 @@ const CourseForm = ({
       price: parseFloat(price) || 0, // ← ensure number
     };
 
-    console.log("CourseForm - handleSaveNext - category:", category);
-    console.log("CourseForm - handleSaveNext - subCategory:", subCategory);
-    console.log("CourseForm - handleSaveNext - categoryMap:", categoryMap);
-    console.log("CourseForm - handleSaveNext - language (display):", language);
-    console.log(
-      "CourseForm - handleSaveNext - subtitleLanguage (display):",
-      subtitleLanguage
-    );
-    console.log("CourseForm - handleSaveNext - level (display):", level);
-    console.log(
-      "CourseForm - handleSaveNext - languageBackend:",
-      convertLanguageToBackend(language)
-    );
-    console.log(
-      "CourseForm - handleSaveNext - subtitleLanguageBackend:",
-      convertLanguageToBackend(subtitleLanguage)
-    );
-    console.log(
-      "CourseForm - handleSaveNext - levelBackend:",
-      level?.toLowerCase()
-    );
-    console.log("CourseForm - handleSaveNext - data being sent:", data);
     onNext(data);
   };
 
@@ -330,7 +273,6 @@ const CourseForm = ({
   const allFieldsFilled =
     titleState?.trim() &&
     subtitle?.trim() &&
-    topic?.trim() &&
     category &&
     category !== "Select..." &&
     subCategory &&
@@ -409,18 +351,7 @@ const CourseForm = ({
                   />
                 </div>
               </div>
-              <div className="cf-form-group">
-                <label htmlFor="topic" className="cf-form-label">
-                  Course Topic
-                </label>
-                <Input
-                  id="topic"
-                  placeholder="What is primarily taught in your course?"
-                  textarea
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                />
-              </div>
+
               <div className="cf-form-row">
                 <div className="cf-form-group">
                   <label className="cf-form-label">Course Category</label>
