@@ -44,6 +44,7 @@ function BestSellingCourse() {
         students: course.studentsEnrolled?.length || 0,
       },
       detailedProps: {
+        courseId: course._id, 
         title: course.title,
         author: "Admin", // If there is an author field, take it
         authorAvatar: "/images/admin-image.png", // If there is one, take it
@@ -59,15 +60,32 @@ function BestSellingCourse() {
       },
     };
   });
-  if (isLoading) return <LoaddingComponent></LoaddingComponent>;
   return (
     <>
       <div style={{ backgroundColor: "#ecebeb7c" }}>
         <div className="container py-5">
           <h3 className="text-center mb-5">Best selling courses</h3>
-          <div className="desktop-view">
-            <div className="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-3">
-              {coursesInfo.map((courseInfo, index) => (
+          {isLoading ? (
+            <LoaddingComponent></LoaddingComponent>
+          ) : (
+            <>
+              <div className="desktop-view">
+                <div className="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-3">
+                  {coursesInfo.map((courseInfo, index) => (
+                    <div className="col" key={index}>
+                      <div>
+                        <PopupCard
+                          cardProps={courseInfo.cardProps}
+                          detailedProps={courseInfo.detailedProps}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+          {/* {coursesInfo.map((courseInfo, index) => (
                 <div className="col" key={index}>
                   <div>
                     <PopupCard
@@ -76,9 +94,8 @@ function BestSellingCourse() {
                     />
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              ))} */}
+
           {/* for mobile */}
           <div className="mobile-view">
             <Swiper

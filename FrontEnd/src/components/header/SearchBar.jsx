@@ -19,9 +19,6 @@ function SearchBar() {
     courseData?.map((course) => ({
       label: course.title,
     })) || [];
-  if (isLoading) {
-    return <LoaddingComponent />;
-  }
   return (
     <>
       <SearchBox
