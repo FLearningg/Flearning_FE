@@ -172,6 +172,12 @@
   z-index: 2010 !important;
   border-radius: 10px;
 }
+.dropdown-menu-center {
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-65%) !important;
+  top: 100%;
+}
 
 .notification-title {
   white-space: nowrap;

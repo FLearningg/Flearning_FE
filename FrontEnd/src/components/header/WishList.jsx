@@ -71,7 +71,7 @@ function WishList() {
           <img src="/icons/heart.png" className="icon" alt="" />
         </button>
         <ul
-          className="dropdown-menu dropdown-menu-end"
+          className="dropdown-menu dropdown-menu-center"
           style={{ width: "376px" }}
           aria-labelledby="dropdownMenuButton1"
         >

@@ -21,7 +21,9 @@ function HeaderRight({ user: currentUser }) {
       <div className="d-flex align-items-center gap-1">
         {currentUser ? (
           <>
-            <Notification />
+            <div className="d-none d-sm-block">
+              <Notification />
+            </div>
             <WishList />
             <Link to="/profile/cart">
               <button className="btn btn-light rounded-circle icon-btn">
