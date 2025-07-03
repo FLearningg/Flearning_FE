@@ -124,7 +124,7 @@ function Notification() {
           )}
         </button>
         <ul
-          className="dropdown-menu dropdown-menu-fixed-right"
+          className="dropdown-menu dropdown-menu-end"
           style={{ width: "350px" }}
           aria-labelledby="dropdownMenuButton1"
         >
