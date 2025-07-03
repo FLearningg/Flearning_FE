@@ -1,39 +1,61 @@
 import "../../assets/AdminHeaderAndSidebar/Sidebar.css";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../../store/authSlice";
 
-export function Sidebar({ open, setOpen }) {
+export function Sidebar({ open, setOpen, isMobile }) {
   const location = useLocation();
-  // Only show overlay on tablet/mobile screens
-  const isMobile =
-    typeof window !== "undefined" &&
-    window.innerWidth <= 768 &&
-    window.innerHeight <= 683;
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { currentUser } = useSelector((state) => state.auth);
+
+  // Debug logs
+  useEffect(() => {
+    console.log("Sidebar state:", { open, isMobile });
+  }, [open, isMobile]);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login");
+    if (isMobile) {
+      setOpen(false);
+    }
+  };
+
+  const handleNavClick = () => {
+    if (isMobile) {
+      setOpen(false);
+    }
+  };
+
+  const displayName = currentUser
+    ? `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim() ||
+      currentUser.userName ||
+      "Admin"
+    : "Admin";
+
+  // Build class names
+  const sidebarClasses = ["ahs-sidebar", isMobile && open ? "ahs-open" : ""]
+    .filter(Boolean)
+    .join(" ");
+
+  console.log("Sidebar classes:", sidebarClasses);
 
   return (
     <>
+      {/* Mobile Overlay */}
       {isMobile && open && (
-        <div
-          className="sidebar-overlay"
-          onClick={() => setOpen(false)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.2)",
-            zIndex: 999,
-          }}
-        />
+        <div className="ahs-sidebar-overlay" onClick={() => setOpen(false)} />
       )}
-      <div
-        className={`sidebar${isMobile && open ? " open" : ""}`}
-        style={isMobile && !open ? { width: 0, minWidth: 0 } : {}}
-      >
-        <div className="sidebar-header">
-          <NavLink to="/" className="logo-link">
-            <div className="logo-icon">
+
+      {/* Sidebar */}
+      <div className={sidebarClasses}>
+        {/* Sidebar Header */}
+        <div className="ahs-sidebar-header">
+          <NavLink to="/" className="ahs-logo-link" onClick={handleNavClick}>
+            <div className="ahs-logo-icon">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -49,53 +71,80 @@ export function Sidebar({ open, setOpen }) {
                 <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
               </svg>
             </div>
-            <span className="logo-text">F-Learning</span>
+            <span className="ahs-logo-text">F-Learning</span>
           </NavLink>
+
+          {/* User Info for Mobile */}
+          {isMobile && (
+            <div className="ahs-mobile-user-info">
+              <div className="ahs-mobile-user-avatar">
+                <img
+                  src={currentUser?.userImage || "/images/defaultImageUser.png"}
+                  alt="Profile"
+                  onError={(e) => {
+                    e.target.src = "/images/defaultImageUser.png";
+                  }}
+                />
+              </div>
+              <div className="ahs-mobile-user-details">
+                <div className="ahs-mobile-user-name">{displayName}</div>
+                <div className="ahs-mobile-user-role">Administrator</div>
+              </div>
+            </div>
+          )}
         </div>
 
-        <nav className="sidebar-nav">
-          <ul className="nav-list">
+        {/* Navigation */}
+        <nav className="ahs-sidebar-nav">
+          <ul className="ahs-nav-list">
             <NavItem
               href="/admin/dashboard"
               icon="bar-chart"
               label="Dashboard"
               active={location.pathname.startsWith("/admin/dashboard")}
+              onClick={handleNavClick}
             />
             <NavItem
               href="/admin/courses/new"
               icon="plus-circle"
               label="Create New Course"
               active={location.pathname.startsWith("/admin/courses/new")}
+              onClick={handleNavClick}
             />
             <NavItem
               href="/admin/courses/all"
               icon="book"
               label="My Courses"
               active={location.pathname.endsWith("/admin/courses/all")}
+              onClick={handleNavClick}
             />
             <NavItem
               href="/admin/earning"
               icon="dollar-sign"
               label="Earning"
               active={location.pathname.startsWith("/admin/earning")}
+              onClick={handleNavClick}
             />
             <NavItem
               href="/admin/discounts"
               icon="tag"
               label="Discounts"
               active={location.pathname.startsWith("/admin/discounts")}
+              onClick={handleNavClick}
             />
             <NavItem
               href="/admin/users"
               icon="users"
               label="Manage Users"
               active={location.pathname.startsWith("/admin/users")}
+              onClick={handleNavClick}
             />
           </ul>
         </nav>
 
-        <div className="sidebar-footer">
-          <button className="sign-out-button">
+        {/* Sidebar Footer */}
+        <div className="ahs-sidebar-footer">
+          <button className="ahs-sign-out-button" onClick={handleLogout}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -118,11 +167,12 @@ export function Sidebar({ open, setOpen }) {
     </>
   );
 }
-function NavItem({ href, icon, label, active, badge }) {
+
+function NavItem({ href, icon, label, active, badge, onClick }) {
   return (
-    <li className={`nav-item ${active ? "active" : ""}`}>
-      <NavLink to={href} className="nav-link">
-        <span className="nav-icon">
+    <li className={`ahs-nav-item ${active ? "ahs-active" : ""}`}>
+      <NavLink to={href} className="ahs-nav-link" onClick={onClick}>
+        <span className="ahs-nav-icon">
           {icon === "bar-chart" && (
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -239,8 +289,8 @@ function NavItem({ href, icon, label, active, badge }) {
             </svg>
           )}
         </span>
-        <span className="nav-label">{label}</span>
-        {badge && <div className="nav-badge">{badge}</div>}
+        <span className="ahs-nav-label">{label}</span>
+        {badge && <div className="ahs-nav-badge">{badge}</div>}
       </NavLink>
     </li>
   );

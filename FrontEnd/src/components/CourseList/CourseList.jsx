@@ -94,7 +94,8 @@ const CourseList = () => {
         <div className="course-list-container">
           <div className="courses-header">
             <h2>
-              My Courses <span className="course-count">({filteredCourses.length})</span>
+              My Courses{" "}
+              <span className="course-count">({filteredCourses.length})</span>
             </h2>
             <div className="filter-group">
               <div className="search-box">
@@ -143,7 +144,9 @@ const CourseList = () => {
                 createdAt={enrollment.enrollmentDate}
                 instructor={enrollment.course.instructor}
                 category={enrollment.course.category}
-                status={enrollment.progress === 100 ? "completed" : "in-progress"}
+                status={
+                  enrollment.progress === 100 ? "completed" : "in-progress"
+                }
               />
             ))}
           </div>

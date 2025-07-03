@@ -15,6 +15,7 @@ const adminRoutesContent = (
     <Route path="discounts" element={<AdminDiscount />} />
     <Route path="users" element={<AdminManageUser />} />
     <Route path="courses/new" element={<CourseWizard />} />
+    <Route path="courses/edit/:id" element={<CourseWizard />} />
     <Route path="courses/all" element={<AdminAllCourse />} />
     <Route path="courses/:id" element={<AdminMyCourse />} />
     <Route path="courses" element={<AdminMyCourse />} />

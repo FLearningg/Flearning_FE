@@ -26,6 +26,17 @@ const Input = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
+  // Sync selectedText with value prop for dropdown
+  useEffect(() => {
+    if (variant === "dropdown") {
+      if (value && value !== selectedText) {
+        setSelectedText(value);
+      } else if (!value && text !== selectedText) {
+        setSelectedText(text);
+      }
+    }
+  }, [value, text, variant, selectedText]);
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
