@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { NotificationCard } from "./NotificationCard";
 import { Link } from "react-router-dom";
 import { faListAlt } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -37,17 +36,17 @@ function WishList() {
   console.log("wishlistData", wishlistData);
   const courseData = wishlistData?.map((course) => {
     let finalPrice = course.price;
-    let discountText = "";
+    // let discountText = "";
     if (course.discountId) {
       if (course.discountId.typee === "fixedAmount") {
         finalPrice = Math.max(0, course.price - course.discountId.value);
-        discountText = `-${course.discountId.value}$`;
+        // discountText = `-${course.discountId.value}$`;
       } else if (course.discountId.typee === "percent") {
         finalPrice = Math.max(
           0,
           course.price * (1 - course.discountId.value / 100)
         );
-        discountText = `-${course.discountId.value}%`;
+        // discountText = `-${course.discountId.value}%`;
       }
     }
     return {
@@ -72,7 +71,7 @@ function WishList() {
           <img src="/icons/heart.png" className="icon" alt="" />
         </button>
         <ul
-          className="dropdown-menu  dropdown-menu-fixed-right"
+          className="dropdown-menu dropdown-menu-end"
           style={{ width: "376px" }}
           aria-labelledby="dropdownMenuButton1"
         >
