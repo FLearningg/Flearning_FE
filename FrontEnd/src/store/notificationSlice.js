@@ -8,6 +8,12 @@ const notificationSlice = createSlice({
       error: false,
       errorMsg: "",
     },
+    updateNotification: {
+      isLoading: false,
+      error: false,
+      errorMsg: "",
+      success: false,
+    },
   },
   reducers: {
     getNotificationStart: (state) => {
@@ -23,11 +29,27 @@ const notificationSlice = createSlice({
       state.getNotifications.error = true;
       state.getNotifications.errorMsg = action.payload;
     },
+    updateNotificationStart: (state) => {
+      state.updateNotification.isLoading = true;
+    },
+    updateNotificationSuccess: (state) => {
+      state.updateNotification.isLoading = false;
+      state.updateNotification.success = true;
+      state.updateNotification.error = false;
+    },
+    updateNotificationFailure: (state, action) => {
+      state.updateNotification.isLoading = false;
+      state.updateNotification.error = true;
+      state.updateNotification.errorMsg = action.payload;
+    },
   },
 });
 export const {
   getNotificationStart,
   getNotificationSuccess,
   getNotificationFailure,
+  updateNotificationStart,
+  updateNotificationSuccess,
+  updateNotificationFailure,
 } = notificationSlice.actions;
 export default notificationSlice.reducer;

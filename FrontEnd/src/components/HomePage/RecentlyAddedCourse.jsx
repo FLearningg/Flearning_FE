@@ -74,8 +74,8 @@ function RecentlyAddedCourse() {
         ) : (
           <div className="desktop-view">
             <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
-              {coursesInfo?.map((courseInfo) => (
-                <div className="col">
+              {coursesInfo?.map((courseInfo, index) => (
+                <div className="col" key={index}>
                   <div className="mb-5">
                     <PopupCard
                       cardProps={courseInfo.cardProps}

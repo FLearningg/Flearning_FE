@@ -24,16 +24,19 @@ function WishList() {
   // ];
   const currentUser = useSelector((state) => state.auth.currentUser);
   const dispatch = useDispatch();
-  const wishlistData = useSelector((state) => state.wishlist.getWishlist.items);
+  const wishlistData = useSelector((state) => state.wishlist?.getWishlist?.items);
   useEffect(() => {
     const fetchWishlist = async () => {
-      if (currentUser) {
-        await getWishlist(dispatch, currentUser._id);
+      try {
+        if (currentUser) {
+          await getWishlist(dispatch, currentUser._id);
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
       }
     };
     fetchWishlist();
   }, [dispatch, currentUser]);
-  console.log("wishlistData", wishlistData);
   const courseData = wishlistData?.map((course) => {
     let finalPrice = course.price;
     // let discountText = "";

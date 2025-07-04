@@ -29,8 +29,12 @@ function WishListPage() {
   );
   useEffect(() => {
     const fetchWishlist = async () => {
-      if (currentUser) {
-        await getWishlist(dispatch, currentUser._id);
+      try {
+        if (currentUser) {
+          await getWishlist(dispatch, currentUser._id);
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
       }
     };
     fetchWishlist();
