@@ -435,7 +435,7 @@ export const DetailedCard = ({
           autoClose: 3000,
         });
       } catch (err) {
-        toast.error(errorMsg, {
+        toast.error(errorMsg || "Error adding course to cart", {
           position: "top-right",
           autoClose: 3000,
         });

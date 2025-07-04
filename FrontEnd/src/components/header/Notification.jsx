@@ -1,12 +1,14 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../assets/header/header.css";
 import { NotificationCard } from "./NotificationCard";
-import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell } from "@fortawesome/free-regular-svg-icons";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useDispatch, useSelector } from "react-redux";
-import { getNotifications } from "../../services/notificationService";
+import {
+  getNotifications,
+  markNotificationAsRead,
+} from "../../services/notificationService";
 import LoaddingComponent from "../common/Loadding/LoaddingComponent";
 const PAGE_SIZE = 10; // number of notifications to render at a time
 const RENDER_STEP = 5; // number of notifications to render on each scroll
@@ -15,15 +17,22 @@ function Notification() {
     useSelector(
       (state) => state.notifications?.getNotifications?.notifications
     ) || [];
-  const isLoading = useSelector((state) => state.notifications.getNotifications.isLoading);
+  const [isLoading, setIsLoading] = useState(true);
   const currentUser = useSelector((state) => state.auth.currentUser);
   const dispatch = useDispatch();
   useEffect(() => {
     const fetchNotifications = async () => {
-      await getNotifications(dispatch, currentUser?._id, 1, PAGE_SIZE);
+      try {
+        setIsLoading(true);
+        await getNotifications(dispatch, currentUser?._id, 1, PAGE_SIZE);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchNotifications();
-  }, [dispatch]);
+  }, [dispatch, currentUser?._id]);
   const [notifications, setNotifications] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMoreApi, setHasMoreApi] = useState(true);
@@ -107,7 +116,15 @@ function Notification() {
     const { date, time } = formatDateTime(n.createdAt);
     return { ...n, date, time };
   });
-
+  const markAllAsRead = async () => {
+    try {
+      await markNotificationAsRead(currentUser?._id, dispatch);
+      await getNotifications(dispatch, currentUser?._id, 1, PAGE_SIZE);
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+    }
+  };
+  console.log("notificationData", notificationData);
   return (
     <>
       <div className="dropdown">
@@ -117,9 +134,10 @@ function Notification() {
           id="dropdownMenuButton1"
           data-bs-toggle="dropdown"
           aria-expanded="false"
+          onClick={markAllAsRead}
         >
           <img src="/icons/bell.png" className="icon" alt="" />
-          {notificationData?.length > 0 && (
+          {notificationData?.some((n) => n.readStatus === false) && (
             <span className="notification-dot"></span>
           )}
         </button>
