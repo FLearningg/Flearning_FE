@@ -56,23 +56,30 @@ function LoginPage() {
             setIsResendCooldown(false); // Bật lại nút nếu có lỗi
         }
     };
+
+    const handleLoginRedirect = (user) => {
+        if (user.role === 'admin') {
+            navigate('/admin/dashboard');
+        } else {
+            navigate('/');
+        }
+    };
     
     const onFinish = (values) => {
         setUnverifiedEmail(null); 
-        setApiAlert({ show: false }); // Ẩn thông báo cũ khi submit
+        setApiAlert({ show: false });
         
         const credentials = { email: values.email, password: values.password };
         dispatch(loginUser(credentials))
             .unwrap()
-            .then(() => {
-                // Có thể hiển thị thông báo thành công ở trang chủ nếu muốn
-                navigate('/');
+            .then((result) => {
+                setApiAlert({ show: true, type: 'success', message: 'Đăng nhập thành công!' });
+                handleLoginRedirect(result.user);
             })
             .catch((error) => {
                 if (error.errorCode === 'ACCOUNT_NOT_VERIFIED') {
                     setUnverifiedEmail(values.email);
                 } else {
-                    // Hiển thị lỗi sai mật khẩu bằng Bootstrap Alert
                     setApiAlert({ show: true, type: 'danger', message: error.message || 'Email hoặc mật khẩu không đúng.' });
                 }
             });
@@ -81,7 +88,10 @@ function LoginPage() {
     const handleGoogleSuccess = (credentialResponse) => {
         dispatch(googleLogin(credentialResponse.credential))
             .unwrap()
-            .then(() => navigate('/'))
+            .then((result) => {
+                setApiAlert({ show: true, type: 'success', message: 'Đăng nhập với Google thành công!' });
+                handleLoginRedirect(result.user); 
+            })
             .catch((error) => {
                 setApiAlert({ show: true, type: 'danger', message: error.message || 'Đăng nhập Google thất bại.' });
             });

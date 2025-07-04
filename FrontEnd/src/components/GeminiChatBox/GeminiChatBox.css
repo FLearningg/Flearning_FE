@@ -1,0 +1,134 @@
+.gemini-chatbox-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+}
+
+.chat-display-area {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background-color: #ffffff;
+}
+
+.message-row {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 16px;
+  gap: 10px;
+  max-width: 90%;
+}
+
+.bot-row {
+  justify-content: flex-start;
+}
+
+.user-row {
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.chat-avatar {
+  flex-shrink: 0;
+}
+
+.message-bubble {
+  padding: 10px 15px;
+  border-radius: 20px;
+  max-width: 100%;
+}
+
+.bot-row .message-bubble {
+  background-color: #f0f2f5;
+  color: #050505;
+  border-bottom-left-radius: 5px;
+}
+
+.user-row .message-bubble {
+  background-color: #0084ff;
+  color: white;
+  border-bottom-right-radius: 5px;
+}
+
+.message-author {
+  font-weight: 600;
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+}
+
+.user-row .message-author {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.bot-row .message-author {
+  color: #65676b;
+}
+
+.message-text {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.message-text p {
+  margin: 0;
+}
+
+.typing-indicator .ant-spin {
+  padding: 2px 0;
+}
+
+.chat-input-area {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: #fff;
+  border-top: 1px solid #e5e5e5;
+  flex-shrink: 0;
+}
+
+.chat-input-field {
+  flex-grow: 1;
+  background-color: #f0f2f5;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+}
+.chat-input-field:focus {
+  box-shadow: none;
+}
+
+.send-button {
+  background-color: #0084ff;
+  color: white !important;
+  font-size: 1rem;
+  margin-left: 8px;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.send-button:hover,
+.send-button:focus {
+  background-color: #0084ff !important;
+  color: white !important;
+}
+
+.send-button:disabled {
+  background-color: #e0e0e0 !important;
+  color: #a0a0a0 !important;
+  cursor: not-allowed;
+}
+
+.send-button.ant-btn-loading::before {
+  display: none;
+}
+
+.send-button .ant-spin {
+  color: white;
+}
+.send-button:disabled .ant-spin {
+  color: #a0a0a0;
+}
