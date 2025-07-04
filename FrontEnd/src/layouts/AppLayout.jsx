@@ -6,7 +6,9 @@ import Footer from "../components/footer/Footer";
 import FinalHeaderAndSidebar from "../components/AdminHeaderAndSidebar/FinalHeaderAndSidebar";
 
 // Đảm bảo đường dẫn này là chính xác
-const FloatingChatButton = React.lazy(() => import("../components/GeminiChatBox/FloatingChatButton"));
+const FloatingChatButton = React.lazy(() =>
+  import("../components/GeminiChatBox/FloatingChatButton")
+);
 
 const { Content } = Layout;
 
@@ -40,7 +42,7 @@ function AppLayout() {
         </Content>
         <Footer />
       </Layout>
-      
+
       {/* Không hiển thị chatbot trên trang admin, đã được xử lý ở trên */}
       <Suspense fallback={null}>
         <FloatingChatButton />
