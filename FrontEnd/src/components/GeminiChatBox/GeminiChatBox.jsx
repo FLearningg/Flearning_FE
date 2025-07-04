@@ -78,7 +78,7 @@ const GeminiChatBox = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/chatbot/query",
+        "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api/chatbot/query",
         {
           prompt: userMessageText,
         }
