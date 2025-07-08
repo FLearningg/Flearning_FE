@@ -17,3 +17,19 @@ export const getPurchaseHistory = (page = 1, limit = 10) =>
 // Enrolled Courses Routes
 export const getEnrolledCourses = () =>
   apiClient.get("/profile/enrolled-courses");
+
+// Progress Routes
+export const getCourseProgress = (courseId) =>
+  apiClient.get(`/progress/${courseId}`);
+
+export const getAllCoursesProgress = () => apiClient.get("/progress");
+
+export const getCompletedCourses = () => apiClient.get("/progress/completed");
+
+export const getIncompleteCourses = () => apiClient.get("/progress/incomplete");
+
+export const markLessonCompleted = (courseId, lessonId) =>
+  apiClient.post(`/progress/${courseId}/lessons/${lessonId}/complete`);
+
+export const markLessonIncomplete = (courseId, lessonId) =>
+  apiClient.delete(`/progress/${courseId}/lessons/${lessonId}/complete`);

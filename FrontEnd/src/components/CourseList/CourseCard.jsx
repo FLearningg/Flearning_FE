@@ -1,44 +1,39 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-const CourseCard = ({ 
-  thumbnail, 
-  title, 
-  progress, 
+const CourseCard = ({
+  thumbnail,
+  title,
+  progress,
   instructor,
   category,
-  status 
+  status,
+  completedLessons = 0,
+  totalLessons = 0,
 }) => {
   const getStatusColor = () => {
     switch (status) {
-      case 'completed':
-        return 'course-status-completed';
-      case 'in-progress':
-        return 'course-status-progress';
+      case "completed":
+        return "course-status-completed";
+      case "in-progress":
+        return "course-status-progress";
       default:
-        return 'course-status-default';
+        return "course-status-default";
     }
   };
 
   const getProgressColor = () => {
-    if (progress >= 75) return '#4CAF50';
-    if (progress >= 50) return '#FFC107';
-    return '#ff6b38';
+    if (progress >= 75) return "#4CAF50";
+    if (progress >= 50) return "#FFC107";
+    return "#ff6b38";
   };
 
   return (
-    <div 
-      className="course-card"
-      role="article"
-    >
+    <div className="course-card" role="article">
       <div className="course-thumbnail">
-        <img 
-          src={thumbnail} 
-          alt={`${title} course thumbnail`}
-          loading="lazy"
-        />
+        <img src={thumbnail} alt={`${title} course thumbnail`} loading="lazy" />
         <div className={`course-status-badge ${getStatusColor()}`}>
-          {status.replace('-', ' ')}
+          {status.replace("-", " ")}
         </div>
       </div>
       <div className="course-info">
@@ -48,36 +43,38 @@ const CourseCard = ({
         </div>
         <h3 title={title}>{title}</h3>
         <div className="course-footer">
-          <button 
+          <button
             className="course-watch-btn"
-            aria-label={`Watch lecture for ${title}`}
+            aria-label={`${
+              status === "completed" ? "Review" : "Continue"
+            } ${title} course`}
           >
-            Watch Lecture
+            {status === "completed" ? "Review Course" : "Continue Learning"}
           </button>
-          {progress > 0 && (
-            <div className="course-progress-status">
-              <div className="course-progress-wrapper">
-                <div 
-                  className="course-progress"
-                  role="progressbar"
-                  aria-valuenow={progress}
-                  aria-valuemin="0"
-                  aria-valuemax="100"
-                >
-                  <div 
-                    className="course-progress-bar" 
-                    style={{ 
-                      width: `${progress}%`,
-                      backgroundColor: getProgressColor()
-                    }}
-                  />
-                </div>
+          <div className="course-progress-status">
+            <div className="course-progress-wrapper">
+              <div
+                className="course-progress"
+                role="progressbar"
+                aria-valuenow={progress}
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                <div
+                  className="course-progress-bar"
+                  style={{
+                    width: `${progress}%`,
+                    backgroundColor: getProgressColor(),
+                  }}
+                />
               </div>
-              <span className="course-completion-text">
-                {progress}% Completed
-              </span>
             </div>
-          )}
+            <span className="course-completion-text">
+              {progress}% Completed{" "}
+              {totalLessons > 0 &&
+                `(${completedLessons}/${totalLessons} lessons)`}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -90,7 +87,9 @@ CourseCard.propTypes = {
   progress: PropTypes.number.isRequired,
   instructor: PropTypes.string.isRequired,
   category: PropTypes.string.isRequired,
-  status: PropTypes.oneOf(['completed', 'in-progress']).isRequired
+  status: PropTypes.oneOf(["completed", "in-progress"]).isRequired,
+  completedLessons: PropTypes.number,
+  totalLessons: PropTypes.number,
 };
 
-export default CourseCard; 
+export default CourseCard;

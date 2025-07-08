@@ -3,12 +3,16 @@ import { FaSearch } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import CourseCard from "./CourseCard";
 import ProfileSection from "./ProfileSection";
-import { getEnrolledCourses } from "../../services/profileService";
+import {
+  getEnrolledCourses,
+  getAllCoursesProgress,
+} from "../../services/profileService";
 import "../../assets/CourseList/CourseList.css";
 
 const CourseList = () => {
   const location = useLocation();
   const [courses, setCourses] = useState([]);
+  const [coursesProgress, setCoursesProgress] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,30 +20,55 @@ const CourseList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
-    fetchEnrolledCourses();
+    fetchCoursesData();
   }, []);
 
-  const fetchEnrolledCourses = async () => {
+  const fetchCoursesData = async () => {
     try {
       setLoading(true);
-      const { data } = await getEnrolledCourses();
-      setCourses(data.data);
+
+      // Fetch both enrolled courses and their progress data
+      const [enrolledResponse, progressResponse] = await Promise.all([
+        getEnrolledCourses(),
+        getAllCoursesProgress(),
+      ]);
+
+      setCourses(enrolledResponse.data.data);
+      setCoursesProgress(progressResponse.data.data);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to fetch courses");
+      setError(err.response?.data?.message || "Failed to fetch courses data");
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredCourses = courses
+  // Merge course data with progress data
+  const coursesWithProgress = courses.map((enrollment) => {
+    const progressData = coursesProgress.find(
+      (progress) => progress.courseId === enrollment.course.id
+    );
+
+    return {
+      ...enrollment,
+      progress: progressData ? progressData.progressPercentage : 0,
+      completedLessons: progressData ? progressData.completedLessons : 0,
+      totalLessons: progressData ? progressData.totalLessons : 0,
+      status:
+        progressData && progressData.progressPercentage === 100
+          ? "completed"
+          : "in-progress",
+    };
+  });
+
+  const filteredCourses = coursesWithProgress
     .filter((course) => {
       const matchesSearch = course.course.title
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
       const matchesStatus =
         statusFilter === "all" ||
-        (statusFilter === "completed" && course.progress === 100) ||
-        (statusFilter === "in-progress" && course.progress < 100);
+        (statusFilter === "completed" && course.status === "completed") ||
+        (statusFilter === "in-progress" && course.status === "in-progress");
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
@@ -140,13 +169,13 @@ const CourseList = () => {
                 id={enrollment.course.id}
                 thumbnail={enrollment.course.thumbnail}
                 title={enrollment.course.title}
-                progress={enrollment.progress || 0}
+                progress={enrollment.progress}
                 createdAt={enrollment.enrollmentDate}
                 instructor={enrollment.course.instructor}
                 category={enrollment.course.category}
-                status={
-                  enrollment.progress === 100 ? "completed" : "in-progress"
-                }
+                status={enrollment.status}
+                completedLessons={enrollment.completedLessons}
+                totalLessons={enrollment.totalLessons}
               />
             ))}
           </div>
