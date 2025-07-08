@@ -1,6 +1,5 @@
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
 import { Link } from "react-router-dom";
 
 export const WishListCard = ({
@@ -10,10 +9,11 @@ export const WishListCard = ({
   enrolledCount,
   price,
   oldPrice,
+  linkToCourseDetail,
 }) => {
   return (
     <>
-      <Link to={"/"} className="text-decoration-none text-dark">
+      <Link to={linkToCourseDetail} className="text-decoration-none text-dark">
         <div className="notification-card my-2 p-2">
           <div className="d-flex">
             <img

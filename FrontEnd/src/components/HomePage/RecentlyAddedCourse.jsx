@@ -47,6 +47,7 @@ function RecentlyAddedCourse() {
         rating: course?.rating || 0, // If there is a rating field, take it, otherwise 0
         students: course.studentsEnrolled?.length || 0,
         variant: "large",
+        linkToCourseDetail: `/course/${course._id}`,
       },
       detailedProps: {
         courseId: course._id,
@@ -108,6 +109,7 @@ function RecentlyAddedCourse() {
                   title={courseInfo.cardProps.title}
                   rating={courseInfo.cardProps.rating}
                   students={courseInfo.cardProps.students}
+                  linkToCourseDetail={courseInfo.cardProps.linkToCourseDetail}
                 />
               </SwiperSlide>
             ))}
