@@ -184,6 +184,18 @@
   gap: 4px;
 }
 
+.aac-page-btn.disabled {
+  background-color: #f9fafb;
+  border-color: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.aac-page-btn.disabled:hover {
+  background-color: #f9fafb;
+  border-color: #e5e7eb;
+}
+
 /* Loading and Error States */
 .loading-container {
   display: flex;
