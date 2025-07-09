@@ -1,14 +1,14 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router } from "react-router-dom";
+import React, { useEffect } from "react";
 import AppRouter from "./routes"; // Import AppRouter từ thư mục routes (routes/index.js)
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchCurrentUser } from './store/authSlice'; // Import action để lấy thông tin người dùng hiện tại
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCurrentUser } from "./store/authSlice"; // Import action để lấy thông tin người dùng hiện tại
 
 function App() {
   const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector(state => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
   // useEffect này sẽ chạy một lần khi ứng dụng tải,
   // hoặc mỗi khi trạng thái isAuthenticated thay đổi.
   useEffect(() => {
