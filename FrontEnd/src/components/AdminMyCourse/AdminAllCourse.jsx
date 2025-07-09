@@ -23,6 +23,10 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [coursesPerPage] = useState(8); // 8 courses per page
+
   // Fetch courses and categories on component mount
   useEffect(() => {
     fetchCourses();
@@ -162,6 +166,64 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
         return 0;
     }
   });
+
+  // Pagination calculations
+  const totalCourses = sortedCourses.length;
+  const totalPages = Math.ceil(totalCourses / coursesPerPage);
+  const indexOfLastCourse = currentPage * coursesPerPage;
+  const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
+  const currentCourses = sortedCourses.slice(
+    indexOfFirstCourse,
+    indexOfLastCourse
+  );
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryFilter, ratingFilter, sortBy]);
+
+  // Pagination handlers
+  const goToPage = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      let startPage = Math.max(1, currentPage - 2);
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+      if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
+  };
 
   // Handle course click - navigate to AdminMyCourse with course details
   const handleCourseClick = (course) => {
@@ -350,7 +412,11 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
         {/* Show filter info */}
         <div className="aac-filter-info">
           <span className="aac-filter-count">
-            {sortedCourses.length} of {coursesData.length} courses
+            Showing {indexOfFirstCourse + 1}-
+            {Math.min(indexOfLastCourse, totalCourses)} of {totalCourses}{" "}
+            courses
+            {totalCourses !== coursesData.length &&
+              ` (filtered from ${coursesData.length})`}
           </span>
           {(categoryFilter !== "all" || ratingFilter !== "all") && (
             <button
@@ -368,8 +434,8 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
 
       {/* Courses Grid */}
       <div className="aac-courses-grid">
-        {sortedCourses.length > 0 ? (
-          sortedCourses.map((course) => (
+        {currentCourses.length > 0 ? (
+          currentCourses.map((course) => (
             <AdminCourseCard key={course.id} course={course} />
           ))
         ) : (
@@ -383,38 +449,59 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
       </div>
 
       {/* Pagination */}
-      <div className="aac-pagination">
-        <button className="aac-page-btn aac-page-prev">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M15 18L9 12L15 6"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+      {totalPages > 1 && (
+        <div className="aac-pagination">
+          <button
+            className={`aac-page-btn aac-page-prev ${
+              currentPage === 1 ? "disabled" : ""
+            }`}
+            onClick={goToPrevPage}
+            disabled={currentPage === 1}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M15 18L9 12L15 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
 
-        <div className="aac-page-numbers">
-          <button className="aac-page-btn">1</button>
-          <button className="aac-page-btn aac-page-active">2</button>
-          <button className="aac-page-btn">3</button>
-          <button className="aac-page-btn">4</button>
+          <div className="aac-page-numbers">
+            {getPageNumbers().map((pageNumber) => (
+              <button
+                key={pageNumber}
+                className={`aac-page-btn ${
+                  currentPage === pageNumber ? "aac-page-active" : ""
+                }`}
+                onClick={() => goToPage(pageNumber)}
+              >
+                {pageNumber}
+              </button>
+            ))}
+          </div>
+
+          <button
+            className={`aac-page-btn aac-page-next ${
+              currentPage === totalPages ? "disabled" : ""
+            }`}
+            onClick={goToNextPage}
+            disabled={currentPage === totalPages}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M9 18L15 12L9 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
-
-        <button className="aac-page-btn aac-page-next">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M9 18L15 12L9 6"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-      </div>
+      )}
     </div>
   );
 };

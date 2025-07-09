@@ -200,17 +200,110 @@ function AdminMyCourse() {
   );
   const [loading, setLoading] = useState(!location.state?.courseData);
   const [error, setError] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (!courseData) {
       setLoading(true);
       setError(null);
       getCourseById(id)
-        .then((res) => setCourseData(res.data))
+        .then((res) => {
+          console.log("Course data from API:", res.data);
+          setCourseData(res.data);
+        })
         .catch(() => setError("Course not found or failed to fetch."))
         .finally(() => setLoading(false));
     }
   }, [id]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".amc-dropdown-container")) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener("click", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [showDropdown]);
+
+  // Close modal when pressing ESC
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === "Escape") {
+        setShowDeleteModal(false);
+      }
+    };
+
+    if (showDeleteModal) {
+      document.addEventListener("keydown", handleEscKey);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, [showDeleteModal]);
+
+  const handleEdit = () => {
+    setShowDropdown(false);
+    // Navigate to edit course page
+    navigate(`/admin/courses/edit/${id}`, { state: { courseData } });
+  };
+
+  const handleDelete = () => {
+    setShowDropdown(false);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    setShowDeleteModal(false);
+    // TODO: Implement delete functionality
+    console.log("Delete course:", id);
+    // You can add delete API call here
+    // Example: deleteCourse(id).then(() => navigate('/admin/courses'));
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  const handleTrailerClick = () => {
+    if (trailerUrl) {
+      // Check if it's a YouTube URL or external video
+      const isYouTube =
+        trailerUrl.includes("youtube.com") || trailerUrl.includes("youtu.be");
+      const isExternalVideo =
+        trailerUrl.includes("http") &&
+        !trailerUrl.includes(window.location.hostname);
+
+      if (isYouTube || isExternalVideo) {
+        // Open external videos in new tab
+        window.open(trailerUrl, "_blank");
+      } else {
+        // For local videos, you might want to open in a modal or play inline
+        console.log("Playing local video:", trailerUrl);
+        // Could implement a modal video player here
+        window.open(trailerUrl, "_blank");
+      }
+    } else {
+      // If no trailer, navigate to edit page to add one
+      console.log("No trailer available for this course");
+      navigate(`/admin/courses/edit/${id}`, {
+        state: { courseData, focusSection: "trailer" },
+      });
+    }
+  };
 
   if (loading) return <div style={{ padding: 32 }}>Loading...</div>;
   if (error || !courseData)
@@ -220,9 +313,6 @@ function AdminMyCourse() {
       </div>
     );
 
-  // Helper: get category names as string
-  const categoryNames =
-    courseData.categoryIds?.map((cat) => cat.name).join(", ") || "";
   // Helper: get students enrolled count
   const studentsEnrolled =
     courseData.enrollmentCount ||
@@ -232,14 +322,23 @@ function AdminMyCourse() {
     courseData.thumbnail ||
     courseData.image ||
     "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=320&h=192&fit=crop";
+  // Helper: get trailer URL from API
+  const trailerUrl =
+    courseData.trailerUrl ||
+    courseData.trailer ||
+    courseData.previewVideo ||
+    courseData.videoUrl ||
+    courseData.introVideo ||
+    null;
+
+  // Debug log for trailer URL
+  console.log("Extracted trailer URL:", trailerUrl);
   // Helper: get course price
   const coursePrice = courseData.price ? `$${courseData.price}` : "N/A";
   // Helper: get course rating
   const courseRating = courseData.rating || 0;
   // Helper: get course level
   const courseLevel = courseData.level || "Beginner";
-  // Helper: get course language
-  const courseLanguage = courseData.language || "Unknown";
   // Helper: get uploaded/last updated
   const uploaded = courseData.createdAt
     ? new Date(courseData.createdAt).toLocaleDateString()
@@ -261,18 +360,6 @@ function AdminMyCourse() {
       },
       number: courseData.sections ? courseData.sections.length : 0,
       label: "Sections",
-    },
-    {
-      icon: {
-        component: (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
-          </svg>
-        ),
-        color: "amc-purple",
-      },
-      number: "N/A",
-      label: "Total Comments",
     },
     {
       icon: {
@@ -302,30 +389,6 @@ function AdminMyCourse() {
       icon: {
         component: (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zm2.95-8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z" />
-          </svg>
-        ),
-        color: "amc-gray",
-      },
-      number: courseLanguage,
-      label: "Course Language",
-    },
-    {
-      icon: {
-        component: (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-          </svg>
-        ),
-        color: "amc-yellow",
-      },
-      number: courseData.materials ? courseData.materials.length : 0,
-      label: "Attach File",
-    },
-    {
-      icon: {
-        component: (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" />
           </svg>
         ),
@@ -333,18 +396,6 @@ function AdminMyCourse() {
       },
       number: courseData.duration || "N/A",
       label: "Hours",
-    },
-    {
-      icon: {
-        component: (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" />
-          </svg>
-        ),
-        color: "amc-gray",
-      },
-      number: studentsEnrolled,
-      label: "Students viewed",
     },
   ];
 
@@ -354,11 +405,11 @@ function AdminMyCourse() {
         <div className="amc-breadcrumb-content">
           <span
             onClick={() => navigate("/admin/courses/all")}
-            style={{ cursor: "pointer", color: "#ff6636" }}
+            className="amc-breadcrumb-link"
           >
             My Courses
-          </span>{" "}
-          / <span>Course</span> / <span>{categoryNames}</span> /
+          </span>
+          <span className="amc-breadcrumb-separator">/</span>
           <span className="amc-breadcrumb-active">{courseData.title}</span>
         </div>
       </div>
@@ -387,7 +438,8 @@ function AdminMyCourse() {
                     >
                       <div>
                         <p className="amc-course-meta">
-                          Uploaded: {uploaded} • Last Updated: {lastUpdated}
+                          Uploaded: {uploaded} <br /> Last Updated:{" "}
+                          {lastUpdated}
                         </p>
                         <h2 className="amc-course-title">{courseData.title}</h2>
                         <p className="amc-course-description">
@@ -399,7 +451,46 @@ function AdminMyCourse() {
                         <button className="amc-withdraw-btn">
                           Withdraw Money
                         </button>
-                        <button className="amc-more-btn">...</button>
+                        <div className="amc-dropdown-container">
+                          <button
+                            className="amc-more-btn"
+                            onClick={toggleDropdown}
+                          >
+                            ...
+                          </button>
+                          {showDropdown && (
+                            <div className="amc-dropdown-menu">
+                              <button
+                                className="amc-dropdown-item"
+                                onClick={handleEdit}
+                              >
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                >
+                                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                                </svg>
+                                Edit
+                              </button>
+                              <button
+                                className="amc-dropdown-item amc-dropdown-item-danger"
+                                onClick={handleDelete}
+                              >
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                >
+                                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                                </svg>
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="amc-course-creators-rating">
@@ -436,6 +527,80 @@ function AdminMyCourse() {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Course Trailer Section */}
+            <div className="amc-card amc-trailer-card">
+              <div className="amc-card-header">
+                <h3 className="amc-card-title">Course Trailer</h3>
+              </div>
+              <div className="amc-card-content">
+                <div className="amc-trailer-container">
+                  {trailerUrl ? (
+                    <video
+                      className="amc-trailer-video"
+                      controls
+                      poster={courseImage}
+                      preload="metadata"
+                      onError={(e) => {
+                        console.error("Error loading trailer video:", e);
+                        e.target.style.display = "none";
+                      }}
+                    >
+                      <source src={trailerUrl} type="video/mp4" />
+                      <source src={trailerUrl} type="video/webm" />
+                      <source src={trailerUrl} type="video/ogg" />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <div
+                      className="amc-trailer-placeholder"
+                      onClick={handleTrailerClick}
+                    >
+                      <div className="amc-trailer-overlay">
+                        <div className="amc-play-button">
+                          {trailerUrl ? (
+                            <svg
+                              width="48"
+                              height="48"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          ) : (
+                            <svg
+                              width="48"
+                              height="48"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="amc-trailer-text">
+                          <h4>
+                            {trailerUrl
+                              ? "Course Preview"
+                              : "Add Course Trailer"}
+                          </h4>
+                          <p>
+                            {trailerUrl
+                              ? "Watch a preview of this course content"
+                              : "Click to add a trailer to showcase your course"}
+                          </p>
+                        </div>
+                      </div>
+                      <img
+                        src={courseImage}
+                        alt="Course preview"
+                        className="amc-trailer-thumbnail"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -594,6 +759,61 @@ function AdminMyCourse() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="amc-modal-overlay">
+          <div className="amc-modal">
+            <div className="amc-modal-header">
+              <h3 className="amc-modal-title">Delete Course</h3>
+              <button className="amc-modal-close" onClick={cancelDelete}>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
+              </button>
+            </div>
+            <div className="amc-modal-body">
+              <div className="amc-modal-icon">
+                <svg
+                  width="48"
+                  height="48"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                </svg>
+              </div>
+              <h4 className="amc-modal-message">
+                Are you sure you want to delete this course?
+              </h4>
+              <p className="amc-modal-description">
+                <strong>"{courseData?.title}"</strong> will be permanently
+                deleted. This action cannot be undone and all course data will
+                be lost.
+              </p>
+            </div>
+            <div className="amc-modal-footer">
+              <button
+                className="amc-modal-button amc-modal-button-secondary"
+                onClick={cancelDelete}
+              >
+                Cancel
+              </button>
+              <button
+                className="amc-modal-button amc-modal-button-danger"
+                onClick={confirmDelete}
+              >
+                Delete Course
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
