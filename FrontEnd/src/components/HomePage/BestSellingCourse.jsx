@@ -6,8 +6,10 @@ import PopupCard from "../common/Card/PopupCard";
 import { useDispatch, useSelector } from "react-redux";
 import { getBestSellingCourses } from "../../services/courseService";
 import LoaddingComponent from "../common/Loadding/LoaddingComponent";
+import { useNavigate } from "react-router-dom";
 
 function BestSellingCourse() {
+  const navigate = useNavigate();
   const courseInfo1 = useSelector(
     (state) => state.courses.bestSelling.bestSellingCourses
   );
@@ -42,8 +44,10 @@ function BestSellingCourse() {
         title: course.title,
         rating: course?.rating || 0, // If there is a rating field, take it, otherwise 0
         students: course.studentsEnrolled?.length || 0,
+        linkToCourseDetail: `/course/${course._id}`,
       },
       detailedProps: {
+        courseId: course._id,
         title: course.title,
         author: "Admin", // If there is an author field, take it
         authorAvatar: "/images/admin-image.png", // If there is one, take it
@@ -59,26 +63,32 @@ function BestSellingCourse() {
       },
     };
   });
-  if (isLoading) return <LoaddingComponent></LoaddingComponent>;
   return (
     <>
       <div style={{ backgroundColor: "#ecebeb7c" }}>
         <div className="container py-5">
           <h3 className="text-center mb-5">Best selling courses</h3>
-          <div className="desktop-view">
-            <div className="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-3">
-              {coursesInfo.map((courseInfo, index) => (
-                <div className="col" key={index}>
-                  <div>
-                    <PopupCard
-                      cardProps={courseInfo.cardProps}
-                      detailedProps={courseInfo.detailedProps}
-                    />
-                  </div>
+          {isLoading ? (
+            <LoaddingComponent></LoaddingComponent>
+          ) : (
+            <>
+              <div className="desktop-view">
+                <div className="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-3">
+                  {coursesInfo.map((courseInfo, index) => (
+                    <div className="col" key={index}>
+                      <div>
+                        <PopupCard
+                          cardProps={courseInfo.cardProps}
+                          detailedProps={courseInfo.detailedProps}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            </>
+          )}
+
           {/* for mobile */}
           <div className="mobile-view">
             <Swiper
@@ -103,6 +113,7 @@ function BestSellingCourse() {
                     title={courseInfo.cardProps.title}
                     rating={courseInfo.cardProps.rating}
                     students={courseInfo.cardProps.students}
+                    linkToCourseDetail={courseInfo.cardProps.linkToCourseDetail}
                   />
                 </SwiperSlide>
               ))}

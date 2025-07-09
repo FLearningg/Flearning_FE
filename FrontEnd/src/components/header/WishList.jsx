@@ -1,24 +1,51 @@
-import React from "react";
-import { NotificationCard } from "./NotificationCard";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { faListAlt } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { WishListCard } from "./WishListCard";
+import { useDispatch, useSelector } from "react-redux";
+import { getWishlist } from "../../services/wishlistService";
 function WishList() {
-  const courseData = [
-    {
-      courseImage: "/images/CourseImages.png",
-      courseName: "The Ultimate Drawing Course - Beginner to Advanced",
-      rating: 4.5,
-      reviewCount: 10,
-    },
-    {
-      courseImage: "/images/CourseImages.png",
-      courseName: "The Complete JavaScript Course 2023: From Zero to Expert!",
-      rating: 4.0,
-      reviewCount: 5,
-    },
-  ];
+  const currentUser = useSelector((state) => state.auth.currentUser);
+  const dispatch = useDispatch();
+  const wishlistData = useSelector((state) => state.wishlist?.getWishlist?.items);
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        if (currentUser) {
+          await getWishlist(dispatch, currentUser._id);
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+      }
+    };
+    fetchWishlist();
+  }, [dispatch, currentUser]);
+  const courseData = wishlistData?.map((course) => {
+    let finalPrice = course.price;
+    // let discountText = "";
+    if (course.discountId) {
+      if (course.discountId.typee === "fixedAmount") {
+        finalPrice = Math.max(0, course.price - course.discountId.value);
+        // discountText = `-${course.discountId.value}$`;
+      } else if (course.discountId.typee === "percent") {
+        finalPrice = Math.max(
+          0,
+          course.price * (1 - course.discountId.value / 100)
+        );
+        // discountText = `-${course.discountId.value}%`;
+      }
+    }
+    return {
+      courseId: course._id,
+      courseImage: course.thumbnail,
+      courseName: course.title,
+      rating: course.rating,
+      enrolledCount: course.studentsEnrolled.length,
+      price: `${finalPrice}`,
+      oldPrice: course.discountId ? `${course.price}` : "",
+    };
+  });
   return (
     <>
       <div className="dropdown">
@@ -32,7 +59,7 @@ function WishList() {
           <img src="/icons/heart.png" className="icon" alt="" />
         </button>
         <ul
-          className="dropdown-menu  dropdown-menu-fixed-right"
+          className="dropdown-menu dropdown-menu-center"
           style={{ width: "376px" }}
           aria-labelledby="dropdownMenuButton1"
         >
@@ -56,7 +83,10 @@ function WishList() {
                     courseImage={course.courseImage}
                     courseName={course.courseName}
                     rating={course.rating}
-                    reviewCount={course.reviewCount}
+                    enrolledCount={course.enrolledCount}
+                    price={course.price}
+                    oldPrice={course.oldPrice}
+                    linkToCourseDetail={`/course/${course.courseId}`}
                   />
                 ))
               ) : (

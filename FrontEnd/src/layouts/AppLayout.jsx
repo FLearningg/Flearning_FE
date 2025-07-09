@@ -1,18 +1,21 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Layout } from "antd";
 import { Outlet, useLocation } from "react-router-dom";
 import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
 import FinalHeaderAndSidebar from "../components/AdminHeaderAndSidebar/FinalHeaderAndSidebar";
 
+// Đảm bảo đường dẫn này là chính xác
+const FloatingChatButton = React.lazy(() =>
+  import("../components/GeminiChatBox/FloatingChatButton")
+);
+
 const { Content } = Layout;
 
 function AppLayout() {
   const location = useLocation();
   const isAdminRoute = location.pathname.includes("admin");
-  // Ước lượng chiều cao của Header, điều chỉnh cho chính xác
-  // Chiều cao này có thể khác nhau giữa desktop và mobile, và phụ thuộc vào nội dung Header
-  const headerHeight = "130px"; // Ví dụ: NavigationBar (khoảng 50-60px) + Navbar (khoảng 70-80px)
+  const headerHeight = "130px"; // Giả sử chiều cao header của bạn
 
   if (isAdminRoute) {
     return (
@@ -23,22 +26,29 @@ function AppLayout() {
   }
 
   return (
-    <Layout
-      className="layout"
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
-    >
-      <Header />
-      <Content
-        style={{
-          paddingTop: headerHeight,
-          flex: "1 0 auto", // Đảm bảo Content chiếm không gian còn lại và đẩy Footer xuống dưới
-        }}
+    <>
+      <Layout
+        className="layout"
+        style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
       >
-        {/* Outlet là nơi các component con của Route sẽ được render */}
-        <Outlet />
-      </Content>
-      <Footer />
-    </Layout>
+        <Header />
+        <Content
+          style={{
+            paddingTop: headerHeight,
+            flex: "1 0 auto",
+          }}
+        >
+          <Outlet />
+        </Content>
+        <Footer />
+      </Layout>
+
+      {/* Không hiển thị chatbot trên trang admin, đã được xử lý ở trên */}
+      <Suspense fallback={null}>
+        <FloatingChatButton />
+      </Suspense>
+    </>
   );
 }
+
 export default AppLayout;

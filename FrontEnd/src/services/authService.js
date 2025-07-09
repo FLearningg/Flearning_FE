@@ -1,12 +1,13 @@
 import axios from "axios";
+
 import { store } from "../store";
 import { logout } from "../store/authSlice";
 
 // Tạo một instance của axios với cấu hình chung
 const apiClient = axios.create({
   baseURL:
-    "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api", // URL gốc của API backend
-  withCredentials: true, // Cho phép trình duyệt tự động gửi cookie
+    "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api",
+  withCredentials: true,
 });
 
 // Interceptor 1: Can thiệp vào TRƯỚC KHI request được gửi đi
@@ -25,53 +26,87 @@ apiClient.interceptors.request.use(
   }
 );
 
+let isRefreshing = false;
+
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 // Interceptor 2: Can thiệp vào SAU KHI nhận được response
 apiClient.interceptors.response.use(
-  // Nếu response thành công, trả về response đó luôn
   (response) => response,
-  // Nếu response có lỗi, xử lý lỗi ở đây
+
   async (error) => {
     const originalRequest = error.config;
 
-    // Chỉ xử lý lỗi 401 (Unauthorized) và request chưa được thử lại
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true; // Đánh dấu là đã thử lại 1 lần để tránh lặp vô hạn
+    if (error.response?.status === 401) {
+      if (isRefreshing) {
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers["Authorization"] = "Bearer " + token;
+            return apiClient(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
 
       console.log("Access Token hết hạn, đang thử làm mới...");
 
       try {
-        // Gọi API để refresh token
-        const { data } = await apiClient.post("/auth/refresh-token");
+        const { data } = await axios.post(
+          "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api/auth/refresh-token",
+          {},
+          { withCredentials: true }
+        );
+
         const { accessToken } = data;
-
         console.log("Làm mới Access Token thành công!");
-
-        // Lưu token mới vào localStorage
         localStorage.setItem("accessToken", accessToken);
 
-        // Cập nhật lại header của request ban đầu và thử lại
+        apiClient.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${accessToken}`;
+
         originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
+
+        processQueue(null, accessToken);
+
         return apiClient(originalRequest);
       } catch (_error) {
-        // Nếu việc refresh token cũng thất bại (ví dụ: refresh token hết hạn)
-        console.log("Refresh Token không hợp lệ. Đang đăng xuất người dùng...");
+        console.error(
+          "Refresh Token không hợp lệ. Đang đăng xuất người dùng...",
+          _error
+        );
 
-        // Dùng store của Redux để dispatch action logout
+        processQueue(_error, null);
+
         store.dispatch(logout());
 
-        // Chuyển hướng người dùng về trang đăng nhập để chắc chắn
-        window.location.href = "/login";
+        window.location.replace("/login");
 
         return Promise.reject(_error);
+      } finally {
+        isRefreshing = false;
       }
     }
-
-    // Trả về lỗi cho các trường hợp khác (ví dụ: lỗi 400, 404, 500...)
     return Promise.reject(error);
   }
 );
-
-// --- Export các hàm gọi API ---
 
 // Auth Routes
 export const registerUser = (userData) =>

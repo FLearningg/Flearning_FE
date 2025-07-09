@@ -47,8 +47,10 @@ function RecentlyAddedCourse() {
         rating: course?.rating || 0, // If there is a rating field, take it, otherwise 0
         students: course.studentsEnrolled?.length || 0,
         variant: "large",
+        linkToCourseDetail: `/course/${course._id}`,
       },
       detailedProps: {
+        courseId: course._id,
         title: course.title,
         author: "Admin", // If there is an author field, take it
         authorAvatar: "/images/admin-image.png", // If there is one, take it
@@ -64,25 +66,28 @@ function RecentlyAddedCourse() {
       },
     };
   });
-  if (isLoading) return <LoaddingComponent />;
   return (
     <>
       <div className="container my-5">
         <h3 className="text-center mb-5">Recently Added Courses</h3>
-        <div className="desktop-view">
-          <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
-            {coursesInfo?.map((courseInfo) => (
-              <div className="col">
-                <div className="mb-5">
-                  <PopupCard
-                    cardProps={courseInfo.cardProps}
-                    detailedProps={courseInfo.detailedProps}
-                  />
+        {isLoading ? (
+          <LoaddingComponent />
+        ) : (
+          <div className="desktop-view">
+            <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+              {coursesInfo?.map((courseInfo, index) => (
+                <div className="col" key={index}>
+                  <div className="mb-5">
+                    <PopupCard
+                      cardProps={courseInfo.cardProps}
+                      detailedProps={courseInfo.detailedProps}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         {/* for mobile */}
         <div className="mobile-view">
           <Swiper
@@ -104,6 +109,7 @@ function RecentlyAddedCourse() {
                   title={courseInfo.cardProps.title}
                   rating={courseInfo.cardProps.rating}
                   students={courseInfo.cardProps.students}
+                  linkToCourseDetail={courseInfo.cardProps.linkToCourseDetail}
                 />
               </SwiperSlide>
             ))}

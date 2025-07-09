@@ -1,5 +1,3 @@
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect } from "react";
 import SearchBox from "../common/search/SearchBox/SearchBox";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,9 +17,6 @@ function SearchBar() {
     courseData?.map((course) => ({
       label: course.title,
     })) || [];
-  if (isLoading) {
-    return <LoaddingComponent />;
-  }
   return (
     <>
       <SearchBox

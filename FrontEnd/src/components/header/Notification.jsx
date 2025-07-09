@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import "../../assets/header/header.css";
 import { NotificationCard } from "./NotificationCard";
-import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell } from "@fortawesome/free-regular-svg-icons";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useDispatch, useSelector } from "react-redux";
-import { getNotifications } from "../../services/notificationService";
+import {
+  getNotifications,
+  markNotificationAsRead,
+} from "../../services/notificationService";
+import LoaddingComponent from "../common/Loadding/LoaddingComponent";
 const PAGE_SIZE = 10; // number of notifications to render at a time
 const RENDER_STEP = 5; // number of notifications to render on each scroll
 function Notification() {
@@ -14,14 +17,22 @@ function Notification() {
     useSelector(
       (state) => state.notifications?.getNotifications?.notifications
     ) || [];
+  const [isLoading, setIsLoading] = useState(true);
   const currentUser = useSelector((state) => state.auth.currentUser);
   const dispatch = useDispatch();
   useEffect(() => {
     const fetchNotifications = async () => {
-      await getNotifications(dispatch, currentUser?._id, 1, PAGE_SIZE);
+      try {
+        setIsLoading(true);
+        await getNotifications(dispatch, currentUser?._id, 1, PAGE_SIZE);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchNotifications();
-  }, [dispatch]);
+  }, [dispatch, currentUser?._id]);
   const [notifications, setNotifications] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMoreApi, setHasMoreApi] = useState(true);
@@ -105,7 +116,15 @@ function Notification() {
     const { date, time } = formatDateTime(n.createdAt);
     return { ...n, date, time };
   });
-
+  const markAllAsRead = async () => {
+    try {
+      await markNotificationAsRead(currentUser?._id, dispatch);
+      await getNotifications(dispatch, currentUser?._id, 1, PAGE_SIZE);
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+    }
+  };
+  console.log("notificationData", notificationData);
   return (
     <>
       <div className="dropdown">
@@ -115,14 +134,15 @@ function Notification() {
           id="dropdownMenuButton1"
           data-bs-toggle="dropdown"
           aria-expanded="false"
+          onClick={markAllAsRead}
         >
           <img src="/icons/bell.png" className="icon" alt="" />
-          {notificationData?.length > 0 && (
+          {notificationData?.some((n) => n.readStatus === false) && (
             <span className="notification-dot"></span>
           )}
         </button>
         <ul
-          className="dropdown-menu dropdown-menu-fixed-right"
+          className="dropdown-menu dropdown-menu-end"
           style={{ width: "350px" }}
           aria-labelledby="dropdownMenuButton1"
         >
@@ -147,67 +167,76 @@ function Notification() {
                   </div>
                 ) : (
                   <>
-                    {!showInfinite ? (
+                    {isLoading ? (
+                      <LoaddingComponent />
+                    ) : (
                       <>
-                        {notificationsWithDateTime
-                          .slice(0, visibleCount)
-                          .map((notification, index) => (
-                            <NotificationCard
-                              key={notification._id || index}
-                              title={notification.message}
-                              date={notification.date}
-                              time={notification.time}
-                              sender={notification.sender || "Admin"}
-                              senderImage={
-                                notification.senderImage ||
-                                "/images/defaultImageUser.png"
-                              }
-                            />
-                          ))}
-                        {visibleCount < notificationsWithDateTime.length && (
-                          <div className="text-center mt-2 px-2">
-                            <button
-                              className="btn header-btn-show-more w-100"
-                              onClick={handleShowMore}
-                            >
-                              Show More Notifications
-                            </button>
-                          </div>
+                        {!showInfinite ? (
+                          <>
+                            {notificationsWithDateTime
+                              .slice(0, visibleCount)
+                              .map((notification, index) => (
+                                <NotificationCard
+                                  key={notification._id || index}
+                                  title={notification.message}
+                                  date={notification.date}
+                                  time={notification.time}
+                                  sender={notification.sender || "Admin"}
+                                  senderImage={
+                                    notification.senderImage ||
+                                    "/images/defaultImageUser.png"
+                                  }
+                                />
+                              ))}
+                            {visibleCount <
+                              notificationsWithDateTime.length && (
+                              <div className="text-center mt-2 px-2">
+                                <button
+                                  className="btn header-btn-show-more w-100"
+                                  onClick={handleShowMore}
+                                >
+                                  Show More Notifications
+                                </button>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <InfiniteScroll
+                            dataLength={Math.min(
+                              visibleCount,
+                              notifications.length
+                            )}
+                            next={handleInfiniteScroll}
+                            hasMore={
+                              hasMoreApi || visibleCount < notifications.length
+                            }
+                            loader={
+                              <div class="spinner-border" role="status">
+                                <span class="sr-only">Loading...</span>
+                              </div>
+                            }
+                            scrollableTarget={"scrollableNotificationDiv"}
+                          >
+                            {notificationsWithDateTime
+                              .slice(0, visibleCount)
+                              .map((notification, index) => (
+                                <NotificationCard
+                                  key={notification._id || index}
+                                  title={notification.message}
+                                  date={notification.date}
+                                  time={notification.time}
+                                  sender={
+                                    notification.sender || "Unknown Sender"
+                                  }
+                                  senderImage={
+                                    notification.senderImage ||
+                                    "/images/defaultImageUser.png"
+                                  }
+                                />
+                              ))}
+                          </InfiniteScroll>
                         )}
                       </>
-                    ) : (
-                      <InfiniteScroll
-                        dataLength={Math.min(
-                          visibleCount,
-                          notifications.length
-                        )}
-                        next={handleInfiniteScroll}
-                        hasMore={
-                          hasMoreApi || visibleCount < notifications.length
-                        }
-                        loader={
-                          <div class="spinner-border" role="status">
-                            <span class="sr-only">Loading...</span>
-                          </div>
-                        }
-                        scrollableTarget={"scrollableNotificationDiv"}
-                      >
-                        {notificationsWithDateTime
-                          .slice(0, visibleCount)
-                          .map((notification, index) => (
-                            <NotificationCard
-                              key={notification._id || index}
-                              title={notification.message}
-                              date={notification.date}
-                              time={notification.time}
-                              sender={notification.sender || "Unknown Sender"}
-                              senderImage={
-                                notification.senderImage ||
-                                "/images/defaultImageUser.png"
-                              }
-                            />
-                          ))}
-                      </InfiniteScroll>
                     )}
                   </>
                 )
