@@ -11,11 +11,6 @@ export function Sidebar({ open, setOpen, isMobile }) {
   const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.auth);
 
-  // Debug logs
-  useEffect(() => {
-    console.log("Sidebar state:", { open, isMobile });
-  }, [open, isMobile]);
-
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login");
@@ -30,6 +25,18 @@ export function Sidebar({ open, setOpen, isMobile }) {
     }
   };
 
+  const handleLogoClick = () => {
+    // Force scroll to top when logo is clicked
+    setTimeout(() => {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }, 100);
+
+    // Also call the existing nav click handler
+    handleNavClick();
+  };
+
   const displayName = currentUser
     ? `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim() ||
       currentUser.userName ||
@@ -40,8 +47,6 @@ export function Sidebar({ open, setOpen, isMobile }) {
   const sidebarClasses = ["ahs-sidebar", isMobile && open ? "ahs-open" : ""]
     .filter(Boolean)
     .join(" ");
-
-  console.log("Sidebar classes:", sidebarClasses);
 
   return (
     <>
@@ -54,7 +59,7 @@ export function Sidebar({ open, setOpen, isMobile }) {
       <div className={sidebarClasses}>
         {/* Sidebar Header */}
         <div className="ahs-sidebar-header">
-          <NavLink to="/" className="ahs-logo-link" onClick={handleNavClick}>
+          <NavLink to="/" className="ahs-logo-link" onClick={handleLogoClick}>
             <div className="ahs-logo-icon">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

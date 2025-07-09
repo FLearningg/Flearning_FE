@@ -12,43 +12,39 @@ import RoleBasedRoute from "../components/ProtectedRoute/RoleBasedRoute";
 import adminRoutesContent from "./adminRoutes";
 
 import ErrorPage from "../pages/MainPage/ErrorPage";
-import ScrollToTop from "../components/common/ScrollToTop";
 
 const AppRouter = () => {
   return (
-    <>
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<AppLayout />}>
-          {/* Nhúng trực tiếp JSX của mainRoutesContent */}
-          {mainRoutesContent}
+    <Routes>
+      <Route path="/" element={<AppLayout />}>
+        {/* Nhúng trực tiếp JSX của mainRoutesContent */}
+        {mainRoutesContent}
 
-          {/* Nhúng trực tiếp JSX của authRoutesContent */}
-          {authRoutesContent}
-          <Route path="*" element={<ErrorPage />} />
-        </Route>
-        <Route
-          path="/admin/*" // Dùng wildcard '*' để khớp với tất cả các đường dẫn con
-          element={
-            <RoleBasedRoute allowedRoles={["admin"]}>
-              {/* Nếu user là admin, AppLayout sẽ được render */}
-              <AppLayout />
-            </RoleBasedRoute>
-          }
-        >
-          {/* Các route của admin sẽ được render bên trong <Outlet /> của AppLayout */}
-          {adminRoutesContent}
-        </Route>
-        <Route
-          path="*"
-          element={
-            <AppLayout>
-              <ErrorPage />
-            </AppLayout>
-          }
-        />
-      </Routes>
-    </>
+        {/* Nhúng trực tiếp JSX của authRoutesContent */}
+        {authRoutesContent}
+        <Route path="*" element={<ErrorPage />} />
+      </Route>
+      <Route
+        path="/admin/*" // Dùng wildcard '*' để khớp với tất cả các đường dẫn con
+        element={
+          <RoleBasedRoute allowedRoles={["admin"]}>
+            {/* Nếu user là admin, AppLayout sẽ được render */}
+            <AppLayout />
+          </RoleBasedRoute>
+        }
+      >
+        {/* Các route của admin sẽ được render bên trong <Outlet /> của AppLayout */}
+        {adminRoutesContent}
+      </Route>
+      <Route
+        path="*"
+        element={
+          <AppLayout>
+            <ErrorPage />
+          </AppLayout>
+        }
+      />
+    </Routes>
   );
 };
 

@@ -56,19 +56,12 @@ const FinalHeaderAndSidebar = ({ children }) => {
       const width = window.innerWidth;
       const newIsMobile = width <= 768;
 
-      console.log("Resize detected:", {
-        width,
-        newIsMobile,
-        currentIsMobile: isMobileRef.current,
-      });
-
       // Only update if mobile state actually changed
       if (newIsMobile !== isMobileRef.current) {
         setIsMobile(newIsMobile);
 
         // Only auto-close sidebar when switching from desktop to mobile
         if (newIsMobile && !isMobileRef.current && sidebarOpenRef.current) {
-          console.log("Auto-closing sidebar due to resize (desktop to mobile)");
           setSidebarOpen(false);
         }
       }
@@ -82,36 +75,17 @@ const FinalHeaderAndSidebar = ({ children }) => {
   // Close sidebar when route changes on mobile
   useEffect(() => {
     if (isMobile) {
-      console.log("Route changed, closing sidebar");
       setSidebarOpen(false);
     }
   }, [location.pathname, isMobile]);
 
   // Handler for hamburger click (only for mobile)
   const handleHamburgerClick = () => {
-    console.log(
-      "Hamburger clicked!",
-      "isMobile:",
-      isMobile,
-      "current sidebarOpen:",
-      sidebarOpen,
-      "will set to:",
-      !sidebarOpen
-    );
-
     if (isMobile) {
       const newState = !sidebarOpen;
-      console.log("Setting sidebarOpen to:", newState);
       setSidebarOpen(newState);
-    } else {
-      console.log("Not mobile, ignoring hamburger click");
     }
   };
-
-  // Debug effect to track state changes
-  useEffect(() => {
-    console.log("Sidebar state changed:", { sidebarOpen, isMobile });
-  }, [sidebarOpen, isMobile]);
 
   // Clone children with title prop if needed
   let childWithProps = children;
