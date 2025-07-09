@@ -6,22 +6,6 @@ import { WishListCard } from "./WishListCard";
 import { useDispatch, useSelector } from "react-redux";
 import { getWishlist } from "../../services/wishlistService";
 function WishList() {
-  // const courseData = [
-  //   {
-  //     courseImage: "/images/CourseImages.png",
-  //     courseName: "The Ultimate Drawing Course - Beginner to Advanced",
-  //     rating: 4.5,
-  //     reviewCount: 10,
-  //     price: 99,
-  //   },
-  //   {
-  //     courseImage: "/images/CourseImages.png",
-  //     courseName: "The Complete JavaScript Course 2023: From Zero to Expert!",
-  //     rating: 4.0,
-  //     reviewCount: 5,
-  //     price: 99,
-  //   },
-  // ];
   const currentUser = useSelector((state) => state.auth.currentUser);
   const dispatch = useDispatch();
   const wishlistData = useSelector((state) => state.wishlist?.getWishlist?.items);
@@ -53,6 +37,7 @@ function WishList() {
       }
     }
     return {
+      courseId: course._id,
       courseImage: course.thumbnail,
       courseName: course.title,
       rating: course.rating,
@@ -101,6 +86,7 @@ function WishList() {
                     enrolledCount={course.enrolledCount}
                     price={course.price}
                     oldPrice={course.oldPrice}
+                    linkToCourseDetail={`/course/${course.courseId}`}
                   />
                 ))
               ) : (

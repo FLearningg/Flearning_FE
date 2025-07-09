@@ -6,8 +6,10 @@ import PopupCard from "../common/Card/PopupCard";
 import { useDispatch, useSelector } from "react-redux";
 import { getBestSellingCourses } from "../../services/courseService";
 import LoaddingComponent from "../common/Loadding/LoaddingComponent";
+import { useNavigate } from "react-router-dom";
 
 function BestSellingCourse() {
+  const navigate = useNavigate();
   const courseInfo1 = useSelector(
     (state) => state.courses.bestSelling.bestSellingCourses
   );
@@ -42,9 +44,10 @@ function BestSellingCourse() {
         title: course.title,
         rating: course?.rating || 0, // If there is a rating field, take it, otherwise 0
         students: course.studentsEnrolled?.length || 0,
+        linkToCourseDetail: `/course/${course._id}`,
       },
       detailedProps: {
-        courseId: course._id, 
+        courseId: course._id,
         title: course.title,
         author: "Admin", // If there is an author field, take it
         authorAvatar: "/images/admin-image.png", // If there is one, take it
@@ -85,16 +88,6 @@ function BestSellingCourse() {
               </div>
             </>
           )}
-          {/* {coursesInfo.map((courseInfo, index) => (
-                <div className="col" key={index}>
-                  <div>
-                    <PopupCard
-                      cardProps={courseInfo.cardProps}
-                      detailedProps={courseInfo.detailedProps}
-                    />
-                  </div>
-                </div>
-              ))} */}
 
           {/* for mobile */}
           <div className="mobile-view">
@@ -120,6 +113,7 @@ function BestSellingCourse() {
                     title={courseInfo.cardProps.title}
                     rating={courseInfo.cardProps.rating}
                     students={courseInfo.cardProps.students}
+                    linkToCourseDetail={courseInfo.cardProps.linkToCourseDetail}
                   />
                 </SwiperSlide>
               ))}

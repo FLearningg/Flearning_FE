@@ -214,11 +214,12 @@ const Card = ({
   customImageHeight,
   onMenuAction,
   menuActions = [],
+  linkToCourseDetail, 
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [triggerRect, setTriggerRect] = useState(null);
   const menuTriggerRef = useRef(null);
-
+  const navigate = useNavigate();
   const handleMenuToggle = (e) => {
     e.stopPropagation();
 
@@ -297,6 +298,11 @@ const Card = ({
       style={getContainerStyles()}
       role="article"
       tabIndex="0"
+      onClick={() => {
+        if (linkToCourseDetail) {
+          navigate(linkToCourseDetail);
+        }
+      }}
     >
       <div className="modern-card-image-container" style={getImageStyles()}>
         <img
@@ -387,6 +393,7 @@ Card.propTypes = {
       icon: PropTypes.node,
     })
   ),
+  linkToCourseDetail: PropTypes.string,
 };
 
 Card.defaultProps = {
@@ -554,6 +561,9 @@ export const DetailedCard = ({
           className="card-detail-button"
           aria-label={`View details for ${title}`}
           type="button"
+          onClick={() => {
+            navigate(`/course/${courseId}`);
+          }}
         >
           Course Detail
         </button>

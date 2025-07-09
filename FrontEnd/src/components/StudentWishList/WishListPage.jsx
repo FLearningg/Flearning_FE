@@ -172,7 +172,7 @@ function WishListPage() {
                             {/* Link to course details page */}
                             <Link
                               className="text-decoration-none text-reset"
-                              to={"#"}
+                              to={`/course/${item.courseId}`}
                             >
                               <div className="text-truncate fw-semibold">
                                 {item.courseName}

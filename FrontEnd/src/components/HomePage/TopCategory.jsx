@@ -1,25 +1,9 @@
-import {
-  faArrowRight,
-  faBullhorn,
-  faCamera,
-  faCreditCard,
-  faCube,
-  faDesktop,
-  faHandshake,
-  faHeartbeat,
-  faLaptopCode,
-  faMusic,
-  faPaintBrush,
-  faTags,
-  faUserGraduate,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { use, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import "../../assets/homepage/TopCategory.css";
-import CustomButton from "../common/CustomButton/CustomButton";
 import TopCategoryCard from "./TopCategoryCard";
-import { icon } from "@fortawesome/fontawesome-svg-core";
 import { useDispatch, useSelector } from "react-redux";
 import { getTopCategories } from "../../services/categoryService";
 import LoaddingComponent from "../common/Loadding/LoaddingComponent";
