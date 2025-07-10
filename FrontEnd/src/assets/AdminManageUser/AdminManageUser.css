@@ -491,3 +491,12 @@
     height: 32px;
   }
 }
+
+/* Smooth transitions for status changes */
+.amu-status-badge {
+  transition: all 0.3s ease;
+}
+
+.amu-table-row {
+  transition: background-color 0.2s ease;
+}
