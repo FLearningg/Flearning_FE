@@ -16,7 +16,7 @@ export const getWishlist = async (dispatch, userId) => {
   try {
     const response = await apiClient.get(`/wishlist/${userId}`);
     dispatch(getWishlistSuccess(response.data.courseIds));
-    // console.log("Wishlist data:", response.data.courseIds);  
+    // console.log("Wishlist data:", response.data.courseIds);
     return response.data;
   } catch (error) {
     console.error("Error fetching wishlist:", error);
@@ -35,8 +35,11 @@ export const addToWishlist = async (userId, courseId, dispatch) => {
     dispatch(addItemToWishlistSuccess());
     return response.data;
   } catch (error) {
-    console.error("Error adding to wishlist:", error);
-    dispatch(addItemToWishlistFailure(error));
+    const message =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : "Error adding to wishlist";
+    dispatch(addItemToWishlistFailure(message));
     throw error;
   }
 };
@@ -50,8 +53,11 @@ export const removeFromWishlist = async (userId, courseId, dispatch) => {
     dispatch(removeItemFromWishlistSuccess());
     return response.data;
   } catch (error) {
-    console.error("Error removing from wishlist:", error);
-    dispatch(removeItemFromWishlistFailure(error));
+    const message =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : "Error removing from wishlist";
+    dispatch(removeItemFromWishlistFailure(message));
     throw error;
   }
 };
