@@ -1,262 +1,496 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import CourseHeader from "./CourseHeader";
 import CourseDescription from "./CourseDescription";
 import Curriculum from "./Curriculum";
 import CourseRating from "./CourseRating";
 import StudentFeedback from "./StudentFeedback";
 import PricingCard from "./PricingCard";
-import { useRef } from "react";
-
-const course = {
-  title: "Complete Website Responsive Design: from Figma to Webflow to Website Design",
-  subtitle: "3 in 1 Course: Learn to design websites with Figma, build with Webflow, and make a living freelancing.",
-  breadcrumb: ["Home", "Development", "Web Development", "Webflow"],
-  instructors: [{ name: "Vako", img: "/images/connect_us.png" }],
-  rating: {
-    overall: 4.8,
-    totalRatings: 451444,
-    distribution: [
-      { stars: 5, label: "5 Star Rating", percentage: 74.5 },
-      { stars: 4, label: "4 Star Rating", percentage: 21 },
-      { stars: 3, label: "3 Star Rating", percentage: 3 },
-      { stars: 2, label: "2 Star Rating", percentage: 1 },
-      { stars: 1, label: "1 Star Rating", percentage: 0.5 },
-    ],
-  },
-  heroImage: "/images/two-business-partners-working-office.png",
-  description: {
-    paragraphs: [
-      `It gives you a huge self-satisfaction when you look at your work and say, "I made that!" Love that feeling after I'm done working on something. When I lean back in my chair, look at the final result with a smile, and have this little "spark joy" moment. It's especially satisfying when I know I just made $3000.`,
-      `I did. And that's why I got into this field. Not for the love of Web Design, which I do now. But for the LIFESTYLE. There are many ways one can achieve this lifestyle. This is my way. This is how I achieved a lifestyle I've been fantasizing about for five years. And I'm going to teach you the same. Often people think Web Design is complicated. That it needs some creative talent or knack for computers.`,
-      `But a lot of people make it way complicated. That's like the hardest thing complicated. Like most subjects taught in the universities. I remember learning calculus. And thinking, "When will I ever use this?" Well, I never did. But here's the thing. I haven't gone to art school or have a computer science degree. I'm an outsider to this field who hacked himself into it, somehow making six-figure a month after professional. That's how I'm going to teach you Web Design. So you're not intimidated or your way with needless complexity. So you enjoy the process because it's simple and fun. So you can become a Freelance Web Designer in no time.`,
-      `For example, this is a Design course but I don't teach you Photoshop. Because Photoshop is needlessly complicated for Web Design. Full people still teach it, quite designers. I don't. I teach Figma — a simple tool that is taking over the design world. You will be designing a complete website within a week while others are still learning how to create basic layouts in Photoshop.`,
-    ],
-    learnItems: [
-      `You will learn how to design beautiful websites using Figma, an interface design tool used by designers at Uber, Airbnb, and Microsoft.`,
-      `You will learn how to take your designs and build them into beautiful websites using Webflow, a state-of-the-art site builder used by teams at Dell, NASA, and more.`,
-      `You will learn how freelance web designers make great money online and build a rewarding career.`,
-      `You will master responsive design techniques to create websites that work on all devices.`,
-      `You will learn best practices for client communication and project management as a freelancer.`,
-    ],
-    whoIsForItems: [
-      `This course is for those who want to launch a Freelance Web Design career.`,
-      `Beginners looking to enter the web design industry with no prior experience.`,
-      `Professionals seeking to transition into a creative and flexible career.`,
-      `Entrepreneurs who want to design their own websites without hiring developers.`,
-      `Those who are looking to reboot their work life and try a new profession that is fun, rewarding, and highly in-demand.`,
-    ],
-    requirementsItems: [
-      `No prior web design experience required.`,
-      `A computer with internet access.`,
-      `A free Figma account (no software purchase needed).`,
-      `A willingness to learn and experiment with design tools.`,
-      `Basic familiarity with computers and web browsing.`,
-    ],
-  },
-  curriculum: {
-    totalSections: 6,
-    totalLectures: 202,
-    totalDuration: "19h 37m",
-    sections: [
-      {
-        id: "getting-started",
-        title: "Getting Started",
-        lectureCount: 5,
-        duration: "51m",
-        lectures: [
-          { title: "What is Webflow?", duration: "07:31", type: "video" },
-          { title: "Sign up in Webflow", duration: "07:31", type: "video" },
-          { title: "Webflow Terms & Conditions", size: "5.3 MB", type: "document" },
-          { title: "Teaser of Webflow", duration: "07:31", type: "video" },
-          { title: "Practice Project", size: "5.3 MB", type: "document" },
-        ],
-      },
-      {
-        id: "secret-good-design",
-        title: "Secret of Good Design",
-        lectureCount: 52,
-        duration: "5h 49m",
-        lectures: [
-          { title: "Introduction to Design Principles", duration: "10:00", type: "video" },
-          { title: "Color Theory Basics", duration: "08:30", type: "video" },
-          // Placeholder for remaining lectures
-        ],
-      },
-      {
-        id: "practice-design",
-        title: "Practice Design Like an Artist",
-        lectureCount: 43,
-        duration: "53m",
-        lectures: [
-          { title: "Figma Interface Overview", duration: "06:00", type: "video" },
-          // Placeholder for remaining lectures
-        ],
-      },
-      {
-        id: "web-development",
-        title: "Web Development (Webflow)",
-        lectureCount: 81,
-        duration: "10h 6m",
-        lectures: [
-          { title: "Building Your First Webflow Site", duration: "12:00", type: "video" },
-          // Placeholder for remaining lectures
-        ],
-      },
-      {
-        id: "freelancing",
-        title: "Secrets of Making Money Freelancing",
-        lectureCount: 21,
-        duration: "38m",
-        lectures: [
-          { title: "Finding Freelance Clients", duration: "09:00", type: "video" },
-          // Placeholder for remaining lectures
-        ],
-      },
-      {
-        id: "advanced",
-        title: "Advanced",
-        lectureCount: 0,
-        duration: "0m",
-        lectures: [],
-      },
-    ],
-  },
-  pricing: {
-    currentPrice: 14.00,
-    originalPrice: 28.00,
-    discount: "56% OFF",
-    timeLeft: "2 days",
-    details: [
-      { icon: "Clock", label: "Course Duration", value: "6 Months" },
-      { icon: "BarChart3", label: "Course Level", value: "Beginner and Intermediate" },
-      { icon: "Users", label: "Students Enrolled", value: "451,444" },
-      { icon: "Book", label: "Language", value: "English" },
-      { icon: "Calendar", label: "Subtitle Language", value: "English" },
-    ],
-    includes: [
-      { icon: "Clock", text: "Lifetime access" },
-      { icon: "DollarSign", text: "30-days money-back guarantee" },
-      { icon: "FileText", text: "Free exercises file & downloadable resources" },
-      { icon: "Trophy", text: "Shareable certificate of completion" },
-      { icon: "Smartphone", text: "Access on mobile, tablet, and TV" },
-      { icon: "Subtitles", text: "English subtitles" },
-      { icon: "Layers", text: "100% online course" },
-    ],
-    shareButtons: [
-      { icon: "Copy", label: "Copy" },
-      { icon: "Facebook", label: "Facebook" },
-      { icon: "Twitter", label: "Twitter" },
-      { icon: "Mail", label: "Mail" },
-      { icon: "MessageCircle", label: "Message" },
-    ],
-  },
-  feedback: [
-    {
-      id: 1,
-      name: "Guy Hawkins",
-      avatar: "/avatar-guy.jpg?height=40&width=40",
-      timestamp: "1 week ago",
-      rating: 5,
-      feedback:
-        "I appreciate the precise short videos (10 mins or less each) because overly long videos tend to make me lose focus. The instructor is very knowledgeable in Web Design and it shows as he shares his knowledge. These were my best 6 months of training. Thanks, Vako.",
-    },
-    {
-      id: 2,
-      name: "Dianne Russell",
-      avatar: "/avatar-dianne.jpg?height=40&width=40",
-      timestamp: "51 mins ago",
-      rating: 5,
-      feedback:
-        "This course is just amazing! has great course content, the best practices, and a lot of real-world knowledge. I love the way of giving examples, the best tips by the instructor which are pretty interesting, fun and knowledgeable and I was never getting bored throughout the course. This course meets more than my expectation and, I made the best investment of time to learn and practice what I am passionate about. Thank you so much to our excellent instructor Vako!! Highly recommend this course! Take the next step.",
-    },
-    {
-      id: 3,
-      name: "Bessie Cooper",
-      avatar: "/avatar-bessie.jpg?height=40&width=40",
-      timestamp: "6 hours ago",
-      rating: 4,
-      feedback:
-        "Webflow course was good, it covers design secrets, and how to build responsive web pages, blogs, and some more tricks and tips about Webflow. I enjoyed the course and it helped me to add web development skills related to Webflow in my toolbox. Thank you Vako.",
-    },
-    {
-      id: 4,
-      name: "Eleanor Pena",
-      avatar: "/avatar-eleanor.jpg?height=40&width=40",
-      timestamp: "1 day ago",
-      rating: 5,
-      feedback:
-        "The course structure is fantastic, with clear explanations and practical projects. I built my first portfolio site in a week using Figma and Webflow. Vako’s teaching style is engaging and easy to follow. Highly recommend!",
-    },
-    {
-      id: 5,
-      name: "Ralph Edwards",
-      avatar: "/avatar-ralph.jpg?height=40&width=40",
-      timestamp: "2 days ago",
-      rating: 5,
-      feedback:
-        "GREAT Course! Instructor was very descriptive and professional. I learned a TON that is going to apply immediately to real life work. Thanks so much, cant wait for the next one!",
-    },
-    {
-      id: 6,
-      name: "Arlene McCoy",
-      avatar: "/avatar-arlene.jpg?height=40&width=40",
-      timestamp: "1 week ago",
-      rating: 5,
-      feedback:
-        "This should be one of the best course I ever made about UXUI in Udemy. Highly recommend to those who is new to UXUI and want to become UXUI freelancer!",
-    },
-  ],
-};
+import { Facebook, Twitter, Mail, MessageCircle } from "lucide-react";
+import "../../assets/CourseDetails/SingleCourse.css";
+import { getCourseById } from "../../services/courseService";
 
 export default function SingleCourse() {
-    const overviewRef = useRef(null);
-    const curriculumRef = useRef(null);
-    const reviewRef = useRef(null);
+  const { courseId } = useParams();
 
-    const handleTabClick = (tab) => {
-        let ref;
-        if (tab === "overview") ref = overviewRef;
-        else if (tab === "curriculum") ref = curriculumRef;
-        else if (tab === "review") ref = reviewRef;
-        if (ref && ref.current) {
-            ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  const [course, setCourse] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isScreenSmall, setIsScreenSmall] = useState(window.innerWidth < 1201);
+
+  const overviewRef = useRef(null);
+  const curriculumRef = useRef(null);
+  const reviewRef = useRef(null);
+
+  useEffect(() => {
+    if (!courseId) return; // guard against empty param
+
+    let isMounted = true; // prevents state updates on unmount
+    const fetchCourse = async () => {
+      setLoading(true);
+      try {
+        const data = await getCourseById(courseId);
+        if (isMounted) setCourse(data);
+      } catch (err) {
+        if (isMounted) {
+          setError(err.response?.data?.message || err.message);
         }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     };
 
+    fetchCourse();
+    return () => {
+      isMounted = false;
+    }; // cleanup
+  }, [courseId]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsScreenSmall(window.innerWidth < 1201);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup the event listener
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const handleTabClick = (tab) => {
+    const refs = {
+      overview: overviewRef,
+      curriculum: curriculumRef,
+      review: reviewRef,
+    };
+    refs[tab]?.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  if (loading) return <div className="text-center p-5">Loading course...</div>;
+  if (error) return <div className="text-center text-danger p-5">{error}</div>;
+
+  if (!course) {
     return (
-        <div style={{ margin: "0 200px", backgroundColor: "#ffffff" }}>
-            <div className="container">
-                <div className="row">
-                    <div className="col-lg-8">
-                        <CourseHeader
-                            breadcrumb={course.breadcrumb}
-                            title={course.title}
-                            subtitle={course.subtitle}
-                            instructors={course.instructors}
-                            rating={course.rating.overall}
-                            totalRatings={course.rating.totalRatings}
-                            heroImage={course.heroImage}
-                            activeTab={null}
-                            setActiveTab={handleTabClick}
-                        />
-                        <div ref={overviewRef}>
-                            <CourseDescription {...course.description} />
-                        </div>
-                        <div ref={curriculumRef}>
-                            <Curriculum {...course.curriculum} />
-                        </div>
-                        <div ref={reviewRef}>
-                            <CourseRating rating={course.rating} />
-                            <StudentFeedback feedback={course.feedback} />
-                        </div>
-                    </div>
-                    <div className="col-lg-4">
-                        <div>
-                            <PricingCard {...course.pricing} />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <div className="text-center p-5">
+        Could not find the requested course.
+      </div>
     );
+  }
+
+  function Modal({ isOpen, onClose, children }) {
+    if (!isOpen) return null;
+
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 1000,
+          overflow: "auto", // Cho phép scroll toàn modal nếu cần (đề phòng mobile)
+        }}
+        onClick={onClose}
+      >
+        <div
+          className="course-modal"
+          style={{
+            backgroundColor: "white",
+            borderRadius: "8px",
+            maxWidth: "400px",
+            width: "100%",
+            maxHeight: "90vh", // Giới hạn chiều cao modal
+            overflowY: "auto", // Cho phép cuộn nếu nội dung dài
+          }}
+          onClick={(e) => e.stopPropagation()} // Prevent modal from closing when clicking inside
+        >
+          {children}
+        </div>
+      </div>
+    );
+  }
+
+  // === Render fallback for missing attributes ===
+  const breadcrumb = course.breadcrumb ?? [
+    "Home > Development > Web Development > Webflow",
+  ];
+
+  const title = course.title ?? "S-Title";
+  const subtitle = course.subTitle ?? "S-Subtitle";
+  const instructors = course.instructors ?? [
+    { name: "Thien Huynh", img: "/images/connect_us.png" },
+  ];
+  const heroImage =
+    course.thumbnail ?? "/images/two-business-partners-working-office.png";
+  const trailer = /*course.trailer ??*/ {
+    url: "https://video.twimg.com/ext_tw_video/1009501301976326144/pu/vid/1280x720/oGf8vbus_bDega0M.mp4?tag=3",
+  };
+
+  const detail = course.detail ?? {};
+
+  const description = {
+    description: detail.description
+      ? [detail.description] // ép string thành array
+      : [],
+
+    willLearn: detail.willLearn ?? [],
+    targetAudience: detail.targetAudience ?? [],
+    requirement: detail.requirement ?? [],
+  };
+
+  const pricing = {
+    currentPrice: course.price - (course.discountId?.value ?? 0),
+    originalPrice: course.price,
+    discount: course.discountId?.description ?? "",
+    timeLeft: course.discountId?.endDate
+      ? `Ends on ${new Date(course.discountId.endDate).toLocaleDateString()}`
+      : "",
+    details: [
+      { label: "Level", value: course.level ?? "All levels" },
+      { label: "Duration", value: course.duration ?? "0h" },
+      {
+        label: "Students enrolled",
+        value: course.studentsEnrolled?.length.toLocaleString() ?? "0",
+      },
+      { label: "Language", value: course.language ?? "English" },
+      {
+        label: "Subtitle language",
+        value: course.subtitleLanguage ?? "None",
+      },
+    ],
+    includes: course.materials ?? [],
+    shareButtons: [
+      { icon: Facebook, label: "Facebook" },
+      { icon: Twitter, label: "Twitter" },
+      { icon: Mail, label: "Mail" },
+      { icon: MessageCircle, label: "Message" },
+    ],
+  };
+
+  const rating = [
+    { rateStar: 5 },
+    { rateStar: 5 },
+    { rateStar: 5 },
+    { rateStar: 5 },
+    { rateStar: 5 },
+    { rateStar: 5 },
+    { rateStar: 5 },
+    { rateStar: 5 },
+    { rateStar: 4 },
+    { rateStar: 4 },
+    { rateStar: 4 },
+    { rateStar: 3 },
+    { rateStar: 2 },
+    { rateStar: 1 },
+  ];
+
+  const curriculum = {
+    sections: course.sections ?? [
+      {
+        _id: "section1",
+        name: "Getting Started",
+        courseId: "course1",
+        lessons: [
+          {
+            _id: "lesson1",
+            courseId: "course1",
+            sectionId: "section1",
+            title: "What's is Webflow?",
+            duration: 451, // 7:31 in seconds
+            order: 1,
+          },
+          {
+            _id: "lesson2",
+            courseId: "course1",
+            sectionId: "section1",
+            title: "Sign up in Webflow",
+            duration: 451, // 7:31 in seconds
+            order: 2,
+          },
+          {
+            _id: "lesson3",
+            courseId: "course1",
+            sectionId: "section1",
+            title: "Webflow Terms & Conditions",
+            duration: 0, // Document type
+            order: 3,
+          },
+          {
+            _id: "lesson4",
+            courseId: "course1",
+            sectionId: "section1",
+            title: "Teaser of Webflow",
+            duration: 451, // 7:31 in seconds
+            order: 4,
+          },
+          {
+            _id: "lesson5",
+            courseId: "course1",
+            sectionId: "section1",
+            title: "Practice Project",
+            duration: 0, // Document type
+            order: 5,
+          },
+        ],
+        order: 1,
+      },
+      {
+        _id: "section2",
+        name: "Secret of Good Design",
+        courseId: "course1",
+        lessons: [
+          {
+            _id: "lesson6",
+            courseId: "course1",
+            sectionId: "section2",
+            title: "Design Principles",
+            duration: 20940, // 5h 49m in seconds
+            order: 1,
+          },
+        ],
+        order: 2,
+      },
+      {
+        _id: "section3",
+        name: "Practice Design Like an Artist",
+        courseId: "course1",
+        lessons: [
+          {
+            _id: "lesson8",
+            courseId: "course1",
+            sectionId: "section3",
+            title: "Sketching Basics",
+            duration: 3180, // 53m in seconds
+            order: 1,
+          },
+        ],
+        order: 3,
+      },
+      {
+        _id: "section4",
+        name: "Web Development (webflow)",
+        courseId: "course1",
+        lessons: [
+          {
+            _id: "lesson10",
+            courseId: "course1",
+            sectionId: "section4",
+            title: "HTML Basics",
+            duration: 36360, // 10h 6m in seconds
+            order: 1,
+          },
+        ],
+        order: 4,
+      },
+      {
+        _id: "section5",
+        name: "Secrets of Making Money Freelancing",
+        courseId: "course1",
+        lessons: [
+          {
+            _id: "lesson11",
+            courseId: "course1",
+            sectionId: "section5",
+            title: "Finding Clients",
+            duration: 2280, // 38m in seconds
+            order: 1,
+          },
+        ],
+        order: 5,
+      },
+      {
+        _id: "section6",
+        name: "Advanced",
+        courseId: "course1",
+        lessons: [
+          {
+            _id: "lesson12",
+            courseId: "course1",
+            sectionId: "section6",
+            title: "Advanced Techniques",
+            duration: 5460, // 91m in seconds
+            order: 1,
+          },
+        ],
+        order: 6,
+      },
+    ],
+  };
+
+  const feedback = course.feedback ?? [
+    {
+      _id: "507f1f77bcf86cd799439011",
+      content:
+        "I appreciate the precise short videos (10 mins or less each) because overly long videos tend to make me lose focus. The instructor is very knowledgeable in Web Design and it shows as he shares his knowledge. These were my best 6 months of training. Thanks, Vako.",
+      rateStar: 5,
+      courseId: "64a7b8c9e1234567890abcde",
+      userId: {
+        name: "Guy Hawkins",
+        avatar: "/images/connect_us.png",
+      },
+      createdAt: "2024-01-03T10:30:00Z",
+    },
+    {
+      _id: "507f1f77bcf86cd799439012",
+      content:
+        "This course is just amazing! has great course content, the best practices, and a lot of real-world knowledge. I love the way of giving examples, the best tips by the instructor which are pretty interesting, fun and knowledgeable and I was never getting bored throughout the course. This course meets more than my expectation and, I made the best investment of time to learn and practice what I am passionate about. Thank you so much to our excellent instructor Vako!! Highly recommend this course! Take the next step.",
+      rateStar: 5,
+      courseId: "64a7b8c9e1234567890abcde",
+      userId: {
+        name: "Dianne Russell",
+        avatar: "/images/connect_us.png",
+      },
+      createdAt: "2024-01-09T14:15:00Z",
+    },
+    {
+      _id: "507f1f77bcf86cd799439013",
+      content:
+        "Webflow course was good, it coves design secrets, and to build responsive web pages, blog, and some more tricks and tips about webflow. I enjoyed the course and it helped me to add web development skills related to webflow in my toolbox. Thank you Vako.",
+      rateStar: 4,
+      courseId: "64a7b8c9e1234567890abcde",
+      userId: {
+        name: "Bessie Cooper",
+        avatar: "/images/connect_us.png",
+      },
+      createdAt: "2024-01-09T08:45:00Z",
+    },
+    {
+      _id: "507f1f77bcf86cd799439014",
+      content:
+        "I appreciate the precise short videos (10 mins or less each) because overly long videos tend to make me lose focus. The instructor is very knowledgeable in Web Design and it shows as he shares his knowledge. These were my best 6 months of training. Thanks, Vako.",
+      rateStar: 5,
+      courseId: "64a7b8c9e1234567890abcde",
+      userId: {
+        name: "Eleanor Pena",
+        avatar: "/images/connect_us.png",
+      },
+      createdAt: "2024-01-08T16:20:00Z",
+    },
+    {
+      _id: "507f1f77bcf86cd799439015",
+      content:
+        "GREAT Course! Instructor was very descriptive and professional. I learned a TON that is going to apply immediately to real life work. Thanks so much, cant wait for the next one!",
+      rateStar: 3,
+      courseId: "64a7b8c9e1234567890abcde",
+      userId: {
+        name: "Ralph Edwards",
+        avatar: "/images/connect_us.png",
+      },
+      createdAt: "2024-01-07T11:10:00Z",
+    },
+    {
+      _id: "507f1f77bcf86cd799439016",
+      content:
+        "This should be one of the best course I ever made about UXUI in Udemy. Highly recommend to those who is new to UXUI and want to become UXUI freelancer!",
+      rateStar: 5,
+      courseId: "64a7b8c9e1234567890abcde",
+      userId: {
+        name: "Arlene McCoy",
+        avatar: "/images/connect_us.png",
+      },
+      createdAt: "2024-01-03T09:00:00Z",
+    },
+  ];
+
+  return (
+    <div
+      className="single-course-wrapper"
+      style={{
+        margin: "0 200px",
+        backgroundColor: "#ffffff",
+        paddingTop: "20px",
+      }}
+    >
+      <div className="single-course container">
+        <div className="row single-row">
+          <div className="col-lg-8 single-col">
+            <CourseHeader
+              breadcrumb={breadcrumb}
+              title={title}
+              subtitle={subtitle}
+              instructors={instructors}
+              rating={rating.overall}
+              totalRatings={rating.totalRatings}
+              heroImage={heroImage}
+              trailer={trailer}
+              activeTab={null}
+              setActiveTab={handleTabClick}
+              isScreenSmall={isScreenSmall}
+              onBurgerClick={() => setIsModalOpen(true)}
+            />
+
+            <div ref={overviewRef}>
+              {description ? (
+                <CourseDescription {...description} />
+              ) : (
+                <p className="text-muted">Course description not available</p>
+              )}
+            </div>
+
+            <div ref={curriculumRef}>
+              {curriculum.sections.length > 0 ? (
+                <Curriculum {...curriculum} />
+              ) : (
+                <p className="text-muted">Curriculum not available</p>
+              )}
+            </div>
+
+            <div ref={reviewRef}>
+              {rating ? (
+                <CourseRating rawRatings={rating} />
+              ) : (
+                <p className="text-muted">Rating not available</p>
+              )}
+              {feedback.length > 0 ? (
+                <StudentFeedback feedback={feedback} />
+              ) : (
+                <p className="text-muted">Student feedback not available</p>
+              )}
+            </div>
+          </div>
+
+          {!isScreenSmall && (
+            <div className="col-lg-4">
+              {pricing ? (
+                <PricingCard
+                  currentPrice={pricing.currentPrice}
+                  originalPrice={pricing.originalPrice}
+                  discount={pricing.discount}
+                  timeLeft={pricing.timeLeft}
+                  details={pricing.details}
+                  includes={pricing.includes}
+                  shareButtons={pricing.shareButtons}
+                />
+              ) : (
+                <p className="text-muted">Pricing info not available</p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        {pricing ? (
+          <PricingCard
+            currentPrice={pricing.currentPrice}
+            originalPrice={pricing.originalPrice}
+            discount={pricing.discount}
+            timeLeft={pricing.timeLeft}
+            details={pricing.details}
+            includes={pricing.includes}
+            shareButtons={pricing.shareButtons}
+          />
+        ) : (
+          <p className="text-muted">Pricing info not available</p>
+        )}
+      </Modal>
+    </div>
+  );
 }

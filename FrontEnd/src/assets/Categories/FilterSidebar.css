@@ -7,3 +7,61 @@
   background: #007bff;
   cursor: pointer;
 }
+
+@media (max-width: 1400px) {
+  .filter-sidebar .form-check-label {
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 992px) {
+  .filter-sidebar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 991px) {
+  .filter-sidebar {
+    width: 100%;
+  }
+}
+
+.filter-sidebar .checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-sidebar .custom-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.filter-sidebar .custom-checkbox input[type="checkbox"] {
+  flex-shrink: 0;
+}
+
+.filter-sidebar .checkbox-label-text {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-sidebar .label-wrapper {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.filter-sidebar .form-check-label.text-truncate {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}

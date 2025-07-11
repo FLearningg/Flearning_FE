@@ -6,6 +6,7 @@ import HomePage from "../components/HomePage/HomePage";
 import FaqsPage from "../pages/MainPage/FaqsPage";
 import ProfileRoutes from "./profileRoutes";
 import CategoryPage from "../components/Categories/CategoryPage";
+import CoursePage from "../components/Categories/CoursePage";
 import SingleCourse from "../components/CourseDetails/SingleCourse";
 
 const mainRoutesContent = (
@@ -14,10 +15,8 @@ const mainRoutesContent = (
     <Route path="faqs" element={<FaqsPage />} />
     <Route path="profile/*" element={<ProfileRoutes />} />
     <Route path="category" element={<CategoryPage />} />
-    <Route path="coursedetail" element={<SingleCourse />} />
-    {/*Course Detail sau khi thêm data sẽ đổi lại thành course/:id */}
-    {/* Thêm các route chính khác ở đây */}
-    {/* <Route path="courses" element={<CoursesPage />} /> */}
+    <Route path="courses" element={<CoursePage />} />
+    <Route path="course/:courseId" element={<SingleCourse />} />
     {/* Thêm các route chính khác ở đây */}
   </>
 );
