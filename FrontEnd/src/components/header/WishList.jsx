@@ -8,7 +8,9 @@ import { getWishlist } from "../../services/wishlistService";
 function WishList() {
   const currentUser = useSelector((state) => state.auth.currentUser);
   const dispatch = useDispatch();
-  const wishlistData = useSelector((state) => state.wishlist?.getWishlist?.items);
+  const wishlistData = useSelector(
+    (state) => state.wishlist?.getWishlist?.items
+  );
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
@@ -70,7 +72,7 @@ function WishList() {
             <div className="d-flex align-items-center">
               <h5 className="text-start fw-bold mb-0">WishList</h5>
               <Link to={"/profile/wishlist"} className="ms-auto see-all-link">
-                <small>See all</small>
+                <p className="m-0 p-0">See all</p>
               </Link>
             </div>
           </div>

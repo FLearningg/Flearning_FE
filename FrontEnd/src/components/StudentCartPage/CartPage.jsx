@@ -146,7 +146,7 @@ function CartPage() {
                 ) : (
                   currentData.map((item, index) => (
                     <tr key={startIdx + index}>
-                      <td className="p-3">
+                      <td className="p-3" style={{ width: "60%" }}>
                         <div className="d-flex align-items-start gap-3 flex-nowrap">
                           <img
                             src={item.courseImage}
@@ -155,7 +155,7 @@ function CartPage() {
                           />
                           <div
                             className="flex-shrink-1"
-                            style={{ minWidth: 0 }}
+                            style={{ minWidth: 0, maxWidth: "67%" }}
                           >
                             <div className="cart-rating-star mb-1">
                               <FontAwesomeIcon icon={faStar} /> {item.rating}{" "}

@@ -124,7 +124,6 @@ function Notification() {
       console.error("Error marking notifications as read:", error);
     }
   };
-  console.log("notificationData", notificationData);
   return (
     <>
       <div className="dropdown">

@@ -1,7 +1,7 @@
 .wishlist-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 .wishlist-content {
   background: #fff;
@@ -11,17 +11,18 @@
 }
 
 .wishlist-button-buy-now {
-    background-color: #F5F7FA !important;
+  background-color: #f5f7fa !important;
 }
 
 .wishlist-button-buy-now:hover {
-    background-color: #eeecec !important;
+  background-color: #eeecec !important;
 }
 
 .wishlist-course-img {
-    /* width: 25%; */
-    width: 165px;
-    border-radius: 6px;
+  width: 165px;
+  height: 100px;
+  border-radius: 6px;
+  object-fit: cover;
 }
 
 /* .wl-course-title {
@@ -37,57 +38,57 @@
 } */
 
 .wl-course-author {
-    color: #888;
-    font-size: 0.875rem;
-    white-space: nowrap;
+  color: #888;
+  font-size: 0.875rem;
+  white-space: nowrap;
 }
 
 .wl-rating-star {
-    color: #f39c12;
-    font-weight: 600;
-    white-space: nowrap;
+  color: #f39c12;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .wl-price-current {
-    color: #ff5722;
-    font-weight: 600;
-    font-size: 1.2rem;
+  color: #ff5722;
+  font-weight: 600;
+  font-size: 1.2rem;
 }
 
 .wl-price-old {
-    text-decoration: line-through;
-    color: #999;
-    font-size: 0.875rem;
+  text-decoration: line-through;
+  color: #999;
+  font-size: 0.875rem;
 }
 
 .wl-btn-cart {
-    background-color: #ff5722 !important;
-    color: white !important;
-    border: 1px solid #ff5722 !important;
+  background-color: #ff5722 !important;
+  color: white !important;
+  border: 1px solid #ff5722 !important;
 }
 
 .wl-btn-cart:hover {
-    background-color: #fff !important;
-    color: #ff5722 !important;
+  background-color: #fff !important;
+  color: #ff5722 !important;
 }
 
 .wl-btn-fav {
-    background-color: #FFEEE8 !important;
-    color: #ff5722 !important;
+  background-color: #ffeee8 !important;
+  color: #ff5722 !important;
 }
 
 .wishlist-button-primary {
-    background-color: #ff5722 !important;
-    border: 1px solid #ff5722 !important;
+  background-color: #ff5722 !important;
+  border: 1px solid #ff5722 !important;
 }
 
 .wishlist-button-outline {
-    background-color: transparent !important;
-    color: #ff5722 !important;
-    border: 1px solid #ff5722 !important;
+  background-color: transparent !important;
+  color: #ff5722 !important;
+  border: 1px solid #ff5722 !important;
 }
 
 .wishlist-button-outline:hover {
-    background-color: #ff5722 !important;
-    color: white !important;
+  background-color: #ff5722 !important;
+  color: white !important;
 }

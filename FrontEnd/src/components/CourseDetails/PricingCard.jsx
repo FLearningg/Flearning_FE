@@ -1,6 +1,10 @@
 import { Clock, BarChart3, Users, Book, Subtitles, Layers } from "lucide-react";
 import { Copy } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import { addToWishlist, getWishlist } from "../../services/wishlistService";
+import { toast } from "react-toastify";
+import { addToCart } from "../../services/cartService";
 
 const ICON_MAP = {
   Level: BarChart3,
@@ -123,38 +127,140 @@ const ShareSection = ({ buttons }) => {
   );
 };
 
-const ActionButtons = () => (
-  <div className="mb-4">
-    <button
-      className="btn w-100 fw-medium py-2 mb-3"
-      style={{
-        backgroundColor: "#ff6636",
-        borderColor: "#ff6636",
-        color: "white",
-      }}
-    >
-      Add To Cart
-    </button>
-    <button
-      className="btn btn-outline w-100 fw-medium py-2 mb-3"
-      style={{ borderColor: "#ff6636", color: "#ff6636" }}
-    >
-      Buy Now
-    </button>
-    <div className="row g-2">
-      <div className="col-6 col-sm-7">
-        <button className="btn btn-outline-secondary w-100 wishlist-btn">
-          Add To Wishlist
+const ActionButtons = () => {
+  const courseId = useParams().courseId;
+  const currentUser = useSelector((state) => state.auth.currentUser);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const isLoadingWishlist = useSelector(
+    (state) => state.wishlist.addItemToWishlist.isLoading
+  );
+  const errorMsgWishlist = useSelector(
+    (state) => state.wishlist.addItemToWishlist.errorMsg
+  );
+  const isLoadingCart = useSelector(
+    (state) => state.cart.addItemToCart.isLoading
+  );
+  const errorMsgCart = useSelector(
+    (state) => state.cart.addItemToCart.errorMsg
+  );
+  const handleAddToWishList = async () => {
+    if (!currentUser) {
+      navigate("/login");
+    } else {
+      try {
+        await addToWishlist(currentUser._id, courseId, dispatch);
+        await getWishlist(dispatch, currentUser._id);
+        toast.success("Added to wishlist successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } catch (error) {
+        toast.error(
+          errorMsgWishlist || "Failed to add to wishlist. Please try again.",
+          {
+            position: "top-right",
+            autoClose: 3000,
+          }
+        );
+      }
+    }
+  };
+  const AddCourseToCart = async () => {
+    if (!currentUser) {
+      navigate("/login");
+    } else {
+      try {
+        await addToCart(currentUser._id, courseId, dispatch);
+        toast.success("Add course to cart success", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } catch (err) {
+        toast.error(
+          errorMsgCart || "Error adding course to cart, please try again",
+          {
+            position: "top-right",
+            autoClose: 3000,
+          }
+        );
+      }
+    }
+  };
+  const isEnrolledCourse = (courseId) => {
+    return currentUser?.enrolledCourses?.includes(courseId);
+  };
+  return (
+    <div className="mb-4">
+      {!isEnrolledCourse(courseId) ? (
+        <button
+          className="btn w-100 fw-medium py-2 mb-3"
+          style={{
+            backgroundColor: "#ff6636",
+            borderColor: "#ff6636",
+            color: "white",
+          }}
+          onClick={AddCourseToCart}
+          disabled={isLoadingCart}
+        >
+          {isLoadingCart ? (
+            <span
+              className="spinner-border spinner-border-sm text-light"
+              role="status"
+              aria-hidden="true"
+              style={{ verticalAlign: "middle" }}
+            ></span>
+          ) : (
+            <>Add To Cart</>
+          )}
         </button>
-      </div>
-      <div className="col-6 col-sm-5">
-        <button className="btn btn-outline-secondary w-100 gift-btn">
-          Gift Course
+      ) : (
+        <button
+          className="btn w-100 fw-medium py-2 mb-3"
+          style={{
+            backgroundColor: "#ff6636",
+            borderColor: "#ff6636",
+            color: "white",
+          }}
+        >
+          Go To Course
         </button>
+      )}
+
+      <button
+        className="btn btn-outline w-100 fw-medium py-2 mb-3"
+        style={{ borderColor: "#ff6636", color: "#ff6636" }}
+      >
+        Buy Now
+      </button>
+      <div className="row g-2">
+        <div className="col-6 col-sm-7">
+          <button
+            className="btn btn-outline-secondary w-100 wishlist-btn"
+            onClick={handleAddToWishList}
+            disabled={isLoadingWishlist}
+          >
+            {isLoadingWishlist ? (
+              <span
+                className="spinner-border spinner-border-sm text-light"
+                role="status"
+                aria-hidden="true"
+                style={{ verticalAlign: "middle" }}
+              ></span>
+            ) : (
+              <>Add To Wishlist</>
+            )}
+          </button>
+        </div>
+        <div className="col-6 col-sm-5">
+          <button className="btn btn-outline-secondary w-100 gift-btn">
+            Gift Course
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default function PricingCard({
   currentPrice,

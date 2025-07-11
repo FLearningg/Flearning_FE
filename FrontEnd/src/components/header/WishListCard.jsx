@@ -20,9 +20,9 @@ export const WishListCard = ({
               src={courseImage}
               alt="Course"
               className="mx-2 me-3"
-              style={{ width: "110px", objectFit: "cover" }}
+              style={{ width: "30%", height: "80px", objectFit: "contain" }}
             />
-            <div className="notification-title">
+            <div className="notification-title" style={{ width: "70%" }}>
               <div>
                 <FontAwesomeIcon icon={faStar} color="orange" />
                 <span className="ms-1">{rating}</span>
