@@ -12,13 +12,18 @@ export default function CourseFilterHeader({
   setShowSidebar,
   resultCount,
 }) {
+  const handleSidebarToggle = () => setShowSidebar(!showSidebar);
+  const handleSearchChange = (e) => setSearchQuery(e.target.value);
+  const handleSortChange = (e) => setSort(e.target.value);
+  const handleSuggestionClick = (sugg) => setSearchQuery(sugg);
+
   return (
     <div className="mb-4 course-filter-header">
-      <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-2">
+      <div className="wrap-cont d-flex align-items-center justify-content-between flex-wrap gap-3 mb-2">
         <div className="position-relative">
           <button
             type="button"
-            onClick={() => setShowSidebar(!showSidebar)}
+            onClick={handleSidebarToggle}
             className="filter-btn"
           >
             <Filter size={18} />
@@ -35,18 +40,20 @@ export default function CourseFilterHeader({
             type="text"
             className="form-control ps-5"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             placeholder="Search courses..."
           />
         </div>
 
         <div className="d-flex align-items-center gap-2">
-          <span className="text-secondary small fw-semibold">Sort by:</span>
+          <span className="sort-text text-secondary small fw-semibold">
+            Sort by:
+          </span>
           <select
             className="form-select"
             style={{ width: 160 }}
             value={sort}
-            onChange={(e) => setSort(e.target.value)}
+            onChange={handleSortChange}
           >
             <option value="trending">Trending</option>
             <option value="newest">Newest</option>
@@ -58,22 +65,23 @@ export default function CourseFilterHeader({
       </div>
 
       <div className="d-flex justify-content-between flex-wrap align-items-center gap-2">
-        <div className="d-flex align-items-center gap-2 small flex-wrap">
+        <div className="suggestion d-flex align-items-center gap-2 small flex-wrap">
           <span className="text-secondary">Suggestion:</span>
           {suggestions.map((sugg, idx) => (
             <button
-              key={idx}
+              key={sugg}
               type="button"
               className="suggestion-item"
-              onClick={() => setSearchQuery(sugg)}
+              onClick={() => handleSuggestionClick(sugg)}
             >
               {sugg}
             </button>
           ))}
         </div>
 
-        <div className="small text-muted ms-auto">
-          <strong>{resultCount.toLocaleString()}</strong> results found for “{searchQuery.toLowerCase()}”
+        <div className="numresul small text-muted ms-auto">
+          <strong>{resultCount?.toLocaleString?.() ?? 0}</strong> results found
+          for “{searchQuery?.toLowerCase?.() ?? ""}”
         </div>
       </div>
     </div>

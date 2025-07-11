@@ -1,60 +1,52 @@
-// components/BestSelling.jsx
-import Card from "../common/Card/Card"
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { getBestSellingCourses } from "../../services/courseService";
+import Card from "../common/Card/Card";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 import "../../assets/Categories/BestSelling.css";
 
+const Loading = () => <div className="text-center w-100">Loading...</div>;
+
+const CourseCard = ({ course, onClick }) => (
+  <div style={{ cursor: "pointer" }} onClick={() => onClick(course._id)}>
+    <Card
+      image={course.thumbnail}
+      category={
+        <span style={{ fontSize: "0.5rem" }}>
+          {course?.categoryIds?.[0]?.name || "Uncategorized"}
+        </span>
+      }
+      categoryBgColor={course.categoryColor || "rgb(255, 238, 232)"}
+      price={`${course.price}$`}
+      title={course.title}
+      rating={course?.rating || 0}
+      students={(course.studentsEnrolled?.length || 0).toLocaleString()}
+      variant="normal"
+    />
+  </div>
+);
+
 export default function BestSelling() {
-  const courses = [
-    {
-      id: 1,
-      image: "/images/CourseImages.png",
-      category: "DESIGN",
-      categoryColor: "#ff6636",
-      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
-      price: "$57",
-      rating: 5.0,
-      students: "265.7K",
-    },
-    {
-      id: 2,
-      image: "/images/CourseImages.png",
-      category: "DEVELOPMENTS",
-      categoryColor: "#342f98",
-      title: "The Complete 2021 Web Development Bootcamp",
-      price: "$57",
-      rating: 5.0,
-      students: "265.7K",
-    },
-    {
-      id: 3,
-      image: "/images/CourseImages.png",
-      category: "BUSINESS",
-      categoryColor: "#15711f",
-      title: "Learn Python Programming Masterclass",
-      price: "$57",
-      rating: 5.0,
-      students: "265.7K",
-    },
-    {
-      id: 4,
-      image: "/images/CourseImages.png",
-      category: "MARKETING",
-      categoryColor: "#342f98",
-      title: "The Complete Digital Marketing Course - 12 Courses in 1",
-      price: "$57",
-      rating: 5.0,
-      students: "265.7K",
-    },
-    {
-      id: 5,
-      image: "/images/CourseImages.png",
-      category: "IT & SOFTWARE",
-      categoryColor: "#fd8e1f",
-      title: "Reiki Level I, II and Master/Teacher Program",
-      price: "$57",
-      rating: 5.0,
-      students: "265.7K",
-    },
-  ]
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const courses = useSelector(
+    (state) => state.courses.bestSelling.bestSellingCourses
+  );
+  const loading = useSelector((state) => state.courses.bestSelling.isLoading);
+
+  useEffect(() => {
+    const fetchBestSellingCourses = async () => {
+      await getBestSellingCourses(dispatch);
+    };
+    fetchBestSellingCourses();
+  }, [dispatch]);
+
+  const handleCardClick = (courseId) => {
+    navigate(`/course/${courseId}`);
+  };
 
   return (
     <section className="best-selling-section py-5 bg-white">
@@ -63,23 +55,60 @@ export default function BestSelling() {
           Best selling courses in Web Development
         </h2>
 
-        <div className="row g-4">
-          {courses.map((course) => (
-            <div key={course.id} className="col-12 col-md-6 col-lg-4 col-xl-2-4">
-              <Card 
-                image={course.image}
-                category={course.category}
-                categoryBgColor={course.categoryColor}
-                price={course.price}
-                title={course.title}
-                rating={course.rating}
-                students={course.students}
-                variant="normal"
-              />
-            </div>
-          ))}
+        {/* Desktop ≥1377px: Grid */}
+        <div className="row g-4 d-none d-xxl-flex">
+          {loading ? (
+            <Loading />
+          ) : (
+            courses.map((course) => (
+              <div
+                key={course._id}
+                className="col-12 col-md-6 col-lg-4 col-xl-2-4"
+              >
+                <CourseCard course={course} onClick={handleCardClick} />
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Swiper 992px–1377px: 3.5 slides */}
+        <div className="d-none d-lg-block d-xxl-none mt-4">
+          {loading ? (
+            <Loading />
+          ) : (
+            <Swiper spaceBetween={20} slidesPerView={3.5} grabCursor={true}>
+              {courses.map((course) => (
+                <SwiperSlide key={course._id}>
+                  <CourseCard course={course} onClick={handleCardClick} />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          )}
+        </div>
+
+        {/* Mobile <992px: Swiper 1.2–2.5 slides */}
+        <div className="d-lg-none mt-4">
+          {loading ? (
+            <Loading />
+          ) : (
+            <Swiper
+              spaceBetween={20}
+              slidesPerView={1.2}
+              grabCursor={true}
+              breakpoints={{
+                576: { slidesPerView: 2 },
+                768: { slidesPerView: 2.5 },
+              }}
+            >
+              {courses.map((course) => (
+                <SwiperSlide key={course._id}>
+                  <CourseCard course={course} onClick={handleCardClick} />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          )}
         </div>
       </div>
     </section>
-  )
+  );
 }

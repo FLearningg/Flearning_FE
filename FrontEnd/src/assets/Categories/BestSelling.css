@@ -1,11 +1,3 @@
-/* 5-column support for Bootstrap */
-@media (min-width: 1200px) {
-  .best-selling-section .col-xl-2-4 {
-    flex: 0 0 auto;
-    width: 20%;
-  }
-}
-
 .best-selling-section .course-card {
   transition: all 0.3s ease;
   height: 100%;
@@ -63,4 +55,43 @@
 .best-selling-section .section-title {
   font-size: 2.5rem;
   margin-bottom: 3rem;
+}
+/* 5-column support for Bootstrap */
+@media (min-width: 992px) {
+  .best-selling-section .col-xl-2-4 {
+    flex: 0 0 auto;
+    width: 20%;
+  }
+  .best-selling-section .modern-category-badge {
+    letter-spacing: 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .best-selling-section .section-title {
+    font-size: 1.7rem;
+  }
+}
+
+@media (min-width: 425px) and (max-width: 767.98px) {
+  .best-selling-section .section-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 375px) and (max-width: 424.98px) {
+  .best-selling-section .section-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 320px) and (max-width: 374.98px) {
+  .best-selling-section .section-title {
+    font-size: 1.2rem;
+  }
+
+  .best-selling-section .modern-category-badge {
+    letter-spacing: 0;
+    text-transform: none;
+  }
 }

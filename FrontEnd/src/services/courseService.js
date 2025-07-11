@@ -58,3 +58,23 @@ export const getRecentlyAddedCourses = async (dispatch) => {
     dispatch(recentlyAddedFailure(error.message));
   }
 };
+//get course by id
+export const getCourseById = async (courseId) => {
+  try {
+    const response = await apiClient.get(`/courses/${courseId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching course by ID:", error);
+    throw error;
+  }
+};
+//get all courses not using dispatch
+export const getAllCoursesWithoutDispatch = async () => {
+  try {
+    const response = await apiClient.get(`/courses`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all courses:", error);
+    throw error;
+  }
+};

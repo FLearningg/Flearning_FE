@@ -45,7 +45,7 @@
 .popular-tools-section .tool-card {
   border: 1px solid #e9eaf0;
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 1rem;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -90,5 +90,17 @@
     flex-direction: column;
     align-items: flex-start !important;
     gap: 1rem;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1336px) {
+  .popular-tools-section .tool-name {
+    font-size: 0.8rem;
+  }
+  .popular-tools-section .tool-courses {
+    font-size: 0.5rem;
+  }
+  .popular-tools-section .tool-card {
+    padding: 0.8rem;
   }
 }
