@@ -132,3 +132,15 @@
 .send-button:disabled .ant-spin {
   color: #a0a0a0;
 }
+
+/* Style cho các link trong tin nhắn của bot */
+.bot-row .message-text a {
+  color: #0084ff; /* Màu xanh giống nút gửi */
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.bot-row .message-text a:hover {
+  text-decoration: none;
+  opacity: 0.8;
+}
