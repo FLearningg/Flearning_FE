@@ -193,27 +193,35 @@ const ActionButtons = () => {
   return (
     <div className="mb-4">
       {!isEnrolledCourse(courseId) ? (
-        <button
-          className="btn w-100 fw-medium py-2 mb-3"
-          style={{
-            backgroundColor: "#ff6636",
-            borderColor: "#ff6636",
-            color: "white",
-          }}
-          onClick={AddCourseToCart}
-          disabled={isLoadingCart}
-        >
-          {isLoadingCart ? (
-            <span
-              className="spinner-border spinner-border-sm text-light"
-              role="status"
-              aria-hidden="true"
-              style={{ verticalAlign: "middle" }}
-            ></span>
-          ) : (
-            <>Add To Cart</>
-          )}
-        </button>
+        <>
+          <button
+            className="btn w-100 fw-medium py-2 mb-3"
+            style={{
+              backgroundColor: "#ff6636",
+              borderColor: "#ff6636",
+              color: "white",
+            }}
+            onClick={AddCourseToCart}
+            disabled={isLoadingCart}
+          >
+            {isLoadingCart ? (
+              <span
+                className="spinner-border spinner-border-sm text-light"
+                role="status"
+                aria-hidden="true"
+                style={{ verticalAlign: "middle" }}
+              ></span>
+            ) : (
+              <>Add To Cart</>
+            )}
+          </button>
+          <button
+            className="btn btn-outline w-100 fw-medium py-2 mb-3"
+            style={{ borderColor: "#ff6636", color: "#ff6636" }}
+          >
+            Buy Now
+          </button>
+        </>
       ) : (
         <button
           className="btn w-100 fw-medium py-2 mb-3"
@@ -227,12 +235,12 @@ const ActionButtons = () => {
         </button>
       )}
 
-      <button
+      {/* <button
         className="btn btn-outline w-100 fw-medium py-2 mb-3"
         style={{ borderColor: "#ff6636", color: "#ff6636" }}
       >
         Buy Now
-      </button>
+      </button> */}
       <div className="row g-2">
         <div className="col-6 col-sm-7">
           <button
