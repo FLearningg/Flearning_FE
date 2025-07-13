@@ -42,7 +42,10 @@ function RecentlyAddedCourse() {
       cardProps: {
         image: course.thumbnail,
         category: course?.categoryIds?.[0]?.name || "Uncategorized",
-        price: `${course.price}$`,
+        // price: `${finalPrice.toFixed(2)}$`,
+        price: Number.isInteger(finalPrice)
+          ? `${finalPrice}$`
+          : `${parseFloat(finalPrice.toFixed(2))}$`,
         title: course.title,
         rating: course?.rating || 0, // If there is a rating field, take it, otherwise 0
         students: course.studentsEnrolled?.length || 0,
@@ -59,8 +62,8 @@ function RecentlyAddedCourse() {
         students: course.studentsEnrolled?.length || 0,
         level: course.level,
         duration: course.duration,
-        price: `${finalPrice}$`,
-        oldPrice: course.discountId ? `${course.price}$` : "",
+        price: `${finalPrice.toFixed(2)}$`,
+        oldPrice: course.discountId ? `${course.price.toFixed(2)}$` : "",
         discount: discountText,
         learnList: course.detail?.willLearn || [],
       },
