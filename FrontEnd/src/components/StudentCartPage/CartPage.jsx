@@ -3,10 +3,7 @@ import ProfileSection from "../CourseList/ProfileSection";
 import { Link, useLocation } from "react-router-dom";
 import "../../assets/StudentCartPage/StudentCart.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faTimesCircle,
-  faStar,
-} from "@fortawesome/free-solid-svg-icons";
+import { faTimesCircle, faStar } from "@fortawesome/free-solid-svg-icons";
 import CartPagePagination from "./CartPagePagination";
 import { useDispatch, useSelector } from "react-redux";
 import { getCart, removeFromCart } from "../../services/cartService";
@@ -206,6 +203,36 @@ function CartPage() {
                 )}
               </tbody>
             </table>
+          </div>
+          <div className="row g-3 align-items-center border border-1 p-3 rounded-3 mt-1">
+            <div className="col-12 col-md-auto m-0">
+              <p className="cart-total-money m-0 p-0">
+                Total courses:{" "}
+                <span style={{ color: "#ff5722", marginLeft: "5px" }}>
+                  {Cart_DATA.length}
+                </span>
+              </p>
+            </div>
+            <div className="col-12 col-md d-flex align-items-center justify-content-md-end gap-3 flex-wrap m-0">
+              <div className="cart-total-money-border">
+                <p className="cart-total-money m-0 p-0">
+                  Total money:
+                  <span style={{ color: "#ff5722", marginLeft: "5px" }}>
+                    $
+                    {Cart_DATA
+                      .reduce((total, item) => total + item.price, 0)
+                      .toFixed(2)}
+                  </span>
+                </p>
+              </div>
+              <div className="ms-auto cart-button-checkout">
+                <Link to={"/checkout"}>
+                  <button className="w-100" disabled={Cart_DATA.length === 0}>
+                    Process to checkout
+                  </button>
+                </Link>
+              </div>
+            </div>
           </div>
           <CartPagePagination
             currentPage={currentPage}
