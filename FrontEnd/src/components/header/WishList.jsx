@@ -44,8 +44,8 @@ function WishList() {
       courseName: course.title,
       rating: course.rating,
       enrolledCount: course.studentsEnrolled.length,
-      price: `${finalPrice}`,
-      oldPrice: course.discountId ? `${course.price}` : "",
+      price: `${finalPrice.toFixed(2)}`,
+      oldPrice: course.discountId ? `${course.price.toFixed(2)}` : "",
     };
   });
   return (
