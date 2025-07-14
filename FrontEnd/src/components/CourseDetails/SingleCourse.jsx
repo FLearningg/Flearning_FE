@@ -468,6 +468,7 @@ export default function SingleCourse() {
                   details={pricing.details}
                   includes={pricing.includes}
                   shareButtons={pricing.shareButtons}
+                  course={course}
                 />
               ) : (
                 <p className="text-muted">Pricing info not available</p>
@@ -486,6 +487,7 @@ export default function SingleCourse() {
             details={pricing.details}
             includes={pricing.includes}
             shareButtons={pricing.shareButtons}
+            course={course}
           />
         ) : (
           <p className="text-muted">Pricing info not available</p>

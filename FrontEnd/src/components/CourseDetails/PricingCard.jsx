@@ -1,10 +1,8 @@
 import { Clock, BarChart3, Users, Book, Subtitles, Layers } from "lucide-react";
 import { Copy } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
-import { addToWishlist, getWishlist } from "../../services/wishlistService";
-import { toast } from "react-toastify";
-import { addToCart } from "../../services/cartService";
+import { useParams } from "react-router-dom";
+import { useState } from "react";
+import QRCodePayment from "../ShoppingCart/QRCodePayment";
 
 const ICON_MAP = {
   Level: BarChart3,
@@ -32,6 +30,58 @@ const capitalizeFirstLetter = (str) => {
   }
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
+
+// --- Modal Component for the QR Code ---
+function QRPaymentModal({ isOpen, onClose, children }) {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        backgroundColor: "rgba(0, 0, 0, 0.6)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 2000,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: "2rem",
+          borderRadius: "8px",
+          maxWidth: "450px",
+          width: "90%",
+          position: "relative",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: "10px",
+            right: "15px",
+            border: "none",
+            background: "transparent",
+            fontSize: "1.75rem",
+            cursor: "pointer",
+            lineHeight: "1",
+          }}
+        >
+          &times;
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 const PriceSection = ({ currentPrice, originalPrice, discount, timeLeft }) => (
   <div className="mb-4">
@@ -127,149 +177,44 @@ const ShareSection = ({ buttons }) => {
   );
 };
 
-const ActionButtons = () => {
-  const courseId = useParams().courseId;
-  const currentUser = useSelector((state) => state.auth.currentUser);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const isLoadingWishlist = useSelector(
-    (state) => state.wishlist.addItemToWishlist.isLoading
-  );
-  const errorMsgWishlist = useSelector(
-    (state) => state.wishlist.addItemToWishlist.errorMsg
-  );
-  const isLoadingCart = useSelector(
-    (state) => state.cart.addItemToCart.isLoading
-  );
-  const errorMsgCart = useSelector(
-    (state) => state.cart.addItemToCart.errorMsg
-  );
-  const handleAddToWishList = async () => {
-    if (!currentUser) {
-      navigate("/login");
-    } else {
-      try {
-        await addToWishlist(currentUser._id, courseId, dispatch);
-        await getWishlist(dispatch, currentUser._id);
-        toast.success("Added to wishlist successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      } catch (error) {
-        toast.error(
-          errorMsgWishlist || "Failed to add to wishlist. Please try again.",
-          {
-            position: "top-right",
-            autoClose: 3000,
-          }
-        );
-      }
-    }
-  };
-  const AddCourseToCart = async () => {
-    if (!currentUser) {
-      navigate("/login");
-    } else {
-      try {
-        await addToCart(currentUser._id, courseId, dispatch);
-        toast.success("Add course to cart success", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      } catch (err) {
-        toast.error(
-          errorMsgCart || "Error adding course to cart, please try again",
-          {
-            position: "top-right",
-            autoClose: 3000,
-          }
-        );
-      }
-    }
-  };
-  const isEnrolledCourse = (courseId) => {
-    return currentUser?.enrolledCourses?.includes(courseId);
-  };
-  return (
-    <div className="mb-4">
-      {!isEnrolledCourse(courseId) ? (
-        <>
-          <button
-            className="btn w-100 fw-medium py-2 mb-3"
-            style={{
-              backgroundColor: "#ff6636",
-              borderColor: "#ff6636",
-              color: "white",
-            }}
-            onClick={AddCourseToCart}
-            disabled={isLoadingCart}
-          >
-            {isLoadingCart ? (
-              <span
-                className="spinner-border spinner-border-sm text-light"
-                role="status"
-                aria-hidden="true"
-                style={{ verticalAlign: "middle" }}
-              ></span>
-            ) : (
-              <>Add To Cart</>
-            )}
-          </button>
-          <button
-            className="btn btn-outline w-100 fw-medium py-2 mb-3"
-            style={{ borderColor: "#ff6636", color: "#ff6636" }}
-          >
-            Buy Now
-          </button>
-        </>
-      ) : (
-        <button
-          className="btn w-100 fw-medium py-2 mb-3"
-          style={{
-            backgroundColor: "#ff6636",
-            borderColor: "#ff6636",
-            color: "white",
-          }}
-        >
-          Go To Course
+// --- Modified ActionButtons component ---
+const ActionButtons = (
+  { onBuyNowClick } // Accept the handler as a prop
+) => (
+  <div className="mb-4">
+    <button
+      className="btn w-100 fw-medium py-2 mb-3"
+      style={{
+        backgroundColor: "#ff6636",
+        borderColor: "#ff6636",
+        color: "white",
+      }}
+    >
+      Add To Cart
+    </button>
+    <button
+      className="btn btn-outline w-100 fw-medium py-2 mb-3"
+      style={{ borderColor: "#ff6636", color: "#ff6636" }}
+      onClick={onBuyNowClick} // Use the handler here
+    >
+      Buy Now
+    </button>
+    <div className="row g-2">
+      <div className="col-6 col-sm-7">
+        <button className="btn btn-outline-secondary w-100 wishlist-btn">
+          Add To Wishlist
         </button>
-      )}
-
-      {/* <button
-        className="btn btn-outline w-100 fw-medium py-2 mb-3"
-        style={{ borderColor: "#ff6636", color: "#ff6636" }}
-      >
-        Buy Now
-      </button> */}
-      <div className="row g-2">
-        <div className="col-6 col-sm-7">
-          <button
-            className="btn btn-outline-secondary w-100 wishlist-btn"
-            onClick={handleAddToWishList}
-            disabled={isLoadingWishlist}
-          >
-            {isLoadingWishlist ? (
-              <span
-                className="spinner-border spinner-border-sm text-light"
-                role="status"
-                aria-hidden="true"
-                style={{ verticalAlign: "middle" }}
-              ></span>
-            ) : (
-              <>Add To Wishlist</>
-            )}
-          </button>
-        </div>
-        <div className="col-6 col-sm-5">
-          <button className="btn btn-outline-secondary w-100 gift-btn">
-            Gift Course
-          </button>
-        </div>
+      </div>
+      <div className="col-6 col-sm-5">
+        <button className="btn btn-outline-secondary w-100 gift-btn">
+          Gift Course
+        </button>
       </div>
     </div>
-  );
-};
+  </div>
+);
 
+// --- Main PricingCard Component ---
 export default function PricingCard({
   currentPrice,
   originalPrice,
@@ -278,41 +223,69 @@ export default function PricingCard({
   details,
   includes,
   shareButtons,
+  course, // Accept the full course object
 }) {
+  // State to manage the QR code modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
-    <div className="container-fluid d-flex justify-content-center py-3 course-price">
-      <div
-        className="card shadow-sm"
-        style={{ maxWidth: "400px", width: "100%" }}
-      >
-        <div className="card-body p-4">
-          <PriceSection
-            currentPrice={currentPrice}
-            originalPrice={originalPrice}
-            discount={capitalizeFirstLetter(discount)}
-            timeLeft={capitalizeFirstLetter(timeLeft)}
-          />
-          <CourseDetailsSection
-            details={details?.map(({ label, value }) => ({
-              label: capitalizeFirstLetter(label),
-              value: capitalizeFirstLetter(value),
-            }))}
-          />
-          <ActionButtons />
-          <p className="small text-muted mb-4">
-            Note: all courses have 30-days money-back guarantee
-          </p>
-          <CourseIncludesSection
-            includes={includes?.map(capitalizeFirstLetter)}
-          />
-          <ShareSection
-            buttons={shareButtons?.map((btn) => ({
-              ...btn,
-              label: capitalizeFirstLetter(btn.label),
-            }))}
-          />
+    // Use a React Fragment to wrap the card and the modal
+    <>
+      <div className="container-fluid d-flex justify-content-center py-3 course-price">
+        <div
+          className="card shadow-sm"
+          style={{ maxWidth: "400px", width: "100%" }}
+        >
+          <div className="card-body p-4">
+            <PriceSection
+              currentPrice={currentPrice}
+              originalPrice={originalPrice}
+              discount={capitalizeFirstLetter(discount)}
+              timeLeft={capitalizeFirstLetter(timeLeft)}
+            />
+            <CourseDetailsSection
+              details={details?.map(({ label, value }) => ({
+                label: capitalizeFirstLetter(label),
+                value: capitalizeFirstLetter(value),
+              }))}
+            />
+            {/* Pass the event handler to open the modal */}
+            <ActionButtons onBuyNowClick={() => setIsModalOpen(true)} />
+            <p className="small text-muted mb-4">
+              Note: all courses have 30-days money-back guarantee
+            </p>
+            <CourseIncludesSection
+              includes={includes?.map(capitalizeFirstLetter)}
+            />
+            <ShareSection
+              buttons={shareButtons?.map((btn) => ({
+                ...btn,
+                label: capitalizeFirstLetter(btn.label),
+              }))}
+            />
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* --- Render the Modal with QRCodePayment --- */}
+      <QRPaymentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      >
+        {course ? (
+          <QRCodePayment
+            amount={currentPrice * 25000}
+            // Create a unique transaction content string for "Buy Now"
+            content={`COURSE${course._id.slice(-6)}`}
+            // For a single purchase, the "cart" is just this one course
+            coursesInCart={[course]}
+          />
+        ) : (
+          <div className="text-center p-3">
+            <p>Loading payment details...</p>
+          </div>
+        )}
+      </QRPaymentModal>
+    </>
   );
 }

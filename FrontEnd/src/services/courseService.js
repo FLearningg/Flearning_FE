@@ -78,3 +78,27 @@ export const getAllCoursesWithoutDispatch = async () => {
     throw error;
   }
 };
+
+//Enrolls a user in one or more courses.
+export const enrollInCourses = async (userId, courseIds) => {
+  if (!userId || !courseIds || courseIds.length === 0) {
+    const errorMessage =
+      "User ID and a list of course IDs are required for enrollment.";
+    console.error(errorMessage);
+    throw new Error(errorMessage);
+  }
+
+  const payload = { userId, courseIds };
+
+  try {
+    const response = await apiClient.post("/courses/enroll-course", payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error during course enrollment:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to enroll user in courses";
+    throw new Error(message);
+  }
+};

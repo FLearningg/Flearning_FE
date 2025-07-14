@@ -1,0 +1,203 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
+import { useLocation } from "react-router-dom";
+
+import { removeFromCart } from "../../services/cartService";
+import {
+  getRecentBankTransactions,
+  saveTransactionToDB,
+} from "../../services/paymentService";
+import { enrollInCourses } from "../../services/courseService";
+
+const MY_BANK = {
+  BANK_ID: process.env.REACT_APP_MY_BANK_ID,
+  ACCOUNT_NO: process.env.REACT_APP_MY_BANK_ID_ACCOUNT_NO,
+};
+
+const usePaymentPolling = ({ amount, content, isPolling }) => {
+  const [matchedTransaction, setMatchedTransaction] = useState(null);
+  const [isChecking, setIsChecking] = useState(isPolling);
+  const intervalIdRef = useRef(null);
+  const hasFoundMatchRef = useRef(false);
+
+  const stopPolling = useCallback(() => {
+    if (intervalIdRef.current) {
+      clearInterval(intervalIdRef.current);
+      intervalIdRef.current = null;
+    }
+    setIsChecking(false);
+  }, []);
+
+  useEffect(() => {
+    if (!isPolling || hasFoundMatchRef.current) {
+      stopPolling();
+      return;
+    }
+
+    const checkPayment = async () => {
+      try {
+        const recentTransactions = await getRecentBankTransactions();
+        const matched = recentTransactions.find((tx) => {
+          const amountInTx = Number(tx["Giá trị"]);
+          const descInTx = (tx["Mô tả"] || "").toLowerCase();
+          return (
+            amountInTx >= amount && descInTx.includes(content.toLowerCase())
+          );
+        });
+
+        if (matched) {
+          hasFoundMatchRef.current = true;
+          setMatchedTransaction(matched);
+          stopPolling();
+        }
+      } catch (err) {
+        console.error("Error polling for transactions:", err);
+        stopPolling();
+      }
+    };
+
+    checkPayment();
+    intervalIdRef.current = setInterval(checkPayment, 3000);
+
+    return stopPolling;
+  }, [isPolling, amount, content, stopPolling]);
+
+  return { matchedTransaction, isChecking };
+};
+
+export default function QRCodePayment({ amount, content, coursesInCart }) {
+  const currentUser = useSelector((state) => state.auth.currentUser);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isCheckoutPage = location.pathname.includes("/checkout");
+
+  const [isProcessing, setIsProcessing] = useState(false);
+  const qrCodeUrl = `https://img.vietqr.io/image/${MY_BANK.BANK_ID}-${MY_BANK.ACCOUNT_NO}-compact2.png?amount=${amount}&addInfo=${content}`;
+
+  const { matchedTransaction, isChecking } = usePaymentPolling({
+    amount,
+    content,
+    isPolling: !isProcessing && !!currentUser?._id,
+  });
+
+  useEffect(() => {
+    if (matchedTransaction && !isProcessing) {
+      const handleSuccessfulPayment = async () => {
+        setIsProcessing(true);
+        console.log("Payment matched! Starting post-payment process...");
+
+        try {
+          // STEP 1: Save the transaction to your database
+          console.log("Step 1: Saving transaction to DB...");
+          await saveTransactionToDB(matchedTransaction, currentUser);
+          console.log("Transaction saved successfully.");
+
+          // STEP 2: Enroll the user in the purchased courses
+          console.log("Step 2: Enrolling user in courses...");
+          const courseIdsToEnroll = coursesInCart.map((course) => course._id);
+          await enrollInCourses(currentUser._id, courseIdsToEnroll);
+          console.log("User enrolled successfully.");
+
+          // STEP 3: Remove all courses from the user's cart (only on /checkout and if any)
+          if (
+            isCheckoutPage &&
+            Array.isArray(coursesInCart) &&
+            coursesInCart.length > 0
+          ) {
+            try {
+              console.log("Step 3: Clearing cart for user:", currentUser._id);
+              const removalPromises = coursesInCart.map((course) =>
+                removeFromCart(currentUser._id, course._id, dispatch)
+              );
+              await Promise.all(removalPromises);
+              console.log("All items removed from cart successfully.");
+            } catch (cartError) {
+              console.error(
+                "Payment successful, but failed to clear cart:",
+                cartError
+              );
+            }
+          } else {
+            console.log(
+              "Step 3: Skipping cart removal (not in /checkout or cart empty)."
+            );
+          }
+
+          // STEP 4: Show the success alert to the user
+          console.log("Step 4: Showing success alert.");
+          Swal.fire({
+            icon: "success",
+            title: "Payment Successful!",
+            text: "Thank you for your purchase. You have been enrolled in your new courses.",
+            confirmButtonText: "Go to My Courses",
+            allowOutsideClick: false,
+            didOpen: () => {
+              const popup = Swal.getPopup();
+              const container = Swal.getContainer();
+              const backdrop = document.querySelector(".swal2-backdrop");
+              if (container) container.style.zIndex = "3000";
+              if (backdrop) backdrop.style.zIndex = "2999";
+            },
+          }).then((result) => {
+            if (result.isConfirmed) {
+              navigate("/profile/courses");
+            }
+          });
+        } catch (error) {
+          console.error(
+            "A critical error occurred while processing the payment:",
+            error
+          );
+          Swal.fire({
+            icon: "error",
+            title: "Processing Error",
+            text: "Your payment was received, but we encountered an error setting up your account. Please contact support.",
+          });
+        }
+      };
+
+      handleSuccessfulPayment();
+    }
+  }, [
+    matchedTransaction,
+    isProcessing,
+    currentUser,
+    coursesInCart,
+    dispatch,
+    navigate,
+  ]);
+
+  return (
+    <div className="qr-payment-container border p-3 bg-light mt-3 text-center">
+      <h4 className="mb-3">Quét mã QR để thanh toán</h4>
+      <img
+        src={qrCodeUrl}
+        alt="QR Code for payment"
+        className="img-fluid mb-3"
+        style={{ maxWidth: "350px", display: "inline", width: "100%" }}
+      />
+      <p className="mb-1">
+        Nội dung chuyển khoản:{" "}
+        <strong className="text-danger">{content}</strong>
+      </p>
+      <p>
+        Số tiền:{" "}
+        <strong className="text-danger">
+          {amount.toLocaleString("vi-VN")} VND
+        </strong>
+      </p>
+      {isChecking && (
+        <div className="d-flex justify-content-center align-items-center mt-2">
+          <div className="spinner-border spinner-border-sm" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <span className="ms-2">Đang chờ xác nhận...</span>
+        </div>
+      )}
+    </div>
+  );
+}
