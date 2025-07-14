@@ -1,0 +1,251 @@
+.checkout-page {
+  background-color: #ffffff;
+  min-height: 100vh;
+}
+
+/* --- Breadcrumb Section --- */
+.checkout-page .breadcrumb-section {
+  background-color: #f5f7fa;
+  padding: 1rem 1rem;
+}
+
+.checkout-page .breadcrumb-title {
+  color: #1d2026;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.checkout-page .breadcrumb .breadcrumb-item a {
+  color: #8c94a3;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.2s;
+}
+.checkout-page .breadcrumb .breadcrumb-item a:hover {
+  color: #ff6636;
+}
+
+.checkout-page .breadcrumb .breadcrumb-item.active {
+  color: #1d2026;
+  font-weight: 500;
+}
+
+/* --- Main Content --- */
+.checkout-page .section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1d2026;
+  margin-bottom: 1.5rem;
+}
+
+/* --- Payment Card Component --- */
+.checkout-page .payment-card {
+  border: 1px solid #e9eaf0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+}
+.checkout-page .payment-card:hover {
+  border-color: #ff6636;
+}
+.checkout-page .payment-card.is-selected {
+  border-color: #23bd33;
+  background-color: rgba(35, 189, 51, 0.05);
+  border-width: 2px;
+  padding: calc(1rem - 1px);
+}
+
+.checkout-page .payment-card__details {
+  display: flex;
+  align-items: center;
+}
+.checkout-page .payment-card__brand {
+  width: 48px;
+  height: 32px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.checkout-page .mastercard-logo {
+  display: flex;
+}
+.checkout-page .mastercard-logo__circle--red {
+  width: 16px;
+  height: 16px;
+  background-color: #eb001b;
+  border-radius: 50%;
+}
+.checkout-page .mastercard-logo__circle--yellow {
+  width: 16px;
+  height: 16px;
+  background-color: #f79e1b;
+  border-radius: 50%;
+  margin-left: -6px;
+}
+
+.checkout-page .payment-card__digits {
+  font-weight: 500;
+  color: #1d2026;
+}
+.checkout-page .payment-card__expiry,
+.checkout-page .payment-card__owner,
+.checkout-page .payment-card__description {
+  color: #8c94a3;
+  font-size: 0.875rem;
+}
+.checkout-page .payment-card__selected-indicator {
+  width: 24px;
+  height: 24px;
+  background-color: #23bd33;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- New Card Form --- */
+.checkout-page .new-card-form {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid #e9eaf0;
+  border-radius: 0.5rem;
+}
+.checkout-page .form-group {
+  margin-bottom: 1rem;
+}
+.checkout-page .form-label {
+  font-weight: 500;
+  color: #1d2026;
+  margin-bottom: 0.5rem;
+}
+.checkout-page .form-control {
+  border-color: #e9eaf0;
+}
+.checkout-page .form-control:focus {
+  border-color: #ff6636;
+  box-shadow: 0 0 0 0.25rem rgba(255, 102, 54, 0.25);
+}
+.checkout-page .form-check-input {
+  accent-color: #ff6636;
+}
+.checkout-page .input-with-icon {
+  position: relative;
+}
+.checkout-page .input-icon {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  color: #8c94a3;
+}
+.checkout-page .input-with-icon .form-control {
+  padding-left: 3rem;
+}
+
+/* --- Order Summary Card --- */
+.checkout-page .order-summary-card {
+  margin-top: 55px;
+  border: 1px solid #e9eaf0;
+  border-radius: 0.5rem;
+  padding: 4%;
+}
+.checkout-page .order-summary__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1d2026;
+  margin-bottom: 1.5rem;
+}
+.checkout-page .order-summary__course-list {
+  margin-bottom: 1.5rem;
+}
+.checkout-page .order-summary__breakdown,
+.checkout-page .order-summary__total {
+  padding-top: 1rem;
+  border-top: 1px solid #e9eaf0;
+}
+.checkout-page .order-summary__subtitle {
+  font-weight: 700;
+  color: #1d2026;
+  margin-bottom: 1rem;
+}
+.checkout-page .summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  color: #8c94a3;
+}
+.checkout-page .summary-row small:last-child {
+  color: #1d2026;
+}
+.checkout-page .order-summary__total {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  color: #1d2026;
+  margin-bottom: 1.5rem;
+}
+.checkout-page .total-amount {
+  font-size: 1.5rem;
+}
+.checkout-page .btn-complete-payment {
+  width: 100%;
+  background-color: #ff6636;
+  border: 1px solid #ff6636;
+  color: white;
+  font-weight: 500;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+.checkout-page .btn-complete-payment:hover {
+  background-color: #e65c2b;
+}
+
+/* --- Course Item --- */
+.checkout-page .course-item {
+  display: flex;
+  margin-bottom: 1rem;
+}
+.checkout-page .course-item__image {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 0.25rem;
+  margin-right: 1rem;
+}
+.checkout-page .course-item__details {
+  flex-grow: 1;
+}
+.checkout-page .course-item__instructor {
+  color: #8c94a3;
+  font-size: 0.8rem;
+}
+.checkout-page .course-item__title {
+  font-weight: 500;
+  color: #1d2026;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+.checkout-page .course-item__price {
+  font-weight: 700;
+  color: #ff6636;
+}
+.checkout-page .course-item__original-price {
+  text-decoration: line-through;
+  color: #8c94a3;
+  margin-left: 0.5rem;
+}

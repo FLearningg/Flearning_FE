@@ -8,6 +8,7 @@ import ProfileRoutes from "./profileRoutes";
 import CategoryPage from "../components/Categories/CategoryPage";
 import CoursePage from "../components/Categories/CoursePage";
 import SingleCourse from "../components/CourseDetails/SingleCourse";
+import CheckoutPage from "../components/ShoppingCart/CheckoutPage";
 
 const mainRoutesContent = (
   <>
@@ -17,6 +18,7 @@ const mainRoutesContent = (
     <Route path="category" element={<CategoryPage />} />
     <Route path="courses" element={<CoursePage />} />
     <Route path="course/:courseId" element={<SingleCourse />} />
+    <Route path="checkout" element={<CheckoutPage />} />
     {/* Thêm các route chính khác ở đây */}
   </>
 );

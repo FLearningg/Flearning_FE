@@ -5,6 +5,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { addToWishlist, getWishlist } from "../../services/wishlistService";
 import { toast } from "react-toastify";
 import { addToCart } from "../../services/cartService";
+import { useState } from "react";
+import QRCodePayment from "../ShoppingCart/QRCodePayment";
 
 const ICON_MAP = {
   Level: BarChart3,
@@ -32,6 +34,58 @@ const capitalizeFirstLetter = (str) => {
   }
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
+
+// --- Modal Component for the QR Code ---
+function QRPaymentModal({ isOpen, onClose, children }) {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        backgroundColor: "rgba(0, 0, 0, 0.6)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 2000,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: "2rem",
+          borderRadius: "8px",
+          maxWidth: "450px",
+          width: "90%",
+          position: "relative",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: "10px",
+            right: "15px",
+            border: "none",
+            background: "transparent",
+            fontSize: "1.75rem",
+            cursor: "pointer",
+            lineHeight: "1",
+          }}
+        >
+          &times;
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 const PriceSection = ({ currentPrice, originalPrice, discount, timeLeft }) => (
   <div className="mb-4">
@@ -127,73 +181,76 @@ const ShareSection = ({ buttons }) => {
   );
 };
 
-const ActionButtons = () => {
-  const courseId = useParams().courseId;
-  const currentUser = useSelector((state) => state.auth.currentUser);
+const ActionButtons = ({ onBuyNowClick }) => {
+  const { courseId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const isLoadingWishlist = useSelector(
-    (state) => state.wishlist.addItemToWishlist.isLoading
+
+  const currentUser = useSelector((state) => state.auth.currentUser);
+
+  /* cart slice ------------------------------------------------------------ */
+  const { isLoading: isLoadingCart, errorMsg: errorMsgCart } = useSelector(
+    (state) => state.cart.addItemToCart
   );
-  const errorMsgWishlist = useSelector(
-    (state) => state.wishlist.addItemToWishlist.errorMsg
-  );
-  const isLoadingCart = useSelector(
-    (state) => state.cart.addItemToCart.isLoading
-  );
-  const errorMsgCart = useSelector(
-    (state) => state.cart.addItemToCart.errorMsg
-  );
+
+  /* wishlist slice -------------------------------------------------------- */
+  const { isLoading: isLoadingWishlist, errorMsg: errorMsgWishlist } =
+    useSelector((state) => state.wishlist.addItemToWishlist);
+
+  /* helpers ----------------------------------------------------------------*/
+  const isEnrolledCourse = (id) => currentUser?.enrolledCourses?.includes(id);
+
+  /* handlers ---------------------------------------------------------------*/
   const handleAddToWishList = async () => {
-    if (!currentUser) {
-      navigate("/login");
-    } else {
-      try {
-        await addToWishlist(currentUser._id, courseId, dispatch);
-        await getWishlist(dispatch, currentUser._id);
-        toast.success("Added to wishlist successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      } catch (error) {
-        toast.error(
-          errorMsgWishlist || "Failed to add to wishlist. Please try again.",
-          {
-            position: "top-right",
-            autoClose: 3000,
-          }
-        );
-      }
+    if (!currentUser) return navigate("/login");
+
+    try {
+      await addToWishlist(currentUser._id, courseId, dispatch);
+      await getWishlist(dispatch, currentUser._id);
+      toast.success("Added to wishlist successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } catch {
+      toast.error(
+        errorMsgWishlist || "Failed to add to wishlist. Please try again.",
+        { position: "top-right", autoClose: 3000 }
+      );
     }
   };
-  const AddCourseToCart = async () => {
-    if (!currentUser) {
-      navigate("/login");
-    } else {
-      try {
-        await addToCart(currentUser._id, courseId, dispatch);
-        toast.success("Add course to cart success", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      } catch (err) {
-        toast.error(
-          errorMsgCart || "Error adding course to cart, please try again",
-          {
-            position: "top-right",
-            autoClose: 3000,
-          }
-        );
-      }
+
+  const handleAddToCart = async () => {
+    if (!currentUser) return navigate("/login");
+
+    try {
+      await addToCart(currentUser._id, courseId, dispatch);
+      toast.success("Add course to cart success", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } catch {
+      toast.error(
+        errorMsgCart || "Error adding course to cart, please try again",
+        { position: "top-right", autoClose: 3000 }
+      );
     }
   };
-  const isEnrolledCourse = (courseId) => {
-    return currentUser?.enrolledCourses?.includes(courseId);
+
+  const handleBuyNow = () => {
+    if (typeof onBuyNowClick === "function") {
+      onBuyNowClick(); // use caller‑supplied handler
+    } else {
+      handleAddToCart(); // fallback: just add to cart first
+      navigate("/cart"); // and push user to checkout page
+    }
   };
+
+  /* render -----------------------------------------------------------------*/
   return (
     <div className="mb-4">
       {!isEnrolledCourse(courseId) ? (
         <>
+          {/* Add‑to‑Cart ---------------------------------------------------- */}
           <button
             className="btn w-100 fw-medium py-2 mb-3"
             style={{
@@ -201,7 +258,7 @@ const ActionButtons = () => {
               borderColor: "#ff6636",
               color: "white",
             }}
-            onClick={AddCourseToCart}
+            onClick={handleAddToCart}
             disabled={isLoadingCart}
           >
             {isLoadingCart ? (
@@ -210,19 +267,24 @@ const ActionButtons = () => {
                 role="status"
                 aria-hidden="true"
                 style={{ verticalAlign: "middle" }}
-              ></span>
+              />
             ) : (
-              <>Add To Cart</>
+              "Add To Cart"
             )}
           </button>
+
+          {/* Buy‑Now ------------------------------------------------------- */}
           <button
             className="btn btn-outline w-100 fw-medium py-2 mb-3"
             style={{ borderColor: "#ff6636", color: "#ff6636" }}
+            onClick={handleBuyNow}
+            disabled={isLoadingCart} /* prevent double click while cart req */
           >
             Buy Now
           </button>
         </>
       ) : (
+        /* Already enrolled => show “Go To Course” */
         <button
           className="btn w-100 fw-medium py-2 mb-3"
           style={{
@@ -230,17 +292,13 @@ const ActionButtons = () => {
             borderColor: "#ff6636",
             color: "white",
           }}
+          onClick={() => navigate(`/courses/${courseId}`)}
         >
           Go To Course
         </button>
       )}
 
-      {/* <button
-        className="btn btn-outline w-100 fw-medium py-2 mb-3"
-        style={{ borderColor: "#ff6636", color: "#ff6636" }}
-      >
-        Buy Now
-      </button> */}
+      {/* Wishlist / Gift buttons ------------------------------------------- */}
       <div className="row g-2">
         <div className="col-6 col-sm-7">
           <button
@@ -254,13 +312,14 @@ const ActionButtons = () => {
                 role="status"
                 aria-hidden="true"
                 style={{ verticalAlign: "middle" }}
-              ></span>
+              />
             ) : (
-              <>Add To Wishlist</>
+              "Add To Wishlist"
             )}
           </button>
         </div>
         <div className="col-6 col-sm-5">
+          {/* implement your own gift flow later */}
           <button className="btn btn-outline-secondary w-100 gift-btn">
             Gift Course
           </button>
@@ -278,41 +337,67 @@ export default function PricingCard({
   details,
   includes,
   shareButtons,
+  course, // Accept the full course object
 }) {
+  // State to manage the QR code modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
-    <div className="container-fluid d-flex justify-content-center py-3 course-price">
-      <div
-        className="card shadow-sm"
-        style={{ maxWidth: "400px", width: "100%" }}
-      >
-        <div className="card-body p-4">
-          <PriceSection
-            currentPrice={currentPrice}
-            originalPrice={originalPrice}
-            discount={capitalizeFirstLetter(discount)}
-            timeLeft={capitalizeFirstLetter(timeLeft)}
-          />
-          <CourseDetailsSection
-            details={details?.map(({ label, value }) => ({
-              label: capitalizeFirstLetter(label),
-              value: capitalizeFirstLetter(value),
-            }))}
-          />
-          <ActionButtons />
-          <p className="small text-muted mb-4">
-            Note: all courses have 30-days money-back guarantee
-          </p>
-          <CourseIncludesSection
-            includes={includes?.map(capitalizeFirstLetter)}
-          />
-          <ShareSection
-            buttons={shareButtons?.map((btn) => ({
-              ...btn,
-              label: capitalizeFirstLetter(btn.label),
-            }))}
-          />
+    <>
+      <div className="container-fluid d-flex justify-content-center py-3 course-price">
+        <div
+          className="card shadow-sm"
+          style={{ maxWidth: "400px", width: "100%" }}
+        >
+          <div className="card-body p-4">
+            <PriceSection
+              currentPrice={currentPrice}
+              originalPrice={originalPrice}
+              discount={capitalizeFirstLetter(discount)}
+              timeLeft={capitalizeFirstLetter(timeLeft)}
+            />
+            <CourseDetailsSection
+              details={details?.map(({ label, value }) => ({
+                label: capitalizeFirstLetter(label),
+                value: capitalizeFirstLetter(value),
+              }))}
+            />
+            <ActionButtons onBuyNowClick={() => setIsModalOpen(true)} />
+            <p className="small text-muted mb-4">
+              Note: all courses have 30-days money-back guarantee
+            </p>
+            <CourseIncludesSection
+              includes={includes?.map(capitalizeFirstLetter)}
+            />
+            <ShareSection
+              buttons={shareButtons?.map((btn) => ({
+                ...btn,
+                label: capitalizeFirstLetter(btn.label),
+              }))}
+            />
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* --- Render the Modal with QRCodePayment --- */}
+      <QRPaymentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      >
+        {course ? (
+          <QRCodePayment
+            amount={Math.floor(currentPrice * 25000)}
+            // Create a unique transaction content string for "Buy Now"
+            content={`COURSE${course._id.slice(-6)}`}
+            // For a single purchase, the "cart" is just this one course
+            coursesInCart={[course]}
+          />
+        ) : (
+          <div className="text-center p-3">
+            <p>Loading payment details...</p>
+          </div>
+        )}
+      </QRPaymentModal>
+    </>
   );
 }
