@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Search,
   ChevronDown,
@@ -18,8 +18,7 @@ import "../../assets/AdminManageUser/AdminManageUser.css";
 dayjs.extend(isBetween);
 
 export default function AdminManageUser() {
-  const [users, setUsers] = useState([]);
-  const [totalUsers, setTotalUsers] = useState(0);
+  const [allUsers, setAllUsers] = useState([]); // Store all users
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState("all");
@@ -29,34 +28,67 @@ export default function AdminManageUser() {
   const itemsPerPage = 6;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [allUsers, setAllUsers] = useState([]); // For stats
+  const [userActionLoading, setUserActionLoading] = useState({}); // Loading state for individual users
 
-  // Fetch users from API
-  const fetchUsers = async () => {
+  // Client-side filtering and pagination
+  const filteredUsers = useMemo(() => {
+    let filtered = [...allUsers];
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (user) =>
+          user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== "All") {
+      filtered = filtered.filter((user) => user.status === statusFilter);
+    }
+
+    // Date filter
+    if (dateFilter === "today") {
+      filtered = filtered.filter((user) =>
+        dayjs(user.createdAt).isSame(dayjs(), "day")
+      );
+    } else if (dateFilter === "month") {
+      filtered = filtered.filter((user) =>
+        dayjs(user.createdAt).isSame(dayjs(), "month")
+      );
+    } else if (dateFilter === "custom" && fromDate && toDate) {
+      filtered = filtered.filter((user) =>
+        dayjs(user.createdAt).isBetween(fromDate, toDate, "day", "[]")
+      );
+    }
+
+    return filtered;
+  }, [allUsers, searchTerm, statusFilter, dateFilter, fromDate, toDate]);
+
+  // Paginated users
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredUsers.slice(startIndex, endIndex);
+  }, [filteredUsers, currentPage, itemsPerPage]);
+
+  // Total count and pagination info
+  const totalUsers = filteredUsers.length;
+  const totalPages = Math.ceil(totalUsers / itemsPerPage);
+  const startItem = totalUsers > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
+  const endItem = Math.min(currentPage * itemsPerPage, totalUsers);
+
+  // Fetch all users once
+  const fetchAllUsers = async () => {
     setLoading(true);
     setError(null);
     try {
-      const params = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: searchTerm || undefined,
-        status: statusFilter !== "All" ? statusFilter : undefined,
-        fromDate:
-          dateFilter === "custom" && fromDate
-            ? fromDate.format("YYYY-MM-DD")
-            : undefined,
-        toDate:
-          dateFilter === "custom" && toDate
-            ? toDate.format("YYYY-MM-DD")
-            : undefined,
-        dateFilter:
-          dateFilter !== "all" && dateFilter !== "custom"
-            ? dateFilter
-            : undefined,
-      };
-      const res = await getAllUsers(params);
-      setUsers(res.data.data || []);
-      setTotalUsers(res.data.pagination?.totalUsers || 0);
+      // Fetch with a large limit to get all users
+      const res = await getAllUsers({ limit: 10000 }); // Adjust limit as needed
+      setAllUsers(res.data.data || []);
     } catch (err) {
       setError("Failed to fetch users");
     } finally {
@@ -64,21 +96,14 @@ export default function AdminManageUser() {
     }
   };
 
-  // Fetch all users for stats (no pagination)
-  const fetchAllUsersForStats = async () => {
-    try {
-      const res = await getAllUsers({}); // No pagination params
-      setAllUsers(res.data.data || []);
-    } catch (err) {
-      // Ignore error for stats
-    }
-  };
-
   useEffect(() => {
-    fetchUsers();
-    fetchAllUsersForStats(); // Only on mount
-    // eslint-disable-next-line
-  }, [searchTerm, statusFilter, dateFilter, fromDate, toDate, currentPage]);
+    fetchAllUsers();
+  }, []); // Only fetch once on mount
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, dateFilter, fromDate, toDate]);
 
   const handleToggleStatus = async (userId, currentStatus) => {
     // Map UI status to backend status
@@ -88,15 +113,41 @@ export default function AdminManageUser() {
     } else {
       newStatus = "banned"; // Ban user
     }
+
     try {
-      setLoading(true);
+      // Set loading state for this specific user
+      setUserActionLoading((prev) => ({ ...prev, [userId]: true }));
+
+      // Optimistic update - update allUsers array
+      setAllUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === userId ? { ...user, status: newStatus } : user
+        )
+      );
+
+      // Make API call
       await updateUserStatus(userId, newStatus);
-      message.success(`User status updated to ${newStatus}`);
-      fetchUsers();
+      message.success(
+        `User status updated to ${
+          newStatus === "verified" ? "Active" : "Banned"
+        }`
+      );
     } catch (err) {
+      // Revert optimistic update on error
+      setAllUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === userId ? { ...user, status: currentStatus } : user
+        )
+      );
+
       message.error("Failed to update user status");
     } finally {
-      setLoading(false);
+      // Remove loading state for this specific user
+      setUserActionLoading((prev) => {
+        const newState = { ...prev };
+        delete newState[userId];
+        return newState;
+      });
     }
   };
 
@@ -104,7 +155,6 @@ export default function AdminManageUser() {
     setDateFilter(filter);
     setFromDate(null);
     setToDate(null);
-    setCurrentPage(1);
   };
 
   const handleDateChange = (dates) => {
@@ -117,14 +167,9 @@ export default function AdminManageUser() {
       setFromDate(null);
       setToDate(null);
     }
-    setCurrentPage(1);
   };
 
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, totalUsers);
-  const totalPages = Math.ceil(totalUsers / itemsPerPage);
-
-  // Stats Calculation (based on all users, not just current page)
+  // Stats Calculation (based on all users)
   const today = dayjs();
   const newUsersToday = allUsers.filter((user) =>
     dayjs(user.dateJoined || user.createdAt).isSame(today, "day")
@@ -154,7 +199,7 @@ export default function AdminManageUser() {
               <Users className="amu-stat-icon" />
             </div>
             <div className="amu-stat-info">
-              <span className="amu-stat-value">{totalUsers}</span>
+              <span className="amu-stat-value">{allUsers.length}</span>
               <span className="amu-stat-label">Total Users</span>
             </div>
           </div>
@@ -187,19 +232,13 @@ export default function AdminManageUser() {
                 type="text"
                 placeholder="Search by name or email..."
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="amu-search-input"
               />
             </div>
             <select
               value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => setStatusFilter(e.target.value)}
               className="amu-filter-select"
             >
               <option value="All">All</option>
@@ -267,7 +306,7 @@ export default function AdminManageUser() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user, index) => {
+                {paginatedUsers.map((user, index) => {
                   // Normalize status for UI
                   const isBanned =
                     user.status === "banned" || user.status === "Banned";
@@ -323,11 +362,18 @@ export default function AdminManageUser() {
                           size="small"
                           color={isBanned ? "success" : "error"}
                           type="underline"
+                          disabled={userActionLoading[user._id]}
                           onClick={() =>
                             handleToggleStatus(user._id, user.status)
                           }
                         >
-                          {isBanned ? "Unban User" : "Ban User"}
+                          {userActionLoading[user._id]
+                            ? isBanned
+                              ? "Unbanning..."
+                              : "Banning..."
+                            : isBanned
+                            ? "Unban User"
+                            : "Ban User"}
                         </CustomButton>
                       </td>
                     </tr>
@@ -339,7 +385,7 @@ export default function AdminManageUser() {
         </div>
 
         {/* Pagination */}
-        {users.length > 0 && !loading && !error && (
+        {paginatedUsers.length > 0 && !loading && !error && (
           <div className="amu-pagination">
             <p className="amu-pagination-info">
               Showing {startItem} to {endItem} of {totalUsers} results
@@ -373,7 +419,7 @@ export default function AdminManageUser() {
             </div>
           </div>
         )}
-        {users.length === 0 && !loading && !error && (
+        {paginatedUsers.length === 0 && !loading && !error && (
           <div className="amu-empty-state">No users found.</div>
         )}
       </div>

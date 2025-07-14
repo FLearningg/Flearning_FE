@@ -51,6 +51,13 @@ export const useChat = () => {
 
   useEffect(() => {
     if (!currentUser || !token) return;
+
+    console.log("🔌 Initializing socket connection...", {
+      currentUser: currentUser._id,
+      socketConnected: socket.connected,
+      socketUrl: socket.io.uri,
+    });
+
     if (!socket.connected) {
       socket.auth = { token };
       socket.connect();
@@ -59,6 +66,12 @@ export const useChat = () => {
 
     // Only emit join after connect
     const handleConnect = () => {
+      console.log("✅ Socket connected successfully!", {
+        socketId: socket.id,
+        transport: socket.io.engine?.transport?.name,
+        userId: currentUser._id,
+        url: socket.io.uri,
+      });
       socket.emit("join", { userId: currentUser._id });
     };
     socket.on("connect", handleConnect);
@@ -127,14 +140,26 @@ export const useChat = () => {
     });
 
     socket.on("connect_error", async (err) => {
+      console.error("🚨 Socket connection error:", {
+        error: err.message,
+        description: err.description,
+        context: err.context,
+        type: err.type,
+        transport: socket.io.engine?.transport?.name,
+        url: socket.io.uri,
+      });
+
       if (err.message && err.message.includes("jwt expired")) {
+        console.log("🔄 Attempting to refresh token...");
         try {
           const res = await refreshToken();
           const newToken = res.data.accessToken;
           localStorage.setItem("accessToken", newToken);
           socket.auth = { token: newToken };
           socket.connect();
+          console.log("✅ Token refreshed, reconnecting...");
         } catch (refreshErr) {
+          console.error("❌ Token refresh failed:", refreshErr);
           localStorage.removeItem("accessToken");
           localStorage.removeItem("currentUser");
           window.location.href = "/login";
