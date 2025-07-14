@@ -147,7 +147,20 @@ export default function SingleCourse() {
   };
 
   const pricing = {
-    currentPrice: course.price - (course.discountId?.value ?? 0),
+    // currentPrice: course.price - (course.discountId?.value ?? 0),
+    currentPrice: (() => {
+      if (course.discountId) {
+        if (course.discountId.typee === "fixedAmount") {
+          return Math.max(0, course.price - course.discountId.value);
+        } else if (course.discountId.typee === "percent") {
+          return Math.max(
+            0,
+            course.price * (1 - course.discountId.value / 100)
+          );
+        }
+      }
+      return course.price;
+    })(),
     originalPrice: course.price,
     discount: course.discountId?.description ?? "",
     timeLeft: course.discountId?.endDate

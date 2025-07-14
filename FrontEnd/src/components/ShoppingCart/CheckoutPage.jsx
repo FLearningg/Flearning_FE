@@ -133,15 +133,42 @@ export default function CheckoutPage() {
     else setFullCourses([]);
   }, [coursesInCart]);
 
+  // const processedCourses = useMemo(() => {
+  //   return fullCourses.map((course) => {
+  //     const originalPrice = toNumber(course.price);
+  //     const discount = course.discountId?.value || 0;
+  //     const currentPrice = Math.max(0, originalPrice - discount);
+  //     return {
+  //       ...course,
+  //       originalPrice,
+  //       currentPrice,
+  //     };
+  //   });
+  // }, [fullCourses]);
   const processedCourses = useMemo(() => {
     return fullCourses.map((course) => {
       const originalPrice = toNumber(course.price);
-      const discount = course.discountId?.value || 0;
-      const currentPrice = Math.max(0, originalPrice - discount);
+      let finalPrice = originalPrice;
+      let discountText = "";
+
+      if (course.discountId) {
+        if (course.discountId.typee === "fixedAmount") {
+          finalPrice = Math.max(0, originalPrice - course.discountId.value);
+          discountText = `-${course.discountId.value}$`;
+        } else if (course.discountId.typee === "percent") {
+          finalPrice = Math.max(
+            0,
+            originalPrice * (1 - course.discountId.value / 100)
+          );
+          discountText = `-${course.discountId.value}%`;
+        }
+      }
+
       return {
         ...course,
         originalPrice,
-        currentPrice,
+        currentPrice: finalPrice,
+        discountText,
       };
     });
   }, [fullCourses]);
