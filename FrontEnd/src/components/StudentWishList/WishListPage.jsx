@@ -27,19 +27,24 @@ function WishListPage() {
   const errorMsg = useSelector(
     (state) => state.wishlist.removeItemFromWishlist.errorMsg
   );
+  const [wishlistItems, setWishlistItems] = useState(undefined);
+  const [removingId, setRemovingId] = useState(null);
+
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        if (currentUser) {
-          await getWishlist(dispatch, currentUser._id);
+        if (currentUser?._id) {
+          const data = await getWishlist(dispatch, currentUser._id);
+          setWishlistItems(data.courseIds || []);
         }
       } catch (error) {
         console.error("Error fetching wishlist:", error);
       }
     };
     fetchWishlist();
-  }, [dispatch, currentUser]);
-  const WishList_DATA = wishlistData?.map((course) => {
+  }, [currentUser?._id]);
+
+  const WishList_DATA = wishlistItems?.map((course) => {
     let finalPrice = course.price;
     // let discountText = "";
     if (course.discountId) {
@@ -82,20 +87,29 @@ function WishListPage() {
   };
 
   const toggleHeart = async (courseId) => {
+    setRemovingId(courseId);
+    // Xoá khỏi UI ngay lập tức
+    const removedItem = wishlistItems.find((course) => course._id === courseId);
+    setWishlistItems((prev) =>
+      prev.filter((course) => course._id !== courseId)
+    );
     try {
       await removeFromWishlist(currentUser._id, courseId, dispatch);
-      await getWishlist(dispatch, currentUser._id);
       toast.success("Remove from wishlist success", {
         position: "top-right",
         autoClose: 3000,
       });
     } catch (err) {
-      toast.error(errorMsg, {
+      // Nếu lỗi, rollback UI
+      setWishlistItems((prev) => [...prev, removedItem]);
+      toast.error(errorMsg || "Failed to remove from wishlist", {
         position: "top-right",
         autoClose: 3000,
       });
     }
+    setRemovingId(null);
   };
+  const isDataReady = !isLoading && Array.isArray(wishlistItems);
   return (
     <div>
       <ProfileSection
@@ -127,13 +141,13 @@ function WishListPage() {
                 </tr>
               </thead>
               <tbody>
-                {isLoading || !WishList_DATA || isLoadingRemove ? (
+                {!isDataReady ? (
                   <tr>
                     <td colSpan="3" className="text-center">
                       <LoaddingComponent />
                     </td>
                   </tr>
-                ) : currentData?.length === 0 ? (
+                ) : currentData.length === 0 ? (
                   <tr>
                     <td colSpan="3" className="text-center p-3">
                       <div className="d-flex">
@@ -154,11 +168,16 @@ function WishListPage() {
                     <tr key={startIdx + index}>
                       <td className="p-3" style={{ width: "60%" }}>
                         <div className="d-flex align-items-start gap-3 flex-nowrap">
-                          <img
-                            src={item.courseImage}
-                            className="wishlist-course-img"
-                            alt="course"
-                          />
+                          <Link
+                            className="text-decoration-none text-reset"
+                            to={`/course/${item.courseId}`}
+                          >
+                            <img
+                              src={item.courseImage}
+                              className="wishlist-course-img"
+                              alt="course"
+                            />
+                          </Link>
                           <div
                             className="flex-shrink-1"
                             style={{ minWidth: 0, maxWidth: "67%" }}
@@ -213,11 +232,20 @@ function WishListPage() {
                             </Link>
                           )}
                           <button
+                            type="button"
                             className="btn wl-btn-fav rounded-0 p-2"
-                            onClick={() => toggleHeart(item.courseId)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toggleHeart(item.courseId);
+                            }}
                             style={{ minWidth: 40 }}
+                            disabled={removingId === item.courseId}
                           >
-                            <FontAwesomeIcon icon={faTimesCircle} />
+                            {removingId === item.courseId ? (
+                              <LoaddingComponent />
+                            ) : (
+                              <FontAwesomeIcon icon={faTimesCircle} />
+                            )}
                           </button>
                         </div>
                       </td>
