@@ -23,15 +23,21 @@ function CartPage() {
   const errorMsg = useSelector(
     (state) => state.cart.removeItemFromCart.errorMsg
   );
+  const [cartItems, setCartItems] = useState(undefined);
+  const [removingId, setRemovingId] = useState(null);
+
   useEffect(() => {
     const fetchCartData = async () => {
-      await getCart(dispatch, currentUser._id);
+      if (currentUser?._id) {
+        const data = await getCart(dispatch, currentUser._id);
+        setCartItems(data.courseIds || []);
+      }
     };
     fetchCartData();
-  }, [dispatch, currentUser]);
+  }, [currentUser?._id]);
 
   const Cart_DATA =
-    Cart_DATA_1?.map((course) => {
+    cartItems?.map((course) => {
       let finalPrice = course.price;
       // let discountText = "";
       if (course.discountId) {
@@ -72,20 +78,28 @@ function CartPage() {
   };
 
   const toggleHeart = async (courseId) => {
+    setRemovingId(courseId);
+    // Xoá khỏi UI ngay lập tức
+    const removedItem = cartItems.find((course) => course._id === courseId);
+    setCartItems((prev) => prev.filter((course) => course._id !== courseId));
     try {
       await removeFromCart(currentUser._id, courseId, dispatch);
-      await getCart(dispatch, currentUser._id);
       toast.success("Remove from cart success", {
         position: "top-right",
         autoClose: 3000,
       });
     } catch (err) {
-      toast.error(errorMsg, {
+      // Nếu lỗi, rollback UI
+      setCartItems((prev) => [...prev, removedItem]);
+      toast.error(errorMsg || "Failed to remove from cart", {
         position: "top-right",
         autoClose: 3000,
       });
     }
+    setRemovingId(null);
   };
+
+  const isDataReady = !isLoading && Array.isArray(cartItems);
 
   return (
     <div>
@@ -118,7 +132,7 @@ function CartPage() {
                 </tr>
               </thead>
               <tbody>
-                {isLoading || !Cart_DATA || isLoadingRemove ? (
+                {!isDataReady ? (
                   <tr>
                     <td colSpan="3" className="text-center">
                       <LoaddingComponent />
@@ -145,11 +159,16 @@ function CartPage() {
                     <tr key={startIdx + index}>
                       <td className="p-3" style={{ width: "60%" }}>
                         <div className="d-flex align-items-start gap-3 flex-nowrap">
-                          <img
-                            src={item.courseImage}
-                            className="cart-course-img"
-                            alt="course"
-                          />
+                          <Link
+                            className="text-decoration-none text-reset"
+                            to={`/course/${item.courseId}`}
+                          >
+                            <img
+                              src={item.courseImage}
+                              className="cart-course-img"
+                              alt="course"
+                            />
+                          </Link>
                           <div
                             className="flex-shrink-1"
                             style={{ minWidth: 0, maxWidth: "67%" }}
@@ -190,11 +209,20 @@ function CartPage() {
                             Buy Now
                           </button>
                           <button
+                            type="button"
                             className="btn cart-btn-fav rounded-0 p-2"
-                            onClick={() => toggleHeart(item.courseId)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toggleHeart(item.courseId);
+                            }}
                             style={{ minWidth: 40 }}
+                            disabled={removingId === item.courseId}
                           >
-                            <FontAwesomeIcon icon={faTimesCircle} />
+                            {removingId === item.courseId ? (
+                              <LoaddingComponent />
+                            ) : (
+                              <FontAwesomeIcon icon={faTimesCircle} />
+                            )}
                           </button>
                         </div>
                       </td>
@@ -219,9 +247,10 @@ function CartPage() {
                   Total money:
                   <span style={{ color: "#ff5722", marginLeft: "5px" }}>
                     $
-                    {Cart_DATA
-                      .reduce((total, item) => total + item.price, 0)
-                      .toFixed(2)}
+                    {Cart_DATA.reduce(
+                      (total, item) => total + item.price,
+                      0
+                    ).toFixed(2)}
                   </span>
                 </p>
               </div>

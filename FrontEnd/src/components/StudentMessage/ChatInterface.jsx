@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useChat } from "../../hooks/useChat";
 import { ComposeModal } from "./ComposeModal";
 import "../../assets/StudentMsg/ChatInterface.css";
+import "../../assets/StudentMsg/StudentMsgGlobal.css";
 
 export function ChatInterface({ chatListOpen, setChatListOpen }) {
   const {
@@ -503,14 +504,9 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
                       );
                   }
 
-                  // Format message with sender name - SIMPLIFIED
+                  // Format message preview: chỉ hiển thị nội dung tin nhắn
                   let formattedMessage =
                     conversation.lastMessage || "No messages yet";
-                  if (conversation.lastMessage) {
-                    // Đơn giản: luôn hiển thị tên của otherParticipant
-                    const senderName = otherParticipant?.firstName || "Unknown";
-                    formattedMessage = `${senderName}: ${conversation.lastMessage}`;
-                  }
 
                   return (
                     <ChatListItem
@@ -662,12 +658,23 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
                     {messages.map((message) => {
                       const isOwnMessage =
                         message.sender_id._id === currentUser?._id;
+                      // Format tooltip time
+                      const fullTime = new Date(
+                        message.createdAt
+                      ).toLocaleString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      });
                       return (
                         <div
                           key={message._id}
                           className={
                             isOwnMessage ? "message-sent" : "message-received"
                           }
+                          style={{ position: "relative" }}
                         >
                           {!isOwnMessage && (
                             <div className="message-avatar">
@@ -680,8 +687,9 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
                               />
                             </div>
                           )}
-                          <div className="message-bubble">
+                          <div className="message-bubble message-tooltip-parent">
                             <p className="m-0">{message.message}</p>
+                            <span className="message-tooltip">{fullTime}</span>
                           </div>
                           {isOwnMessage && (
                             <div className="message-time">
@@ -709,9 +717,26 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
                   />
                 </div>
                 <button
-                  className="send-button"
+                  className="send-button main-orange"
                   onClick={handleSendMessage}
                   disabled={!newMessage.trim() || loading}
+                  style={{
+                    backgroundColor: "#ff6636",
+                    color: "white",
+                    borderRadius: "8px",
+                    padding: "8px 20px",
+                    fontWeight: 600,
+                    fontSize: "16px",
+                    border: "none",
+                    boxShadow: "0 2px 8px rgba(255,102,54,0.08)",
+                    transition: "background 0.2s",
+                  }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#e55a2b")
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#ff6636")
+                  }
                 >
                   <span>Send</span>
                   <svg
