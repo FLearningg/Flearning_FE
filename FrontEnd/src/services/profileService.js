@@ -33,3 +33,15 @@ export const markLessonCompleted = (courseId, lessonId) =>
 
 export const markLessonIncomplete = (courseId, lessonId) =>
   apiClient.delete(`/progress/${courseId}/lessons/${lessonId}/complete`);
+
+// Thêm API tạo feedback mới cho course
+export const createCourseFeedback = (courseId, { content, rateStar }) =>
+  apiClient.post(`/courses/${courseId}/feedback`, { content, rateStar });
+
+// Lấy feedback cho một course
+export const getCourseFeedback = (courseId) =>
+  apiClient.get(`/courses/${courseId}/feedback`);
+
+// Update feedback cho một course
+export const updateCourseFeedback = (courseId, { content, rateStar }) =>
+  apiClient.put(`/courses/${courseId}/feedback`, { content, rateStar });

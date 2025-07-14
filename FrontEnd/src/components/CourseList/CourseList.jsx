@@ -6,8 +6,15 @@ import ProfileSection from "./ProfileSection";
 import {
   getEnrolledCourses,
   getAllCoursesProgress,
+  createCourseFeedback,
+  getCourseFeedback,
+  updateCourseFeedback,
 } from "../../services/profileService";
+import { useSelector } from "react-redux";
 import "../../assets/CourseList/CourseList.css";
+import ReviewModal from "../WatchCourse/ReviewModal";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CourseList = () => {
   const location = useLocation();
@@ -18,10 +25,50 @@ const CourseList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("latest");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(0);
+  const coursesPerPage = 8;
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const { currentUser } = useSelector((state) => state.auth);
+  const [feedbackByCourseId, setFeedbackByCourseId] = useState({});
 
   useEffect(() => {
     fetchCoursesData();
   }, []);
+
+  useEffect(() => {
+    // Khi đã có danh sách courses, fetch feedback cho từng course
+    if (courses.length > 0 && currentUser) {
+      const fetchAllFeedback = async () => {
+        const feedbackMap = {};
+        await Promise.all(
+          courses.map(async (enrollment) => {
+            try {
+              const res = await getCourseFeedback(enrollment.course.id);
+              const myFeedback = res.data.feedback.find((fb) => {
+                if (!fb.userId) return false;
+                if (typeof fb.userId === "string") {
+                  return (
+                    fb.userId === currentUser._id ||
+                    fb.userId === currentUser.id
+                  );
+                }
+                return (
+                  fb.userId._id === currentUser._id ||
+                  fb.userId._id === currentUser.id
+                );
+              });
+              feedbackMap[enrollment.course.id] = myFeedback || null;
+            } catch {
+              feedbackMap[enrollment.course.id] = null;
+            }
+          })
+        );
+        setFeedbackByCourseId(feedbackMap);
+      };
+      fetchAllFeedback();
+    }
+  }, [courses, currentUser]);
 
   const fetchCoursesData = async () => {
     try {
@@ -81,6 +128,12 @@ const CourseList = () => {
       }
       return 0;
     });
+
+  const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
+  const currentCourses = filteredCourses.slice(
+    currentPage * coursesPerPage,
+    (currentPage + 1) * coursesPerPage
+  );
 
   if (loading) {
     return (
@@ -163,22 +216,60 @@ const CourseList = () => {
           </div>
 
           <div className="course-grid">
-            {filteredCourses.map((enrollment) => (
-              <CourseCard
-                key={enrollment.enrollmentId}
-                id={enrollment.course.id}
-                thumbnail={enrollment.course.thumbnail}
-                title={enrollment.course.title}
-                progress={enrollment.progress}
-                createdAt={enrollment.enrollmentDate}
-                instructor={enrollment.course.instructor}
-                category={enrollment.course.category}
-                status={enrollment.status}
-                completedLessons={enrollment.completedLessons}
-                totalLessons={enrollment.totalLessons}
-              />
-            ))}
+            {currentCourses.map((enrollment) => {
+              const myFeedback = feedbackByCourseId[enrollment.course.id];
+              return (
+                <CourseCard
+                  key={enrollment.course.id}
+                  id={enrollment.course.id}
+                  thumbnail={enrollment.course.thumbnail}
+                  title={enrollment.course.title}
+                  progress={enrollment.progress}
+                  instructor={enrollment.course.instructor}
+                  category={enrollment.course.category}
+                  status={enrollment.status}
+                  completedLessons={enrollment.completedLessons}
+                  totalLessons={enrollment.totalLessons}
+                  onReview={
+                    enrollment.status === "completed"
+                      ? () => {
+                          setSelectedCourseId(enrollment.course.id);
+                          setIsReviewOpen(true);
+                        }
+                      : undefined
+                  }
+                  reviewMode={!!myFeedback}
+                >
+                  {/* Có thể truyền thêm prop nếu muốn */}
+                </CourseCard>
+              );
+            })}
           </div>
+
+          {/* Pagination controls */}
+          {totalPages > 1 && (
+            <div className="course-pagination">
+              <button
+                className="course-pagination-btn"
+                onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
+                disabled={currentPage === 0}
+              >
+                ← Prev
+              </button>
+              <span className="course-pagination-info">
+                Page {currentPage + 1} of {totalPages}
+              </span>
+              <button
+                className="course-pagination-btn"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))
+                }
+                disabled={currentPage >= totalPages - 1}
+              >
+                Next →
+              </button>
+            </div>
+          )}
 
           {filteredCourses.length === 0 && (
             <div className="no-courses-message">
@@ -187,6 +278,57 @@ const CourseList = () => {
           )}
         </div>
       </div>
+      {/* Review Modal */}
+      <ReviewModal
+        isOpen={isReviewOpen}
+        onClose={() => setIsReviewOpen(false)}
+        onSubmit={async ({ rating, feedback }) => {
+          const myFeedback = feedbackByCourseId[selectedCourseId];
+          try {
+            if (myFeedback) {
+              await updateCourseFeedback(selectedCourseId, {
+                content: feedback,
+                rateStar: rating,
+              });
+              toast.success("Review updated successfully!");
+            } else {
+              await createCourseFeedback(selectedCourseId, {
+                content: feedback,
+                rateStar: rating,
+              });
+              toast.success("Review submitted successfully!");
+            }
+            // Refetch feedback cho course này
+            const res = await getCourseFeedback(selectedCourseId);
+            const updatedFeedback = res.data.feedback.find((fb) => {
+              if (!fb.userId) return false;
+              if (typeof fb.userId === "string") {
+                return (
+                  fb.userId === currentUser._id || fb.userId === currentUser.id
+                );
+              }
+              return (
+                fb.userId._id === currentUser._id ||
+                fb.userId._id === currentUser.id
+              );
+            });
+            setFeedbackByCourseId((prev) => ({
+              ...prev,
+              [selectedCourseId]: updatedFeedback || null,
+            }));
+          } catch (err) {
+            toast.error(
+              err.response?.data?.message || "Failed to submit review!"
+            );
+          }
+          setIsReviewOpen(false);
+        }}
+        // Truyền giá trị mặc định nếu đã review
+        defaultRating={feedbackByCourseId[selectedCourseId]?.rateStar || 0}
+        defaultFeedback={feedbackByCourseId[selectedCourseId]?.content || ""}
+        reviewMode={!!feedbackByCourseId[selectedCourseId]}
+      />
+      <ToastContainer autoClose={3000} />
     </ProfileSection>
   );
 };

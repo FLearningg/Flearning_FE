@@ -172,7 +172,7 @@
   padding: 16px;
   display: flex;
   flex-direction: column;
-  height: calc(100% - 9rem); /* 9rem là chiều cao của thumbnail (16/9 ratio) */
+  height: calc(100% - 9rem);
 }
 
 .learning-info h4 {
@@ -185,15 +185,18 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.4;
+  min-height: 2.8em; /* Đảm bảo chiều cao cố định cho tiêu đề 2 dòng */
 }
 
 .learning-chapter-name {
   color: #6f767e;
   font-size: 0.875rem;
   margin: 0 0 16px 0;
+  min-height: 1.2em; /* Đảm bảo chiều cao cố định cho dòng phụ */
 }
 
 .learning-progress {
+  margin-top: auto; /* Đẩy progress bar xuống cuối card */
   margin-bottom: 16px;
 }
 
@@ -271,4 +274,4 @@
     width: 100%;
     justify-content: center;
   }
-} 
+}
