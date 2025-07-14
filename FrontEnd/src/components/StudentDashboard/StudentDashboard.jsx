@@ -5,8 +5,15 @@ import ProfileSection from "../CourseList/ProfileSection";
 import {
   getEnrolledCourses,
   getAllCoursesProgress,
+  createCourseFeedback,
+  getCourseFeedback,
+  updateCourseFeedback,
 } from "../../services/profileService";
 import "../../assets/StudentDashboard/StudentDashboard.css";
+import { useSelector } from "react-redux";
+import ReviewModal from "../WatchCourse/ReviewModal";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const StatCard = ({ icon, count, label, color }) => (
   <div className="dashboard-stat-card">
@@ -31,6 +38,8 @@ const LearningCard = ({
   status,
   completedLessons,
   totalLessons,
+  onReview,
+  reviewMode,
 }) => (
   <div className="learning-card">
     <div className="learning-thumbnail">
@@ -53,8 +62,16 @@ const LearningCard = ({
           {progress}% Completed ({completedLessons}/{totalLessons} lessons)
         </span>
       </div>
-      <button className="learning-watch-btn" aria-label={`Watch ${title}`}>
-        {status === "completed" ? "Review Course" : "Continue Learning"}
+      <button
+        className="learning-watch-btn"
+        aria-label={`Watch ${title}`}
+        onClick={status === "completed" && onReview ? onReview : undefined}
+      >
+        {status === "completed"
+          ? reviewMode
+            ? "Update Review"
+            : "Review Course"
+          : "Continue Learning"}
       </button>
     </div>
   </div>
@@ -62,16 +79,54 @@ const LearningCard = ({
 
 const StudentDashboard = () => {
   const location = useLocation();
+  const { currentUser } = useSelector((state) => state.auth);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [coursesProgress, setCoursesProgress] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const coursesPerPage = 4;
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [feedbackByCourseId, setFeedbackByCourseId] = useState({});
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  useEffect(() => {
+    // Khi đã có danh sách courses, fetch feedback cho từng course
+    if (enrolledCourses.length > 0 && currentUser) {
+      const fetchAllFeedback = async () => {
+        const feedbackMap = {};
+        await Promise.all(
+          enrolledCourses.map(async (enrollment) => {
+            try {
+              const res = await getCourseFeedback(enrollment.course.id);
+              const myFeedback = res.data.feedback.find((fb) => {
+                if (!fb.userId) return false;
+                if (typeof fb.userId === "string") {
+                  return (
+                    fb.userId === currentUser._id ||
+                    fb.userId === currentUser.id
+                  );
+                }
+                return (
+                  fb.userId._id === currentUser._id ||
+                  fb.userId._id === currentUser.id
+                );
+              });
+              feedbackMap[enrollment.course.id] = myFeedback || null;
+            } catch {
+              feedbackMap[enrollment.course.id] = null;
+            }
+          })
+        );
+        setFeedbackByCourseId(feedbackMap);
+      };
+      fetchAllFeedback();
+    }
+  }, [enrolledCourses, currentUser]);
 
   const fetchDashboardData = async () => {
     try {
@@ -167,6 +222,13 @@ const StudentDashboard = () => {
     (currentPage + 1) * coursesPerPage
   );
 
+  // Lấy tên hiển thị ưu tiên firstName + lastName, nếu không có thì dùng userName
+  const displayName = currentUser
+    ? currentUser.firstName || currentUser.lastName
+      ? `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim()
+      : currentUser.userName || "User"
+    : "User";
+
   if (loading) {
     return (
       <ProfileSection
@@ -217,7 +279,7 @@ const StudentDashboard = () => {
 
         <div className="learning-section">
           <div className="learning-section-header">
-            <h3>Let's start learning, Kevin</h3>
+            <h3>{`Let's start learning, ${displayName}`}</h3>
             <div className="learning-nav-buttons">
               <button
                 className="learning-nav-btn learning-nav-prev"
@@ -242,18 +304,30 @@ const StudentDashboard = () => {
           </div>
 
           <div className="learning-grid">
-            {currentCourses.map((enrollment) => (
-              <LearningCard
-                key={enrollment.enrollmentId}
-                thumbnail={enrollment.course.thumbnail}
-                title={enrollment.course.title}
-                chapter={`${enrollment.course.category || "General"} Course`}
-                progress={enrollment.progress}
-                status={enrollment.status}
-                completedLessons={enrollment.completedLessons}
-                totalLessons={enrollment.totalLessons}
-              />
-            ))}
+            {currentCourses.map((enrollment) => {
+              const myFeedback = feedbackByCourseId[enrollment.course.id];
+              return (
+                <LearningCard
+                  key={enrollment.course.id}
+                  thumbnail={enrollment.course.thumbnail}
+                  title={enrollment.course.title}
+                  chapter={`${enrollment.course.category || "General"} Course`}
+                  progress={enrollment.progress}
+                  status={enrollment.status}
+                  completedLessons={enrollment.completedLessons}
+                  totalLessons={enrollment.totalLessons}
+                  onReview={
+                    enrollment.status === "completed"
+                      ? () => {
+                          setSelectedCourseId(enrollment.course.id);
+                          setIsReviewOpen(true);
+                        }
+                      : undefined
+                  }
+                  reviewMode={!!myFeedback}
+                />
+              );
+            })}
             {currentCourses.length === 0 && (
               <div className="no-courses-message">
                 No courses found. Start learning by enrolling in a course!
@@ -262,6 +336,56 @@ const StudentDashboard = () => {
           </div>
         </div>
       </div>
+      {/* Review Modal */}
+      <ReviewModal
+        isOpen={isReviewOpen}
+        onClose={() => setIsReviewOpen(false)}
+        onSubmit={async ({ rating, feedback }) => {
+          const myFeedback = feedbackByCourseId[selectedCourseId];
+          try {
+            if (myFeedback) {
+              await updateCourseFeedback(selectedCourseId, {
+                content: feedback,
+                rateStar: rating,
+              });
+              toast.success("Review updated successfully!");
+            } else {
+              await createCourseFeedback(selectedCourseId, {
+                content: feedback,
+                rateStar: rating,
+              });
+              toast.success("Review submitted successfully!");
+            }
+            // Refetch feedback cho course này
+            const res = await getCourseFeedback(selectedCourseId);
+            const updatedFeedback = res.data.feedback.find((fb) => {
+              if (!fb.userId) return false;
+              if (typeof fb.userId === "string") {
+                return (
+                  fb.userId === currentUser._id || fb.userId === currentUser.id
+                );
+              }
+              return (
+                fb.userId._id === currentUser._id ||
+                fb.userId._id === currentUser.id
+              );
+            });
+            setFeedbackByCourseId((prev) => ({
+              ...prev,
+              [selectedCourseId]: updatedFeedback || null,
+            }));
+          } catch (err) {
+            toast.error(
+              err.response?.data?.message || "Failed to submit review!"
+            );
+          }
+          setIsReviewOpen(false);
+        }}
+        defaultRating={feedbackByCourseId[selectedCourseId]?.rateStar || 0}
+        defaultFeedback={feedbackByCourseId[selectedCourseId]?.content || ""}
+        reviewMode={!!feedbackByCourseId[selectedCourseId]}
+      />
+      <ToastContainer autoClose={3000} />
     </ProfileSection>
   );
 };

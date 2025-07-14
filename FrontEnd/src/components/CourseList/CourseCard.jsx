@@ -10,6 +10,8 @@ const CourseCard = ({
   status,
   completedLessons = 0,
   totalLessons = 0,
+  onReview,
+  reviewMode,
 }) => {
   const getStatusColor = () => {
     switch (status) {
@@ -46,10 +48,19 @@ const CourseCard = ({
           <button
             className="course-watch-btn"
             aria-label={`${
-              status === "completed" ? "Review" : "Continue"
+              status === "completed"
+                ? reviewMode
+                  ? "Update Review"
+                  : "Review"
+                : "Continue"
             } ${title} course`}
+            onClick={status === "completed" && onReview ? onReview : undefined}
           >
-            {status === "completed" ? "Review Course" : "Continue Learning"}
+            {status === "completed"
+              ? reviewMode
+                ? "Update Review"
+                : "Review Course"
+              : "Continue Learning"}
           </button>
           <div className="course-progress-status">
             <div className="course-progress-wrapper">
@@ -90,6 +101,8 @@ CourseCard.propTypes = {
   status: PropTypes.oneOf(["completed", "in-progress"]).isRequired,
   completedLessons: PropTypes.number,
   totalLessons: PropTypes.number,
+  onReview: PropTypes.func,
+  reviewMode: PropTypes.bool,
 };
 
 export default CourseCard;
