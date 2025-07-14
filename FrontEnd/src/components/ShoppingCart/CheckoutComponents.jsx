@@ -145,20 +145,30 @@ export function NewCardForm() {
 
 // --- Component 4: CourseItem ---
 // This must be defined before OrderSummary or imported if in separate files.
-function CourseItem({ instructor, thumbnail, title, price, originalPrice }) {
+function CourseItem({
+  instructor,
+  thumbnail,
+  title,
+  currentPrice,
+  originalPrice,
+}) {
   return (
     <div className="course-item">
-      <img src={thumbnail} alt={title} className="course-item__image" />
+      <img
+        src={thumbnail || "/images/default-thumbnail.jpg"}
+        alt={title}
+        className="course-item__image"
+      />
       <div className="course-item__details">
         <small className="course-item__instructor">
           Course by: {instructor || "Thien Huynh"}
         </small>
         <div className="course-item__title">{title}</div>
         <div className="course-item__price">
-          ${toNumber(price).toFixed(2)}
-          {originalPrice && (
+          ${Number(currentPrice).toFixed(2)}
+          {originalPrice && originalPrice > currentPrice && (
             <small className="course-item__original-price">
-              ${toNumber(originalPrice).toFixed(2)}
+              ${Number(originalPrice).toFixed(2)}
             </small>
           )}
         </div>
@@ -184,7 +194,14 @@ export function OrderSummary({
         </h3>
         <div className="order-summary__course-list">
           {courses.map((course) => (
-            <CourseItem key={course._id || course.id} {...course} />
+            <CourseItem
+              key={course._id || course.id}
+              title={course.title}
+              instructor={course.instructors?.[0]?.name}
+              thumbnail={course.thumbnail}
+              currentPrice={course.currentPrice}
+              originalPrice={course.originalPrice}
+            />
           ))}
         </div>
         <div className="order-summary__breakdown">

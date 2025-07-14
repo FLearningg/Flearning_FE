@@ -5,7 +5,9 @@ import { CreditCard } from "lucide-react";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { getCart } from "../../services/cartService";
+import { getCourseById } from "../../services/courseService";
 import QRCodePayment from "./QRCodePayment";
+
 import {
   Breadcrumb,
   PaymentCard,
@@ -15,7 +17,7 @@ import {
 
 import "../../assets/ShoppingCart/CheckoutPage.css";
 
-// --- Constants and Configuration ---
+// --- Payment methods ---
 const paymentOptions = [
   {
     key: "visa",
@@ -42,8 +44,7 @@ const paymentOptions = [
   {
     key: "paypal",
     brand: { label: "PP", style: { backgroundColor: "#253b80" } },
-    description:
-      "You will be redirected to the PayPal site after reviewing your order.",
+    description: "You will be redirected to PayPal after reviewing your order.",
   },
   {
     key: "new-card",
@@ -60,26 +61,20 @@ const paymentOptions = [
   },
 ];
 
-// --- Helper Functions ---
 const toNumber = (price) => {
   if (typeof price === "number") return price;
   const numericString = String(price).replace(/[^0-9.]/g, "");
   return parseFloat(numericString) || 0;
 };
 
-// Helper to generate a random string
 const generateRandomString = (length) => {
-  const characters =
+  const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
+  return Array.from({ length }, () =>
+    chars.charAt(Math.floor(Math.random() * chars.length))
+  ).join("");
 };
 
-// --- Sub-Components ---
 const PaymentDetails = ({
   selectedMethod,
   qrAmount,
@@ -102,21 +97,19 @@ const PaymentDetails = ({
 };
 
 // =============================================
-//           MAIN CHECKOUT PAGE COMPONENT
+//                  CHECKOUT PAGE
 // =============================================
 export default function CheckoutPage() {
-  // --- State and Hooks ---
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const currentUser = useSelector((state) => state.auth.currentUser);
   const coursesInCart = useSelector((state) => state.cart.getCart.items) || [];
-  const [selectedPayment, setSelectedPayment] = useState("new-card");
 
-  // --- Side Effects ---
+  const [selectedPayment, setSelectedPayment] = useState("new-card");
+  const [fullCourses, setFullCourses] = useState([]);
+
   useEffect(() => {
-    if (currentUser === null) {
-      navigate("/");
-    }
+    if (currentUser === null) navigate("/");
   }, [currentUser, navigate]);
 
   useEffect(() => {
@@ -125,19 +118,44 @@ export default function CheckoutPage() {
     }
   }, [dispatch, currentUser]);
 
-  // --- Memoized Calculations ---
-  const orderTotals = useMemo(() => {
-    const subtotal = coursesInCart.reduce(
-      (sum, course) => sum + toNumber(course.price),
-      0
-    );
-    const couponDiscountPercent = 8;
-    const discountAmount = subtotal * (couponDiscountPercent / 100);
-    const total = subtotal - discountAmount;
-    return { subtotal, discountAmount, total };
+  useEffect(() => {
+    const fetchCourses = async () => {
+      const results = await Promise.allSettled(
+        coursesInCart.map((item) => getCourseById(item._id))
+      );
+      const enriched = results
+        .filter((r) => r.status === "fulfilled")
+        .map((r) => r.value);
+      setFullCourses(enriched);
+    };
+
+    if (coursesInCart.length > 0) fetchCourses();
+    else setFullCourses([]);
   }, [coursesInCart]);
 
-  // --- Handlers ---
+  const processedCourses = useMemo(() => {
+    return fullCourses.map((course) => {
+      const originalPrice = toNumber(course.price);
+      const discount = course.discountId?.value || 0;
+      const currentPrice = Math.max(0, originalPrice - discount);
+      return {
+        ...course,
+        originalPrice,
+        currentPrice,
+      };
+    });
+  }, [fullCourses]);
+
+  const orderTotals = useMemo(() => {
+    const subtotal = processedCourses.reduce(
+      (sum, course) => sum + course.currentPrice,
+      0
+    );
+    const discountAmount = subtotal * 0.08;
+    const total = subtotal - discountAmount;
+    return { subtotal, discountAmount, total };
+  }, [processedCourses]);
+
   const handleNonQRPayment = () => {
     Swal.fire({
       title: "Payment Gateway",
@@ -147,10 +165,7 @@ export default function CheckoutPage() {
     });
   };
 
-  // To prevent rendering the page for a split second before redirecting
-  if (currentUser === null) {
-    return null;
-  }
+  if (!currentUser) return null;
 
   return (
     <div className="checkout-page">
@@ -159,24 +174,24 @@ export default function CheckoutPage() {
         <div className="row g-5">
           <div className="col-lg-8">
             <h2 className="section-title">Payment Method</h2>
-            {paymentOptions.map(({ key, ...methodProps }) => (
+            {paymentOptions.map(({ key, ...props }) => (
               <PaymentCard
                 key={key}
-                {...methodProps}
+                {...props}
                 isSelected={selectedPayment === key}
                 onClick={() => setSelectedPayment(key)}
               />
             ))}
             <PaymentDetails
               selectedMethod={selectedPayment}
-              qrAmount={orderTotals.total * 25000}
+              qrAmount={Math.floor(orderTotals.total * 25000)}
               qrContent={`COURSE${generateRandomString(6)}`}
-              cartCourses={coursesInCart}
+              cartCourses={processedCourses}
             />
           </div>
           <div className="col-lg-4">
             <OrderSummary
-              courses={coursesInCart}
+              courses={processedCourses}
               subtotal={orderTotals.subtotal}
               discountAmount={orderTotals.discountAmount}
               total={orderTotals.total}

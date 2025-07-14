@@ -274,7 +274,7 @@ export default function PricingCard({
       >
         {course ? (
           <QRCodePayment
-            amount={currentPrice * 25000}
+            amount={Math.floor(currentPrice * 25000)}
             // Create a unique transaction content string for "Buy Now"
             content={`COURSE${course._id.slice(-6)}`}
             // For a single purchase, the "cart" is just this one course
