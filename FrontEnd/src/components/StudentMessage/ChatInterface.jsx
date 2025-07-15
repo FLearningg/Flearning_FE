@@ -3,6 +3,11 @@ import { useChat } from "../../hooks/useChat";
 import { ComposeModal } from "./ComposeModal";
 import "../../assets/StudentMsg/ChatInterface.css";
 import "../../assets/StudentMsg/StudentMsgGlobal.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileVideo } from "@fortawesome/free-solid-svg-icons"; // dùng tạm nếu không có faGif
+
+// GIPHY API Key (đã được user cung cấp)
+const GIPHY_API_KEY = "GIPHY_API_KEY";
 
 // GIPHY API Key (đã được user cung cấp)
 const GIPHY_API_KEY = process.env.GIPHY_API_KEY;
@@ -40,6 +45,10 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
   const previousMessagesLength = useRef(0);
   const shouldMaintainPosition = useRef(false);
   const lastLoadTime = useRef(0);
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const [gifSearch, setGifSearch] = useState("");
+  const [gifResults, setGifResults] = useState([]);
+  const [gifLoading, setGifLoading] = useState(false);
 
   // Helper to detect tablet mode - simplified to width-only for consistency
   const [isTablet, setIsTablet] = React.useState(false);
@@ -215,6 +224,24 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
     return () => observer.disconnect();
   }, [hasMoreMessages, loadingMore, loadMoreMessages, isLoadingMore]);
 
+  // Fetch GIFs from Giphy
+  useEffect(() => {
+    if (!showGifPicker) return;
+    setGifLoading(true);
+    const q = gifSearch || "funny";
+    fetch(
+      `https://api.giphy.com/v1/gifs/search?q=${encodeURIComponent(
+        q
+      )}&api_key=${GIPHY_API_KEY}&limit=16&rating=g`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setGifResults(data.data || []);
+        setGifLoading(false);
+      })
+      .catch(() => setGifLoading(false));
+  }, [gifSearch, showGifPicker]);
+
   // Handle sending a message
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation) return;
@@ -242,6 +269,18 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
     } catch (err) {
       console.error("Failed to send message:", err);
     }
+  };
+
+  // Handle send GIF
+  const handleSendGif = (gifUrl) => {
+    setShowGifPicker(false);
+    setNewMessage("");
+    if (!selectedConversation) return;
+    sendNewMessage(
+      selectedConversation.otherParticipant._id,
+      gifUrl,
+      selectedConversation.id
+    );
   };
 
   // Handle compose new message
@@ -671,6 +710,9 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
                         month: "2-digit",
                         year: "numeric",
                       });
+                      const isGif =
+                        typeof message.message === "string" &&
+                        message.message.match(/(giphy\.com|\.gif($|\?))/i);
                       return (
                         <div
                           key={message._id}
@@ -690,10 +732,27 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
                               />
                             </div>
                           )}
-                          <div className="message-bubble message-tooltip-parent">
-                            <p className="m-0">{message.message}</p>
-                            <span className="message-tooltip">{fullTime}</span>
-                          </div>
+                          {isGif ? (
+                            <img
+                              src={message.message}
+                              alt="gif"
+                              style={{
+                                maxWidth: 220,
+                                maxHeight: 180,
+                                borderRadius: 12,
+                                display: "block",
+                                background: "#fff",
+                                padding: 2,
+                              }}
+                            />
+                          ) : (
+                            <div className="message-bubble message-tooltip-parent">
+                              <p className="m-0">{message.message}</p>
+                              <span className="message-tooltip">
+                                {fullTime}
+                              </span>
+                            </div>
+                          )}
                           {isOwnMessage && (
                             <div className="message-time">
                               {formatTime(message.createdAt)}
@@ -707,7 +766,7 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
                 )}
               </div>
 
-              <div className="chat-input-area">
+              <div className="chat-input-area" style={{ position: "relative" }}>
                 <div className="message-input-container">
                   <input
                     type="text"
