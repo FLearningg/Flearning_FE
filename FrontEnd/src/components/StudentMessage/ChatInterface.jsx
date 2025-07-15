@@ -9,6 +9,9 @@ import { faFileVideo } from "@fortawesome/free-solid-svg-icons"; // dùng tạm 
 // GIPHY API Key (đã được user cung cấp)
 const GIPHY_API_KEY = "GIPHY_API_KEY";
 
+// GIPHY API Key (đã được user cung cấp)
+const GIPHY_API_KEY = process.env.GIPHY_API_KEY;
+
 export function ChatInterface({ chatListOpen, setChatListOpen }) {
   const {
     conversations,
@@ -1032,6 +1035,7 @@ function ChatListItem({
           )}
         </div>
         <span className="chat-item-message">{isGif ? "GIF" : message}</span>
+        <span className="chat-item-message">{message}</span>
       </div>
     </div>
   );
