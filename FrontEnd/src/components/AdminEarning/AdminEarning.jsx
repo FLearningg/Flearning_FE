@@ -331,6 +331,9 @@ const getStatusClass = (status) => {
 const AdminEarning = ({ title }) => {
   const [activeCancelIndex, setActiveCancelIndex] = useState(null);
   const popupRef = useRef(null);
+  // Thêm state loading/error mẫu (cần thay bằng logic thực tế nếu có API)
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -345,6 +348,26 @@ const AdminEarning = ({ title }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [activeCancelIndex]);
+
+  // UI loading/error chuẩn hóa
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading earnings...</p>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="error-container">
+        <p>{error}</p>
+        <button className="retry-button" onClick={() => setError(null)}>
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <>
