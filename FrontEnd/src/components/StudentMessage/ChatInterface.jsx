@@ -6,12 +6,6 @@ import "../../assets/StudentMsg/StudentMsgGlobal.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileVideo } from "@fortawesome/free-solid-svg-icons"; // dùng tạm nếu không có faGif
 
-// GIPHY API Key (đã được user cung cấp)
-const GIPHY_API_KEY = "GIPHY_API_KEY";
-
-// GIPHY API Key (đã được user cung cấp)
-const GIPHY_API_KEY = process.env.GIPHY_API_KEY;
-
 const GIPHY_API_KEY = process.env.REACT_APP_GIPHY_API_KEY;
 
 export function ChatInterface({ chatListOpen, setChatListOpen }) {
