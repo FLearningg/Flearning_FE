@@ -199,11 +199,25 @@ const AdminDashboard = () => {
   };
 
   if (loading) {
-    return <div className="loading-container">Loading Dashboard...</div>;
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading dashboard...</p>
+      </div>
+    );
   }
-
   if (error) {
-    return <div className="error-container">{error}</div>;
+    return (
+      <div className="error-container">
+        <p>{error}</p>
+        <button
+          className="retry-button"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   return (

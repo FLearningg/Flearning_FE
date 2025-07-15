@@ -192,235 +192,253 @@ export default function AdminManageUser() {
       }}
     >
       <div className="amu-container">
-        {/* Stats Grid */}
-        <div className="amu-stats-grid">
-          <div className="amu-stat-card">
-            <div className="amu-stat-icon-wrapper amu-color-purple">
-              <Users className="amu-stat-icon" />
-            </div>
-            <div className="amu-stat-info">
-              <span className="amu-stat-value">{allUsers.length}</span>
-              <span className="amu-stat-label">Total Users</span>
-            </div>
-          </div>
-          <div className="amu-stat-card">
-            <div className="amu-stat-icon-wrapper amu-color-green">
-              <UserPlus className="amu-stat-icon" />
-            </div>
-            <div className="amu-stat-info">
-              <span className="amu-stat-value">{newUsersToday}</span>
-              <span className="amu-stat-label">New Users Today</span>
-            </div>
-          </div>
-          <div className="amu-stat-card">
-            <div className="amu-stat-icon-wrapper amu-color-orange">
-              <UserPlus className="amu-stat-icon" />
-            </div>
-            <div className="amu-stat-info">
-              <span className="amu-stat-value">{newUsersThisMonth}</span>
-              <span className="amu-stat-label">{`New in ${monthName}`}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Toolbar */}
-        <div className="amu-toolbar">
-          <div className="amu-toolbar-left">
-            <div className="amu-search-container">
-              <Search className="amu-search-icon" />
-              <input
-                type="text"
-                placeholder="Search by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="amu-search-input"
-              />
-            </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="amu-filter-select"
-            >
-              <option value="All">All</option>
-              <option value="verified">Active</option>
-              <option value="banned">Banned</option>
-              <option value="unverified">Unverified</option>
-            </select>
-          </div>
-          <div className="amu-toolbar-right">
-            <div className="amu-date-filter-group">
-              <span className="amu-filter-label">Joined Date:</span>
-              <div className="amu-date-filter">
-                <button
-                  className={`amu-date-filter-btn ${
-                    dateFilter === "all" ? "active" : ""
-                  }`}
-                  onClick={() => handleDateButtonClick("all")}
-                >
-                  All
-                </button>
-                <button
-                  className={`amu-date-filter-btn ${
-                    dateFilter === "today" ? "active" : ""
-                  }`}
-                  onClick={() => handleDateButtonClick("today")}
-                >
-                  Today
-                </button>
-                <button
-                  className={`amu-date-filter-btn ${
-                    dateFilter === "month" ? "active" : ""
-                  }`}
-                  onClick={() => handleDateButtonClick("month")}
-                >
-                  This Month
-                </button>
-              </div>
-              <div className="amu-date-range-filter">
-                <DatePicker.RangePicker
-                  value={fromDate && toDate ? [fromDate, toDate] : null}
-                  onChange={handleDateChange}
-                  allowClear
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Users Table */}
-        <div className="amu-table-container">
-          {loading ? (
-            <div className="amu-loading-state">Loading users...</div>
-          ) : error ? (
-            <div className="amu-error-state">{error}</div>
-          ) : (
-            <table className="amu-table">
-              <thead className="amu-table-header">
-                <tr>
-                  <th>NO.</th>
-                  <th>User</th>
-                  <th>Email</th>
-                  <th>Status</th>
-                  <th>Date Joined</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedUsers.map((user, index) => {
-                  // Normalize status for UI
-                  const isBanned =
-                    user.status === "banned" || user.status === "Banned";
-                  const statusLabel =
-                    user.status === "banned" || user.status === "Banned"
-                      ? "Banned"
-                      : user.status === "verified" || user.status === "Verified"
-                      ? "Active"
-                      : user.status;
-                  const rowNumber =
-                    (currentPage - 1) * itemsPerPage + index + 1;
-                  return (
-                    <tr key={user._id} className="amu-table-row">
-                      <td className="amu-table-cell amu-row-number">
-                        {rowNumber}
-                      </td>
-                      <td className="amu-table-cell">
-                        <div className="amu-user-info">
-                          <img
-                            src={
-                              user.userImage || "/images/defaultImageUser.png"
-                            }
-                            alt={user.name || user.userName || "User Avatar"}
-                            className="amu-user-avatar"
-                          />
-                          <div>
-                            <div className="amu-user-name">
-                              {user.firstName} {user.lastName}
-                            </div>
-                            <div className="amu-user-email">
-                              {user.userName}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="amu-table-cell amu-user-email">
-                        {user.email}
-                      </td>
-                      <td className="amu-table-cell">
-                        <span
-                          className={`amu-status-badge ${
-                            isBanned ? "amu-status-banned" : "amu-status-active"
-                          }`}
-                        >
-                          {statusLabel}
-                        </span>
-                      </td>
-                      <td className="amu-table-cell amu-date-joined">
-                        {dayjs(user.createdAt).format("DD/MM/YYYY")}
-                      </td>
-                      <td className="amu-table-cell">
-                        <CustomButton
-                          size="small"
-                          color={isBanned ? "success" : "error"}
-                          type="underline"
-                          disabled={userActionLoading[user._id]}
-                          onClick={() =>
-                            handleToggleStatus(user._id, user.status)
-                          }
-                        >
-                          {userActionLoading[user._id]
-                            ? isBanned
-                              ? "Unbanning..."
-                              : "Banning..."
-                            : isBanned
-                            ? "Unban User"
-                            : "Ban User"}
-                        </CustomButton>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Pagination */}
-        {paginatedUsers.length > 0 && !loading && !error && (
-          <div className="amu-pagination">
-            <p className="amu-pagination-info">
-              Showing {startItem} to {endItem} of {totalUsers} results
-            </p>
-            <div className="amu-pagination-controls">
-              <button
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="amu-pagination-button"
-              >
-                Previous
-              </button>
-              {[...Array(totalPages).keys()].map((num) => (
-                <button
-                  key={num + 1}
-                  onClick={() => setCurrentPage(num + 1)}
-                  className={`amu-pagination-button ${
-                    currentPage === num + 1 ? "active" : ""
-                  }`}
-                >
-                  {num + 1}
-                </button>
-              ))}
-              <button
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="amu-pagination-button"
-              >
-                Next
-              </button>
-            </div>
+        {/* Loading State */}
+        {loading && (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading users...</p>
           </div>
         )}
-        {paginatedUsers.length === 0 && !loading && !error && (
-          <div className="amu-empty-state">No users found.</div>
+        {/* Error State */}
+        {!loading && error && (
+          <div className="error-container">
+            <p>{error}</p>
+            <button className="retry-button" onClick={fetchAllUsers}>
+              Retry
+            </button>
+          </div>
+        )}
+        {/* Main Content */}
+        {!loading && !error && (
+          <>
+            {/* Stats Grid */}
+            <div className="amu-stats-grid">
+              <div className="amu-stat-card">
+                <div className="amu-stat-icon-wrapper amu-color-purple">
+                  <Users className="amu-stat-icon" />
+                </div>
+                <div className="amu-stat-info">
+                  <span className="amu-stat-value">{allUsers.length}</span>
+                  <span className="amu-stat-label">Total Users</span>
+                </div>
+              </div>
+              <div className="amu-stat-card">
+                <div className="amu-stat-icon-wrapper amu-color-green">
+                  <UserPlus className="amu-stat-icon" />
+                </div>
+                <div className="amu-stat-info">
+                  <span className="amu-stat-value">{newUsersToday}</span>
+                  <span className="amu-stat-label">New Users Today</span>
+                </div>
+              </div>
+              <div className="amu-stat-card">
+                <div className="amu-stat-icon-wrapper amu-color-orange">
+                  <UserPlus className="amu-stat-icon" />
+                </div>
+                <div className="amu-stat-info">
+                  <span className="amu-stat-value">{newUsersThisMonth}</span>
+                  <span className="amu-stat-label">{`New in ${monthName}`}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Toolbar */}
+            <div className="amu-toolbar">
+              <div className="amu-toolbar-left">
+                <div className="amu-search-container">
+                  <Search className="amu-search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search by name or email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="amu-search-input"
+                  />
+                </div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="amu-filter-select"
+                >
+                  <option value="All">All</option>
+                  <option value="verified">Active</option>
+                  <option value="banned">Banned</option>
+                  <option value="unverified">Unverified</option>
+                </select>
+              </div>
+              <div className="amu-toolbar-right">
+                <div className="amu-date-filter-group">
+                  <span className="amu-filter-label">Joined Date:</span>
+                  <div className="amu-date-filter">
+                    <button
+                      className={`amu-date-filter-btn ${
+                        dateFilter === "all" ? "active" : ""
+                      }`}
+                      onClick={() => handleDateButtonClick("all")}
+                    >
+                      All
+                    </button>
+                    <button
+                      className={`amu-date-filter-btn ${
+                        dateFilter === "today" ? "active" : ""
+                      }`}
+                      onClick={() => handleDateButtonClick("today")}
+                    >
+                      Today
+                    </button>
+                    <button
+                      className={`amu-date-filter-btn ${
+                        dateFilter === "month" ? "active" : ""
+                      }`}
+                      onClick={() => handleDateButtonClick("month")}
+                    >
+                      This Month
+                    </button>
+                  </div>
+                  <div className="amu-date-range-filter">
+                    <DatePicker.RangePicker
+                      value={fromDate && toDate ? [fromDate, toDate] : null}
+                      onChange={handleDateChange}
+                      allowClear
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Users Table */}
+            <div className="amu-table-container">
+              <table className="amu-table">
+                <thead className="amu-table-header">
+                  <tr>
+                    <th>NO.</th>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Date Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedUsers.map((user, index) => {
+                    // Normalize status for UI
+                    const isBanned =
+                      user.status === "banned" || user.status === "Banned";
+                    const statusLabel =
+                      user.status === "banned" || user.status === "Banned"
+                        ? "Banned"
+                        : user.status === "verified" ||
+                          user.status === "Verified"
+                        ? "Active"
+                        : user.status;
+                    const rowNumber =
+                      (currentPage - 1) * itemsPerPage + index + 1;
+                    return (
+                      <tr key={user._id} className="amu-table-row">
+                        <td className="amu-table-cell amu-row-number">
+                          {rowNumber}
+                        </td>
+                        <td className="amu-table-cell">
+                          <div className="amu-user-info">
+                            <img
+                              src={
+                                user.userImage || "/images/defaultImageUser.png"
+                              }
+                              alt={user.name || user.userName || "User Avatar"}
+                              className="amu-user-avatar"
+                            />
+                            <div>
+                              <div className="amu-user-name">
+                                {user.firstName} {user.lastName}
+                              </div>
+                              <div className="amu-user-email">
+                                {user.userName}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="amu-table-cell amu-user-email">
+                          {user.email}
+                        </td>
+                        <td className="amu-table-cell">
+                          <span
+                            className={`amu-status-badge ${
+                              isBanned
+                                ? "amu-status-banned"
+                                : "amu-status-active"
+                            }`}
+                          >
+                            {statusLabel}
+                          </span>
+                        </td>
+                        <td className="amu-table-cell amu-date-joined">
+                          {dayjs(user.createdAt).format("DD/MM/YYYY")}
+                        </td>
+                        <td className="amu-table-cell">
+                          <CustomButton
+                            size="small"
+                            color={isBanned ? "success" : "error"}
+                            type="underline"
+                            disabled={userActionLoading[user._id]}
+                            onClick={() =>
+                              handleToggleStatus(user._id, user.status)
+                            }
+                          >
+                            {userActionLoading[user._id]
+                              ? isBanned
+                                ? "Unbanning..."
+                                : "Banning..."
+                              : isBanned
+                              ? "Unban User"
+                              : "Ban User"}
+                          </CustomButton>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {paginatedUsers.length > 0 && (
+              <div className="amu-pagination">
+                <p className="amu-pagination-info">
+                  Showing {startItem} to {endItem} of {totalUsers} results
+                </p>
+                <div className="amu-pagination-controls">
+                  <button
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="amu-pagination-button"
+                  >
+                    Previous
+                  </button>
+                  {[...Array(totalPages).keys()].map((num) => (
+                    <button
+                      key={num + 1}
+                      onClick={() => setCurrentPage(num + 1)}
+                      className={`amu-pagination-button ${
+                        currentPage === num + 1 ? "active" : ""
+                      }`}
+                    >
+                      {num + 1}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="amu-pagination-button"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+            {paginatedUsers.length === 0 && (
+              <div className="amu-empty-state">No users found.</div>
+            )}
+          </>
         )}
       </div>
     </ConfigProvider>

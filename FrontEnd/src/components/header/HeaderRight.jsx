@@ -1,5 +1,6 @@
 import { faCog, faSignOutAlt, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTachometerAlt } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -54,6 +55,17 @@ function HeaderRight({ user: currentUser }) {
               className="dropdown-menu dropdown-menu-end fade"
               aria-labelledby="userDropdown"
             >
+              {currentUser.role === "admin" && (
+                <li>
+                  <Link
+                    to="/admin/dashboard"
+                    className="dropdown-item dropdown-item-hover"
+                  >
+                    <FontAwesomeIcon icon={faTachometerAlt} className="me-2" />{" "}
+                    Dashboard
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   to="/profile/dashboard"

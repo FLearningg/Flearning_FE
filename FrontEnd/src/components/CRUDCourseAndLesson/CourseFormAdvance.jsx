@@ -416,40 +416,6 @@ export default function CourseForm({
               )}
             </div>
 
-            {/* Description */}
-            <div className="section">
-              <h3>Course Descriptions</h3>
-              <div className="textarea-container">
-                <Input
-                  textarea
-                  placeholder="Enter your course descriptions"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-                <div className="formatting-toolbar">
-                  {[
-                    Bold,
-                    Italic,
-                    Underline,
-                    Strikethrough,
-                    Link,
-                    List,
-                    ListOrdered,
-                  ].map((Icon, idx) => (
-                    <CustomButton
-                      key={idx}
-                      type="square"
-                      isTransparent
-                      size="small"
-                      style={{ padding: 4 }}
-                    >
-                      <Icon className="icon-sm" />
-                    </CustomButton>
-                  ))}
-                </div>
-              </div>
-            </div>
-
             {renderInputList(
               "What you will teach in this course",
               courseInputs,
