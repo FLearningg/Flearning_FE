@@ -4,6 +4,9 @@ import { ComposeModal } from "./ComposeModal";
 import "../../assets/StudentMsg/ChatInterface.css";
 import "../../assets/StudentMsg/StudentMsgGlobal.css";
 
+// GIPHY API Key (đã được user cung cấp)
+const GIPHY_API_KEY = process.env.GIPHY_API_KEY;
+
 export function ChatInterface({ chatListOpen, setChatListOpen }) {
   const {
     conversations,
@@ -716,6 +719,122 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
                     disabled={loading}
                   />
                 </div>
+                <div style={{ position: "relative", display: "inline-block" }}>
+                  <button
+                    type="button"
+                    className="gif-picker-btn"
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: 22,
+                      marginLeft: 8,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onClick={() => setShowGifPicker((v) => !v)}
+                    title="Send GIF"
+                  >
+                    {/* Nếu có faGif thì dùng: <FontAwesomeIcon icon={faGif} /> */}
+                    {/* Nếu không có, dùng SVG chữ GIF */}
+                    <span
+                      style={{
+                        display: "inline-block",
+                        background: "#ff6636",
+                        color: "#fff",
+                        fontWeight: 700,
+                        fontSize: 14,
+                        borderRadius: 4,
+                        padding: "2px 7px",
+                        letterSpacing: 1,
+                        fontFamily: "monospace",
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+                      }}
+                    >
+                      GIF
+                    </span>
+                  </button>
+                  {/* GIF Picker Popup */}
+                  {showGifPicker && (
+                    <div
+                      className="gif-picker-modal"
+                      style={{
+                        position: "absolute",
+                        bottom: 44,
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        zIndex: 1000,
+                        background: "#fff",
+                        border: "1px solid #eee",
+                        borderRadius: 8,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                        padding: 12,
+                        width: 340,
+                      }}
+                    >
+                      <div style={{ display: "flex", marginBottom: 8 }}>
+                        <input
+                          type="text"
+                          placeholder="Search GIFs"
+                          value={gifSearch}
+                          onChange={(e) => setGifSearch(e.target.value)}
+                          style={{
+                            flex: 1,
+                            border: "1px solid #ddd",
+                            borderRadius: 4,
+                            padding: 4,
+                          }}
+                        />
+                        <button
+                          style={{ marginLeft: 8 }}
+                          onClick={() => setShowGifPicker(false)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <div
+                        style={{
+                          minHeight: 120,
+                          maxHeight: 260,
+                          overflowY: "auto",
+                        }}
+                      >
+                        {gifLoading ? (
+                          <div>Loading...</div>
+                        ) : gifResults.length === 0 ? (
+                          <div>No GIFs found</div>
+                        ) : (
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 6,
+                            }}
+                          >
+                            {gifResults.map((gif) => (
+                              <img
+                                key={gif.id}
+                                src={gif.images.fixed_height.url}
+                                alt={gif.title || "gif"}
+                                style={{
+                                  width: 70,
+                                  height: 70,
+                                  objectFit: "cover",
+                                  borderRadius: 4,
+                                  cursor: "pointer",
+                                }}
+                                onClick={() =>
+                                  handleSendGif(gif.images.original.url)
+                                }
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <button
                   className="send-button main-orange"
                   onClick={handleSendMessage}
@@ -730,6 +849,7 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
                     border: "none",
                     boxShadow: "0 2px 8px rgba(255,102,54,0.08)",
                     transition: "background 0.2s",
+                    marginLeft: 8,
                   }}
                   onMouseOver={(e) =>
                     (e.currentTarget.style.backgroundColor = "#e55a2b")
@@ -803,6 +923,8 @@ function ChatListItem({
     finalClassName: `chat-item ${active ? "active" : ""} ${className || ""}`,
   });
 
+  const isGif =
+    typeof message === "string" && message.match(/(giphy\.com|\.gif($|\?))/i);
   return (
     <div
       className={`chat-item ${active ? "active" : ""} ${className || ""}`}
@@ -853,6 +975,7 @@ function ChatListItem({
             ></div>
           )}
         </div>
+        <span className="chat-item-message">{isGif ? "GIF" : message}</span>
         <span className="chat-item-message">{message}</span>
       </div>
     </div>
