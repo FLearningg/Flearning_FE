@@ -12,6 +12,8 @@ const CourseCard = ({
   totalLessons = 0,
   onReview,
   reviewMode,
+  onContinue,
+  onCardClick,
 }) => {
   const getStatusColor = () => {
     switch (status) {
@@ -31,7 +33,12 @@ const CourseCard = ({
   };
 
   return (
-    <div className="course-card" role="article">
+    <div
+      className="course-card"
+      role="article"
+      onClick={onCardClick}
+      style={{ cursor: onCardClick ? "pointer" : undefined }}
+    >
       <div className="course-thumbnail">
         <img src={thumbnail} alt={`${title} course thumbnail`} loading="lazy" />
         <div className={`course-status-badge ${getStatusColor()}`}>
@@ -47,14 +54,21 @@ const CourseCard = ({
         <div className="course-footer">
           <button
             className="course-watch-btn"
-            aria-label={`${
+            aria-label={`$${
               status === "completed"
                 ? reviewMode
                   ? "Update Review"
                   : "Review"
                 : "Continue"
             } ${title} course`}
-            onClick={status === "completed" && onReview ? onReview : undefined}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (status === "completed" && onReview) {
+                onReview();
+              } else if (status === "in-progress" && onContinue) {
+                onContinue();
+              }
+            }}
           >
             {status === "completed"
               ? reviewMode
@@ -103,6 +117,8 @@ CourseCard.propTypes = {
   totalLessons: PropTypes.number,
   onReview: PropTypes.func,
   reviewMode: PropTypes.bool,
+  onContinue: PropTypes.func,
+  onCardClick: PropTypes.func,
 };
 
 export default CourseCard;

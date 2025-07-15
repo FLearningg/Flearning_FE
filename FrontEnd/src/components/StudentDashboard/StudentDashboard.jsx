@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaPlay, FaBook, FaTrophy, FaUsers } from "react-icons/fa";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ProfileSection from "../CourseList/ProfileSection";
 import {
   getEnrolledCourses,
@@ -40,8 +40,14 @@ const LearningCard = ({
   totalLessons,
   onReview,
   reviewMode,
+  onContinue,
+  onCardClick,
 }) => (
-  <div className="learning-card">
+  <div
+    className="learning-card"
+    onClick={onCardClick}
+    style={{ cursor: onCardClick ? "pointer" : undefined }}
+  >
     <div className="learning-thumbnail">
       <img src={thumbnail} alt={title} loading="lazy" />
       <div className={`status-badge ${status}`}>
@@ -65,7 +71,14 @@ const LearningCard = ({
       <button
         className="learning-watch-btn"
         aria-label={`Watch ${title}`}
-        onClick={status === "completed" && onReview ? onReview : undefined}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (status === "completed" && onReview) {
+            onReview();
+          } else if (status === "in-progress" && onContinue) {
+            onContinue();
+          }
+        }}
       >
         {status === "completed"
           ? reviewMode
@@ -79,6 +92,7 @@ const LearningCard = ({
 
 const StudentDashboard = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.auth);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [coursesProgress, setCoursesProgress] = useState([]);
@@ -325,6 +339,14 @@ const StudentDashboard = () => {
                       : undefined
                   }
                   reviewMode={!!myFeedback}
+                  onContinue={
+                    enrollment.status === "in-progress"
+                      ? () => navigate(`/watch-course/${enrollment.course.id}`)
+                      : undefined
+                  }
+                  onCardClick={() =>
+                    navigate(`/watch-course/${enrollment.course.id}`)
+                  }
                 />
               );
             })}

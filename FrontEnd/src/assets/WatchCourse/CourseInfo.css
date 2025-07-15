@@ -279,6 +279,223 @@
   color: white;
 }
 
+.ci-comments-content {
+  margin-top: 24px;
+  background: #fafbfc;
+  border-radius: 8px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.ci-comments-header {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+.ci-add-comment-section {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.ci-add-comment-section textarea {
+  flex: 1;
+  min-height: 40px;
+  border-radius: 6px;
+  border: 1.5px solid #ffd699;
+  padding: 8px 10px;
+  font-size: 1rem;
+  resize: vertical;
+  background: #fff;
+  transition: border 0.2s;
+}
+.ci-add-comment-section textarea:focus {
+  border: 1.5px solid #ff9800;
+  outline: none;
+}
+.ci-add-comment-section button {
+  background: #ff9800;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  height: 40px;
+  align-self: flex-end;
+}
+.ci-add-comment-section button:disabled {
+  background: #ffe0b2;
+  cursor: not-allowed;
+}
+/* Phân trang comment */
+.ci-comment-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+.ci-comment-pagination button {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #ffd699;
+  background: #fff7e6;
+  color: #ff9800;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.18s, border 0.18s, color 0.18s;
+}
+.ci-comment-pagination button:disabled {
+  background: #ffe0b2;
+  color: #ff9800;
+  cursor: not-allowed;
+}
+.ci-comment-pagination span {
+  align-self: center;
+  font-weight: 500;
+  color: #ff9800;
+}
+.ci-comment-pagination button.active, .ci-comment-pagination button:hover:not(:disabled) {
+  background: #ff9800;
+  color: #fff;
+  border: 1px solid #ff9800;
+}
+.ci-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.ci-comment-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 18px 22px 16px 22px;
+  border: 1.5px solid #ff9800;
+  box-shadow: 0 2px 8px rgba(64,148,247,0.06);
+  position: relative;
+  transition: box-shadow 0.2s, border 0.2s;
+}
+.ci-comment-item:hover {
+  box-shadow: 0 4px 16px rgba(64,148,247,0.13);
+  border: 1.5px solid #ff9800;
+}
+.ci-comment-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #e6e6e6;
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+.ci-comment-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ci-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.ci-comment-author {
+  font-weight: 700;
+  color: #222;
+  font-size: 1.08em;
+}
+.ci-comment-admin-badge {
+  background: #ff9800;
+  color: #fff;
+  font-size: 0.82em;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin-left: 2px;
+  letter-spacing: 0.5px;
+}
+.ci-comment-date {
+  font-size: 0.97em;
+  color: #ff9800;
+  margin-left: 2px;
+}
+.ci-comment-content {
+  font-size: 1.12em;
+  margin-bottom: 8px;
+  color: #222;
+  line-height: 1.7;
+  word-break: break-word;
+}
+.ci-comment-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 2px;
+}
+.ci-comment-actions button {
+  background: #fff7e6;
+  border: 1px solid #ffd699;
+  color: #ff9800;
+  font-size: 1em;
+  cursor: pointer;
+  padding: 4px 14px;
+  border-radius: 6px;
+  transition: background 0.18s, border 0.18s, color 0.18s;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(64,148,247,0.04);
+}
+.ci-comment-actions button:hover {
+  background: #ff9800;
+  color: #fff;
+  border: 1px solid #ff9800;
+}
+.ci-edit-comment-section {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.ci-edit-comment-section textarea {
+  flex: 1;
+  min-height: 36px;
+  border-radius: 7px;
+  border: 1.5px solid #d0d7de;
+  padding: 8px 12px;
+  font-size: 1rem;
+  resize: vertical;
+  background: #fff;
+  transition: border 0.2s;
+}
+.ci-edit-comment-section textarea:focus {
+  border: 1.5px solid #ff9800;
+  outline: none;
+}
+.ci-edit-comment-section button {
+  background: #ff9800;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 18px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+  height: 36px;
+  align-self: flex-end;
+  font-weight: 500;
+}
+.ci-edit-comment-section button:disabled {
+  background: #ffe0b2;
+  cursor: not-allowed;
+}
+/* Reply indent (1 level) */
+.ci-comment-reply {
+  margin-left: 48px;
+  border-left: 2px solid #e5e7eb;
+  padding-left: 16px;
+  margin-top: 10px;
+}
+
 @media (max-width: 768px) {
   .ci-notes-header {
     flex-direction: column;

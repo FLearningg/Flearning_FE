@@ -111,23 +111,26 @@
 }
 
 .f-review-button {
-  border: 1px solid #ff4d4f;
+  border: 1px solid #ff9800;
   background: #fff;
-  color: #ff4d4f;
+  color: #ff9800;
 }
 
 .f-review-button:hover {
-  background: #fff1f0;
+  background: #fff3e0;
+  color: #ff9800;
+  border-color: #ff9800;
 }
 
 .f-next-lecture-button {
   border: none;
-  background: #ff4d4f;
+  background: #ff9800;
   color: #fff;
 }
 
 .f-next-lecture-button:hover {
-  background: #ff7875;
+  background: #ffa726;
+  color: #fff;
 }
 
 /* Tablet Styles */
@@ -267,4 +270,4 @@
     font-size: 0.8125rem;
     min-height: 36px;
   }
-} 
+}

@@ -1,7 +1,9 @@
-import React from 'react';
-import '../../assets/WatchCourse/VideoPlayer.css';
+import React from "react";
+import "../../assets/WatchCourse/VideoPlayer.css";
 
-const VideoPlayer = ({ videoUrl = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", onProgress }) => {
+const VideoPlayer = ({ videoUrl, onProgress, onEnded }) => {
+  if (!videoUrl)
+    return <div className="f-video-player">No video available.</div>;
   return (
     <div className="f-video-player">
       <video
@@ -9,10 +11,11 @@ const VideoPlayer = ({ videoUrl = "https://storage.googleapis.com/gtv-videos-buc
         controls
         controlsList="nodownload"
         className="f-video"
-        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+        style={{ width: "100%", height: "100%", objectFit: "contain" }}
+        onEnded={onEnded}
       />
     </div>
   );
 };
 
-export default VideoPlayer; 
+export default VideoPlayer;

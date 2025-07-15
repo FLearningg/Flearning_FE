@@ -9,6 +9,7 @@ import CategoryPage from "../components/Categories/CategoryPage";
 import CoursePage from "../components/Categories/CoursePage";
 import SingleCourse from "../components/CourseDetails/SingleCourse";
 import CheckoutPage from "../components/ShoppingCart/CheckoutPage";
+import WatchCourse from "../components/WatchCourse/WatchCourse";
 
 const mainRoutesContent = (
   <>
@@ -19,6 +20,7 @@ const mainRoutesContent = (
     <Route path="courses" element={<CoursePage />} />
     <Route path="course/:courseId" element={<SingleCourse />} />
     <Route path="checkout" element={<CheckoutPage />} />
+    <Route path="watch-course/:courseId" element={<WatchCourse />} />
     {/* Thêm các route chính khác ở đây */}
   </>
 );

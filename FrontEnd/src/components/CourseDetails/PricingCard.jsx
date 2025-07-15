@@ -292,7 +292,7 @@ const ActionButtons = ({ onBuyNowClick }) => {
             borderColor: "#ff6636",
             color: "white",
           }}
-          onClick={() => navigate(`/courses/${courseId}`)}
+          onClick={() => navigate(`/watch-course/${courseId}`)}
         >
           Go To Course
         </button>
