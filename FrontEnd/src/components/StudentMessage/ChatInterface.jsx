@@ -1031,7 +1031,6 @@ function ChatListItem({
           )}
         </div>
         <span className="chat-item-message">{isGif ? "GIF" : message}</span>
-        <span className="chat-item-message">{message}</span>
       </div>
     </div>
   );
