@@ -1,4 +1,4 @@
-.course-contents {
+.watchcourse-course-contents {
   background: #fff;
   border-radius: 8px;
   overflow: hidden;
@@ -10,25 +10,25 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.course-contents-header {
+.watchcourse-course-contents-header {
   padding: 1.5rem;
   border-bottom: 1px solid #eee;
 }
 
-.course-contents-header h2 {
+.watchcourse-course-contents-header h2 {
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0 0 1rem;
   color: #111;
 }
 
-.progress-info {
+.watchcourse-progress-info {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.progress-bar {
+.watchcourse-progress-bar {
   width: 100%;
   height: 4px;
   background: #eee;
@@ -36,19 +36,19 @@
   overflow: hidden;
 }
 
-.progress-fill {
+.watchcourse-progress-fill {
   height: 100%;
   background: #00c853;
   border-radius: 2px;
   transition: width 0.3s ease;
 }
 
-.progress-info span {
+.watchcourse-progress-info span {
   font-size: 0.875rem;
   color: #00c853;
 }
 
-.sections-list {
+.watchcourse-sections-list {
   flex: 1;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -56,35 +56,35 @@
 }
 
 /* Tùy chỉnh thanh cuộn cho Chrome/Safari */
-.sections-list::-webkit-scrollbar {
+.watchcourse-sections-list::-webkit-scrollbar {
   width: 6px;
 }
 
-.sections-list::-webkit-scrollbar-track {
+.watchcourse-sections-list::-webkit-scrollbar-track {
   background: #f5f5f5;
   border-radius: 3px;
 }
 
-.sections-list::-webkit-scrollbar-thumb {
+.watchcourse-sections-list::-webkit-scrollbar-thumb {
   background: #ff4d4f;
   border-radius: 3px;
   transition: all 0.3s ease;
 }
 
-.sections-list::-webkit-scrollbar-thumb:hover {
+.watchcourse-sections-list::-webkit-scrollbar-thumb:hover {
   background: #ff7875;
 }
 
-.section {
+.watchcourse-section {
   border-bottom: 1px solid #eee;
   transition: all 0.3s ease;
 }
 
-.section:last-child {
+.watchcourse-section:last-child {
   border-bottom: none;
 }
 
-.section-header {
+.watchcourse-section-header {
   padding: 1rem 1.5rem;
   cursor: pointer;
   user-select: none;
@@ -93,12 +93,12 @@
   overflow: hidden;
 }
 
-.section-header:hover {
+.watchcourse-section-header:hover {
   background-color: #f9f9f9;
 }
 
-.section-header::after {
-  content: '';
+.watchcourse-section-header::after {
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -109,22 +109,22 @@
   transform: translateX(-50%);
 }
 
-.section-header:hover::after {
+.watchcourse-section-header:hover::after {
   width: 100%;
 }
 
-.section.expanded .section-header {
+.watchcourse-section.expanded .watchcourse-section-header {
   background-color: #fff5f5;
 }
 
-.section-title {
+.watchcourse-section-title {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
-.section-arrow {
+.watchcourse-section-arrow {
   color: #666;
   font-size: 0.875rem;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -135,17 +135,17 @@
   line-height: 20px;
 }
 
-.expanded .section-arrow {
+.watchcourse-expanded .watchcourse-section-arrow {
   transform: rotate(90deg);
   color: #ff4d4f;
 }
 
-.section-name {
+.watchcourse-section-name {
   font-weight: 500;
   color: #111;
 }
 
-.section-meta {
+.watchcourse-section-meta {
   display: flex;
   gap: 1rem;
   margin-left: 1.5rem;
@@ -153,12 +153,12 @@
   color: #666;
 }
 
-.meta-icon {
+.watchcourse-meta-icon {
   font-size: 0.875rem;
   margin-right: 0.25rem;
 }
 
-.lectures-list {
+.watchcourse-lectures-list {
   max-height: 0;
   overflow: hidden;
   background: #f9f9f9;
@@ -167,13 +167,13 @@
   transform: translateY(-10px);
 }
 
-.lectures-list.expanded {
+.watchcourse-lectures-list.expanded {
   max-height: 2000px;
   opacity: 1;
   transform: translateY(0);
 }
 
-.lecture {
+.watchcourse-lecture {
   padding: 0.75rem 1.5rem 0.75rem 3rem;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -182,8 +182,8 @@
   overflow: hidden;
 }
 
-.lecture::before {
-  content: '';
+.watchcourse-lecture::before {
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -194,32 +194,32 @@
   transition: transform 0.3s ease;
 }
 
-.lecture:hover::before {
+.watchcourse-lecture:hover::before {
   transform: scaleY(1);
 }
 
-.lecture:hover {
+.watchcourse-lecture:hover {
   background-color: #fff5f5;
   padding-left: 3.5rem;
 }
 
-.lecture.active {
+.watchcourse-lecture.active {
   background-color: #fff1f0;
   border-left: 3px solid #ff4d4f;
 }
 
-.lecture.active::before {
+.watchcourse-lecture.active::before {
   transform: scaleY(1);
 }
 
-.lecture-info {
+.watchcourse-lecture-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
 }
 
-.lecture-status-title {
+.watchcourse-lecture-status-title {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -227,19 +227,42 @@
   min-width: 0;
 }
 
-.lecture-checkbox {
+.custom-checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+.watchcourse-lecture-checkbox {
+  display: none;
+}
+.custom-checkbox {
   width: 16px;
   height: 16px;
   border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  border: 1.5px solid #ffd699;
+  background: #fff;
+  position: relative;
+  margin-right: 8px;
+  transition: border 0.2s, background 0.2s;
+}
+.watchcourse-lecture-checkbox:checked + .custom-checkbox {
+  background: #ff9800;
+  border-color: #ff9800;
+}
+.watchcourse-lecture-checkbox:checked + .custom-checkbox::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1.5px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
 }
 
-.lecture-checkbox:checked {
-  transform: scale(1.1);
-}
-
-.lecture-title {
+.watchcourse-lecture-title {
   font-size: 0.875rem;
   color: #333;
   white-space: nowrap;
@@ -247,7 +270,7 @@
   text-overflow: ellipsis;
 }
 
-.lecture-duration {
+.watchcourse-lecture-duration {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -256,17 +279,18 @@
   white-space: nowrap;
 }
 
-.play-icon, .now-playing {
+.watchcourse-play-icon,
+.watchcourse-now-playing {
   font-size: 0.75rem;
   transition: all 0.3s ease;
 }
 
-.lecture:hover .play-icon {
+.watchcourse-lecture:hover .watchcourse-play-icon {
   transform: scale(1.2);
   color: #ff4d4f;
 }
 
-.now-playing {
+.watchcourse-now-playing {
   color: #ff4d4f;
   animation: pulse 1s infinite;
 }
@@ -286,131 +310,131 @@
   }
 }
 
-.completion {
+.watchcourse-completion {
   color: #00c853;
 }
 
 /* Tablet Styles */
 @media (max-width: 1024px) {
-  .course-contents-header {
+  .watchcourse-course-contents-header {
     padding: 1.25rem;
   }
 
-  .section-header {
+  .watchcourse-section-header {
     padding: 1rem 1.25rem;
   }
 
-  .lecture {
+  .watchcourse-lecture {
     padding: 0.75rem 1.25rem 0.75rem 2.5rem;
   }
 
-  .course-contents {
+  .watchcourse-course-contents {
     max-height: 400px;
   }
 }
 
 /* Mobile Styles */
 @media (max-width: 768px) {
-  .course-contents {
+  .watchcourse-course-contents {
     border-radius: 10px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     border: 1px solid rgba(0, 0, 0, 0.12);
     max-height: 350px;
   }
 
-  .course-contents-header {
+  .watchcourse-course-contents-header {
     padding: 0.875rem;
     background: #fff;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
 
-  .course-contents-header h2 {
+  .watchcourse-course-contents-header h2 {
     font-size: 1rem;
     margin-bottom: 0.625rem;
   }
 
-  .progress-info {
+  .watchcourse-progress-info {
     gap: 0.375rem;
   }
 
-  .progress-bar {
+  .watchcourse-progress-bar {
     height: 3px;
   }
 
-  .progress-info span {
+  .watchcourse-progress-info span {
     font-size: 0.75rem;
   }
 
-  .section-header {
+  .watchcourse-section-header {
     padding: 0.75rem;
   }
 
-  .section-title {
+  .watchcourse-section-title {
     gap: 0.5rem;
     margin-bottom: 0.25rem;
   }
 
-  .section-name {
+  .watchcourse-section-name {
     font-size: 0.875rem;
   }
 
-  .section-meta {
+  .watchcourse-section-meta {
     margin-left: 1.25rem;
     font-size: 0.75rem;
     gap: 0.75rem;
   }
 
-  .meta-icon {
+  .watchcourse-meta-icon {
     font-size: 0.75rem;
     margin-right: 0.25rem;
   }
 
-  .lecture {
+  .watchcourse-lecture {
     padding: 0.75rem 1.25rem 0.75rem 2rem;
   }
 
-  .lecture-info {
+  .watchcourse-lecture-info {
     gap: 0.75rem;
   }
 
-  .lecture-status-title {
+  .watchcourse-lecture-status-title {
     gap: 0.5rem;
   }
 
-  .lecture-title {
+  .watchcourse-lecture-title {
     font-size: 0.813rem;
     margin-right: 0.5rem;
   }
 
-  .lecture-duration {
+  .watchcourse-lecture-duration {
     font-size: 0.75rem;
     margin-right: 0.5rem;
   }
 
-  .lecture-checkbox {
+  .watchcourse-lecture-checkbox {
     width: 14px;
     height: 14px;
   }
 
-  .section {
+  .watchcourse-section {
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   }
 
-  .lectures-list {
+  .watchcourse-lectures-list {
     background: #fafafa;
   }
 
-  .lecture {
+  .watchcourse-lecture {
     background: #fff;
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     margin: 1px 0;
   }
 
-  .lecture:hover {
+  .watchcourse-lecture:hover {
     background-color: #f8f8f8;
   }
 
-  .lecture.active {
+  .watchcourse-lecture.active {
     background-color: #f0f7ff;
     border-left: 3px solid #1a73e8;
   }
@@ -418,67 +442,67 @@
 
 /* Small Mobile Styles */
 @media (max-width: 480px) {
-  .course-contents {
+  .watchcourse-course-contents {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
     max-height: 300px;
   }
 
-  .course-contents-header {
+  .watchcourse-course-contents-header {
     padding: 0.75rem;
   }
 
-  .course-contents-header h2 {
+  .watchcourse-course-contents-header h2 {
     font-size: 0.938rem;
   }
 
-  .section-header {
+  .watchcourse-section-header {
     padding: 0.625rem;
   }
 
-  .section-title {
+  .watchcourse-section-title {
     gap: 0.375rem;
   }
 
-  .section-name {
+  .watchcourse-section-name {
     font-size: 0.813rem;
   }
 
-  .section-meta {
+  .watchcourse-section-meta {
     margin-left: 1rem;
     font-size: 0.688rem;
     gap: 0.5rem;
   }
 
-  .lecture {
+  .watchcourse-lecture {
     padding: 0.625rem 1rem 0.625rem 1.75rem;
   }
 
-  .lecture-info {
+  .watchcourse-lecture-info {
     gap: 0.5rem;
   }
 
-  .lecture-status-title {
+  .watchcourse-lecture-status-title {
     gap: 0.375rem;
   }
 
-  .lecture-checkbox {
+  .watchcourse-lecture-checkbox {
     width: 12px;
     height: 12px;
   }
 
-  .lecture-title {
+  .watchcourse-lecture-title {
     font-size: 0.75rem;
     margin-right: 0.375rem;
   }
 
-  .lecture-duration {
+  .watchcourse-lecture-duration {
     font-size: 0.688rem;
     margin-right: 0.375rem;
   }
 }
 
-.f-content-section {
+.watchcourse-f-content-section {
   background: #fff;
   border-radius: 8px;
   overflow: hidden;
@@ -491,13 +515,13 @@
 }
 
 @media (max-width: 1024px) {
-  .f-content-section {
+  .watchcourse-f-content-section {
     max-height: 400px;
   }
 }
 
 @media (max-width: 768px) {
-  .f-content-section {
+  .watchcourse-f-content-section {
     border-radius: 10px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     border: 1px solid rgba(0, 0, 0, 0.12);
@@ -506,9 +530,9 @@
 }
 
 @media (max-width: 480px) {
-  .f-content-section {
+  .watchcourse-f-content-section {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
     max-height: 300px;
   }
-} 
+}

@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
-import '../../assets/WatchCourse/CourseContents.css';
+import React, { useState } from "react";
+import "../../assets/WatchCourse/CourseContents.css";
 
-const CourseContents = ({ contents, currentLesson, progress, onSelectLesson }) => {
+const CourseContents = ({
+  contents,
+  currentLesson,
+  progress,
+  onSelectLesson,
+}) => {
   const [expandedSections, setExpandedSections] = useState(new Set([0])); // First section expanded by default
 
   const toggleSection = (index) => {
-    setExpandedSections(prev => {
+    setExpandedSections((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(index)) {
         newSet.delete(index);
@@ -17,75 +22,72 @@ const CourseContents = ({ contents, currentLesson, progress, onSelectLesson }) =
   };
 
   return (
-    <div className="course-contents">
-      <div className="course-contents-header">
+    <div className="watchcourse-course-contents">
+      <div className="watchcourse-course-contents-header">
         <h2>Course Contents</h2>
-        <div className="progress-info">
-          <div className="progress-bar">
-            <div 
-              className="progress-fill"
-              style={{ width: `${progress}%` }}
+        <div className="watchcourse-progress-info">
+          <div className="watchcourse-progress-bar">
+            <div
+              className="watchcourse-progress-fill"
+              style={{ width: `${progress || 0}%` }}
             />
           </div>
-          <span>{progress}% Completed</span>
+          <span>{progress || 0}% Completed</span>
         </div>
       </div>
 
-      <div className="sections-list">
+      <div className="watchcourse-sections-list">
         {contents?.map((section, index) => (
-          <div key={index} className="section">
-            <div 
-              className="section-header"
+          <div key={section._id || index} className="watchcourse-section">
+            <div
+              className="watchcourse-section-header"
               onClick={() => toggleSection(index)}
             >
-              <div className="section-title">
-                <span className="section-arrow">
-                  {expandedSections.has(index) ? '▾' : '▸'}
+              <div className="watchcourse-section-title">
+                <span className="watchcourse-section-arrow">
+                  {expandedSections.has(index) ? "▾" : "▸"}
                 </span>
-                <span className="section-name">{section.title}</span>
-              </div>
-              <div className="section-meta">
-                <span className="lecture-count">
-                  <span className="meta-icon">📚</span>
-                  {section.lectures?.length} lectures
+                <span className="watchcourse-section-name">
+                  {section.title || "Untitled Section"}
                 </span>
-                <span className="duration">
-                  <span className="meta-icon">⏱️</span>
-                  {section.duration}
-                </span>
-                {index === 0 && (
-                  <span className="completion">
-                    <span className="meta-icon">✓</span>
-                    25% finish (1/4)
-                  </span>
-                )}
               </div>
             </div>
 
-            <div className={`lectures-list ${expandedSections.has(index) ? 'expanded' : ''}`}>
+            <div
+              className={`watchcourse-lectures-list ${
+                expandedSections.has(index) ? "expanded" : ""
+              }`}
+            >
               {section.lectures?.map((lecture, lectureIndex) => (
                 <div
-                  key={lectureIndex}
-                  className={`lecture ${currentLesson?.id === lecture.id ? 'active' : ''} ${lecture.completed ? 'completed' : ''}`}
+                  key={lecture.id || lecture._id || lectureIndex}
+                  className={`watchcourse-lecture ${
+                    currentLesson?.id === lecture.id ? "active" : ""
+                  } ${lecture.completed ? "completed" : ""}`}
                   onClick={() => onSelectLesson(lecture)}
                 >
-                  <div className="lecture-info">
-                    <div className="lecture-status-title">
-                      <input 
-                        type="checkbox" 
-                        checked={lecture.completed}
-                        onChange={(e) => e.stopPropagation()}
-                        className="lecture-checkbox"
-                      />
-                      <span className="lecture-title">{lecture.title}</span>
+                  <div className="watchcourse-lecture-info">
+                    <div className="watchcourse-lecture-status-title">
+                      <label className="custom-checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={!!lecture.completed}
+                          onChange={(e) => e.stopPropagation()}
+                          className="watchcourse-lecture-checkbox"
+                        />
+                        <span className="custom-checkbox"></span>
+                      </label>
+                      <span className="watchcourse-lecture-title">
+                        {lecture.title}
+                      </span>
                     </div>
-                    <div className="lecture-duration">
+                    <div className="watchcourse-lecture-duration">
                       {currentLesson?.id === lecture.id ? (
-                        <span className="now-playing">▐▐</span>
+                        <span className="watchcourse-now-playing">▐▐</span>
                       ) : (
-                        <span className="play-icon">▶</span>
+                        <span className="watchcourse-play-icon">▶</span>
                       )}
-                      <span>{lecture.duration}</span>
+                      <span>{lecture.duration || ""}</span>
                     </div>
                   </div>
                 </div>
@@ -98,4 +100,4 @@ const CourseContents = ({ contents, currentLesson, progress, onSelectLesson }) =
   );
 };
 
-export default CourseContents; 
+export default CourseContents;

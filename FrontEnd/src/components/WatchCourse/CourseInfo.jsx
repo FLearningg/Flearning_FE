@@ -1,123 +1,245 @@
-import React, { useState } from 'react';
-import { FaBook, FaClock, FaUsers } from 'react-icons/fa';
-import '../../assets/WatchCourse/CourseInfo.css';
-import '../../assets/WatchCourse/CourseTabs.css';
+import React, { useState } from "react";
+import { FaBook, FaClock, FaUsers } from "react-icons/fa";
+import "../../assets/WatchCourse/CourseInfo.css";
+import "../../assets/WatchCourse/CourseTabs.css";
+import { useSelector } from "react-redux";
 
-const CourseInfo = ({ lesson, students, lastUpdated, commentsCount }) => {
-  const [activeTab, setActiveTab] = useState('description');
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("vi-VN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+}
+
+const CourseInfo = ({
+  lesson,
+  students,
+  lastUpdated,
+  comments = [],
+  commentsCount,
+  loading,
+  error,
+  onAddComment,
+  onUpdateComment,
+  onDeleteComment,
+  addingComment,
+  updatingCommentId,
+  deletingCommentId,
+}) => {
+  const { currentUser } = useSelector((state) => state.auth);
+  const [activeTab, setActiveTab] = useState("description");
+  const [newComment, setNewComment] = useState("");
+  const [editCommentId, setEditCommentId] = useState(null);
+  const [editContent, setEditContent] = useState("");
+  // Phân trang comment
+  const [commentPage, setCommentPage] = useState(1);
+  const commentsPerPage = 5;
+  const totalPages = Math.ceil(comments.length / commentsPerPage);
+  const pagedComments = comments.slice(
+    (commentPage - 1) * commentsPerPage,
+    commentPage * commentsPerPage
+  );
 
   const tabs = [
-    { id: 'description', label: 'Description' },
-    { id: 'notes', label: 'Lecture Notes' },
-    { id: 'attachments', label: 'Attach File' },
-    { id: 'comments', label: 'Comments' }
+    { id: "description", label: "Description" },
+    { id: "notes", label: "Lecture Notes" },
+    { id: "attachments", label: "Attach File" },
+    { id: "comments", label: "Comments" },
   ];
+
+  const handleAdd = () => {
+    if (newComment.trim()) {
+      onAddComment && onAddComment(newComment);
+      setNewComment("");
+    }
+  };
+
+  const handleEdit = (comment) => {
+    setEditCommentId(comment._id);
+    setEditContent(comment.content);
+  };
+
+  const handleUpdate = (commentId) => {
+    if (editContent.trim()) {
+      onUpdateComment && onUpdateComment(commentId, editContent);
+      setEditCommentId(null);
+      setEditContent("");
+    }
+  };
+
+  const handleDelete = (commentId) => {
+    if (window.confirm("Delete this comment?")) {
+      onDeleteComment && onDeleteComment(commentId);
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'description':
+      case "description":
         return (
           <div className="ci-description-content">
             <h3>{lesson?.title}</h3>
             <p>{lesson?.description}</p>
           </div>
         );
-      case 'notes':
+      case "notes":
         return (
           <div className="ci-notes-content">
-            <div className="ci-notes-header">
-              <h3>Lecture Notes</h3>
-              <div className="ci-notes-actions">
-                <button className="ci-edit-button">
-                  <span className="ci-button-icon">✏️</span>
-                  Edit Notes
-                </button>
-                <button className="ci-download-button">
-                  <span className="ci-button-icon">⬇️</span>
-                  Download
-                </button>
-              </div>
-            </div>
-            <div className="ci-notes-sections">
-              <div className="ci-notes-section">
-                <h4>Key Concepts</h4>
-                <ul className="ci-notes-list">
-                  <li>Understanding the fundamentals of web design principles</li>
-                  <li>Color theory and its application in UI/UX design</li>
-                  <li>Typography selection and hierarchy in design systems</li>
-                  <li>Layout composition and grid systems</li>
-                </ul>
-              </div>
-              <div className="ci-notes-section">
-                <h4>Important Points</h4>
-                <ul className="ci-notes-list">
-                  <li>Always consider user accessibility in design decisions</li>
-                  <li>Test designs across different screen sizes and devices</li>
-                  <li>Maintain consistency in design patterns</li>
-                  <li>Document design decisions and rationale</li>
-                </ul>
-              </div>
-              <div className="ci-notes-section">
-                <h4>Examples & References</h4>
-                <div className="ci-code-block">
-                  <pre>
-                    <code>
-{`// Example of good color contrast
-const colors = {
-  primary: '#0066CC',
-  secondary: '#FF4D4F',
-  background: '#F5F5F5',
-  text: '#1A1A1A'
-}`}
-                    </code>
-                  </pre>
-                </div>
-                <div className="ci-reference-links">
-                  <a href="#" className="ci-reference-link">📚 Design System Guidelines</a>
-                  <a href="#" className="ci-reference-link">🎨 Color Palette Reference</a>
-                  <a href="#" className="ci-reference-link">📐 Grid System Documentation</a>
-                </div>
-              </div>
-              <div className="ci-notes-section">
-                <h4>Practice Exercises</h4>
-                <div className="ci-exercise-list">
-                  <div className="ci-exercise-item">
-                    <span className="ci-exercise-number">1</span>
-                    <p>Create a responsive layout using the grid system discussed</p>
-                  </div>
-                  <div className="ci-exercise-item">
-                    <span className="ci-exercise-number">2</span>
-                    <p>Implement a color scheme following accessibility guidelines</p>
-                  </div>
-                  <div className="ci-exercise-item">
-                    <span className="ci-exercise-number">3</span>
-                    <p>Design a typography hierarchy for a landing page</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <h3>Lecture Notes</h3>
+            <div>{lesson?.lessonNotes || <i>No notes for this lesson.</i>}</div>
           </div>
         );
-      case 'attachments':
+      case "attachments":
         return (
           <div className="ci-attachments-content">
-            {lesson?.attachments?.map((file, index) => (
-              <div key={index} className="ci-attachment-item">
-                <span className="ci-file-icon">📎</span>
-                <span className="ci-file-name">{file.name}</span>
-                <button className="ci-download-button">Download</button>
-              </div>
-            ))}
+            {lesson?.attachments && lesson.attachments.length > 0 ? (
+              lesson.attachments.map((file, index) => (
+                <div key={index} className="ci-attachment-item">
+                  <span className="ci-file-icon">📎</span>
+                  <span className="ci-file-name">{file.name}</span>
+                  <a href={file.url} download className="ci-download-button">
+                    Download
+                  </a>
+                </div>
+              ))
+            ) : (
+              <i>No attachments for this lesson.</i>
+            )}
           </div>
         );
-      case 'comments':
+      case "comments":
         return (
           <div className="ci-comments-content">
             <div className="ci-comments-header">
               <h3>Discussion ({commentsCount})</h3>
-              <button className="ci-add-comment-button">Add Comment</button>
             </div>
-            {/* Comments list would go here */}
+            {loading && <div>Loading comments...</div>}
+            {error && <div style={{ color: "red" }}>{error}</div>}
+            <div className="ci-add-comment-section">
+              <textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Add a comment..."
+                disabled={addingComment}
+              />
+              <button
+                onClick={handleAdd}
+                disabled={addingComment || !newComment.trim()}
+              >
+                {addingComment ? "Adding..." : "Add Comment"}
+              </button>
+            </div>
+            <div className="ci-comments-list">
+              {comments.length === 0 && <div>No comments yet.</div>}
+              {pagedComments.map((comment) => {
+                const isAuthor =
+                  currentUser && comment.authorId?._id === currentUser._id;
+                return (
+                  <div key={comment._id} className="ci-comment-item">
+                    {comment.authorId?.userImage ? (
+                      <img
+                        className="ci-comment-avatar"
+                        src={comment.authorId.userImage}
+                        alt={comment.authorId?.firstName || "avatar"}
+                      />
+                    ) : (
+                      <div
+                        className="ci-comment-avatar"
+                        style={{ background: "#e6e6e6" }}
+                      ></div>
+                    )}
+                    <div className="ci-comment-main">
+                      <div className="ci-comment-header">
+                        <span className="ci-comment-author">
+                          {comment.authorId?.firstName}{" "}
+                          {comment.authorId?.lastName}
+                        </span>
+                        {comment.authorId?.role === "admin" && (
+                          <span className="ci-comment-admin-badge">ADMIN</span>
+                        )}
+                        <span className="ci-comment-date">
+                          {new Date(comment.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      {editCommentId === comment._id ? (
+                        <div className="ci-edit-comment-section">
+                          <textarea
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            disabled={updatingCommentId === comment._id}
+                          />
+                          <button
+                            onClick={() => handleUpdate(comment._id)}
+                            disabled={
+                              updatingCommentId === comment._id ||
+                              !editContent.trim()
+                            }
+                          >
+                            {updatingCommentId === comment._id
+                              ? "Saving..."
+                              : "Save"}
+                          </button>
+                          <button
+                            onClick={() => setEditCommentId(null)}
+                            disabled={updatingCommentId === comment._id}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="ci-comment-content">
+                          {comment.content}
+                        </div>
+                      )}
+                      <div className="ci-comment-actions">
+                        {isAuthor && editCommentId !== comment._id && (
+                          <>
+                            <button
+                              onClick={() => handleEdit(comment)}
+                              disabled={updatingCommentId === comment._id}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(comment._id)}
+                              disabled={deletingCommentId === comment._id}
+                            >
+                              {deletingCommentId === comment._id
+                                ? "Deleting..."
+                                : "Delete"}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {totalPages > 1 && (
+              <div className="ci-comment-pagination">
+                <button
+                  onClick={() => setCommentPage((p) => Math.max(1, p - 1))}
+                  disabled={commentPage === 1}
+                >
+                  Prev
+                </button>
+                <span>
+                  Page {commentPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() =>
+                    setCommentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={commentPage === totalPages}
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         );
       default:
@@ -135,7 +257,7 @@ const colors = {
           </div>
           <div className="ci-stat-item">
             <FaClock className="ci-stat-icon" />
-            <span>Last updated: {lastUpdated}</span>
+            <span>Last updated: {formatDate(lastUpdated)}</span>
           </div>
           <div className="ci-stat-item">
             <FaUsers className="ci-stat-icon" />
@@ -146,10 +268,10 @@ const colors = {
 
       <div className="course-tabs-container">
         <div className="course-tabs">
-          {tabs.map(tab => (
+          {tabs.map((tab) => (
             <div
               key={tab.id}
-              className={`course-tab ${activeTab === tab.id ? 'active' : ''}`}
+              className={`course-tab ${activeTab === tab.id ? "active" : ""}`}
               onClick={() => setActiveTab(tab.id)}
             >
               {tab.label}
@@ -158,11 +280,9 @@ const colors = {
         </div>
       </div>
 
-      <div className="ci-tab-content">
-        {renderContent()}
-      </div>
+      <div className="ci-tab-content">{renderContent()}</div>
     </div>
   );
 };
 
-export default CourseInfo; 
+export default CourseInfo;

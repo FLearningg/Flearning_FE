@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import CourseCard from "./CourseCard";
 import ProfileSection from "./ProfileSection";
 import {
@@ -18,6 +18,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const CourseList = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [coursesProgress, setCoursesProgress] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -239,6 +240,14 @@ const CourseList = () => {
                       : undefined
                   }
                   reviewMode={!!myFeedback}
+                  onContinue={
+                    enrollment.status === "in-progress"
+                      ? () => navigate(`/watch-course/${enrollment.course.id}`)
+                      : undefined
+                  }
+                  onCardClick={() =>
+                    navigate(`/watch-course/${enrollment.course.id}`)
+                  }
                 >
                   {/* Có thể truyền thêm prop nếu muốn */}
                 </CourseCard>
