@@ -7,16 +7,16 @@ function QuickLinkMobile() {
                 <div className="accordion-item">
                     <h2 className="accordion-header" id="panelsStayOpen-headingOne">
                         <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
-                            TOP 4 CATEGORY
+                            SOME CATEGORY
                         </button>
                     </h2>
                     <div id="panelsStayOpen-collapseOne" className="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingOne">
                         <div className="accordion-body">
                             <ul className="nav flex-column">
-                                <li className="nav-item mb-2"><Link to="#" className="nav-link p-0">Development</Link></li>
-                                <li className="nav-item mb-2"><Link to="#" className="nav-link p-0">Finance & Accounting</Link></li>
-                                <li className="nav-item mb-2"><Link to="#" className="nav-link p-0">Design</Link></li>
-                                <li className="nav-item mb-2"><Link to="#" className="nav-link p-0">Business</Link></li>
+                                <li><Link to="/category?category=Web%20Development" className="nav-link p-0">Web Development</Link></li>
+                                <li><Link to="/category?category=Programming" className="nav-link p-0">Programming</Link></li>
+                                <li><Link to="/category?category=Design" className="nav-link p-0">Design</Link></li>
+                                <li><Link to="/category?category=Mobile%20Development" className="nav-link p-0">Mobile Development</Link></li>
                             </ul>
                         </div>
                     </div>
@@ -30,10 +30,9 @@ function QuickLinkMobile() {
                     <div id="panelsStayOpen-collapseTwo" className="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingTwo">
                         <div className="accordion-body">
                             <ul className="nav flex-column">
-                                <li className="nav-item mb-2"><Link to="#" className="nav-link p-0">About</Link></li>
-                                <li className="nav-item mb-2"><Link to="#" className="nav-link p-0">Become Instructor</Link></li>
-                                <li className="nav-item mb-2"><Link to="#" className="nav-link p-0">Contact</Link></li>
-                                <li className="nav-item mb-2"><Link to="#" className="nav-link p-0">Career</Link></li>                                
+                                <li><Link to="/about" className="nav-link p-0">About</Link></li>
+                                <li><Link to="/signup" className="nav-link p-0">Join with us</Link></li>
+                                <li><Link to="/contact" className="nav-link p-0">Contact</Link></li>                               
                             </ul>
                         </div>
                     </div>
@@ -47,8 +46,8 @@ function QuickLinkMobile() {
                     <div id="panelsStayOpen-collapseThree" className="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingThree">
                         <div className="accordion-body">
                             <ul className="nav flex-column">
-                                <li className="nav-item mb-2"><Link to="#" className="nav-link p-0">Help Center</Link></li>
-                                <li className="nav-item mb-2"><Link to="#" className="nav-link p-0">FAQs</Link></li>
+                                {/* <li className="nav-item mb-2"><Link to="#" className="nav-link p-0">Help Center</Link></li> */}
+                                <li className="nav-item mb-2"><Link to="/faqs" className="nav-link p-0">FAQs</Link></li>
                                 <li className="nav-item mb-2"><Link to="#" className="nav-link p-0">Terms & Condition</Link></li>
                                 <li className="nav-item mb-2"><Link to="#" className="nav-link p-0">Privacy Policy</Link></li>
                             </ul>

@@ -1,10 +1,8 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
+import { useRef } from "react";
+import { Link, NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBook,
-  faChalkboardTeacher,
-  faChevronDown,
   faHome,
   faPhoneSquareAlt,
   faQuestionCircle,
@@ -13,6 +11,17 @@ import SearchBar from "./SearchBar";
 import HeaderRight from "./HeaderRight";
 import LogoHeader from "./LogoHeader";
 function MobileHeader({ user }) {
+  const offcanvasRef = useRef(null);
+
+  const closeOffcanvas = () => {
+    if (offcanvasRef.current) {
+      const bsOffcanvas = window.bootstrap.Offcanvas.getInstance(
+        offcanvasRef.current
+      );
+      bsOffcanvas?.hide();
+    }
+  };
+ 
   return (
     <>
       <div className="tablet-view-nav">
@@ -38,14 +47,17 @@ function MobileHeader({ user }) {
         className="offcanvas offcanvas-start text-light offcanvas-menu"
         tabIndex="-1"
         id="mobileMenu"
+        ref={offcanvasRef}
         aria-labelledby="mobileMenuLabel"
       >
         <div className="offcanvas-header mt-3">
-          <img
-            src="/images/logo_black_bg.png"
-            alt="Logo"
-            className="w-50 offcanvas-title"
-          ></img>
+          <Link to={"/"} onClick={closeOffcanvas}>
+            <img
+              src="/images/logo_black_bg.png"
+              alt="Logo"
+              className="w-50 offcanvas-title"
+            ></img>
+          </Link>
           <button
             type="button"
             className="btn-close btn-close-white"
@@ -64,7 +76,7 @@ function MobileHeader({ user }) {
               <NavLink
                 to="/"
                 className="nav-link nav-mobile-link"
-                data-bs-dismiss="offcanvas"
+                onClick={closeOffcanvas}
               >
                 <FontAwesomeIcon icon={faHome} className="me-2" />
                 Home
@@ -74,7 +86,7 @@ function MobileHeader({ user }) {
               <NavLink
                 to={"/courses"}
                 className="nav-link nav-mobile-link"
-                data-bs-dismiss="offcanvas"
+                onClick={closeOffcanvas}
               >
                 <FontAwesomeIcon icon={faBook} className="me-2" />
                 Courses
@@ -84,7 +96,7 @@ function MobileHeader({ user }) {
               <NavLink
                 to="/about"
                 className="nav-link nav-mobile-link"
-                data-bs-dismiss="offcanvas"
+                onClick={closeOffcanvas}
               >
                 <FontAwesomeIcon icon={faQuestionCircle} className="me-2" />
                 About
@@ -94,7 +106,7 @@ function MobileHeader({ user }) {
               <NavLink
                 to="/contact"
                 className="nav-link nav-mobile-link"
-                data-bs-dismiss="offcanvas"
+                onClick={closeOffcanvas}
               >
                 <FontAwesomeIcon icon={faPhoneSquareAlt} className="me-2" />
                 Contact

@@ -11,10 +11,10 @@ function StartLearning() {
             <div className="col-md-4">
               <h2>Start learning with 67.1k students around the world.</h2>
               <div className="mt-4 d-flex gap-4">
-                <Link className="btn-create-account" to={"/"}>
+                <Link className="btn-create-account" to={"/signup"}>
                   <button className="p-2 px-3">Join The Family</button>
                 </Link>
-                <Link className="btn-browse-courses" to={"/"}>
+                <Link className="btn-browse-courses" to={"/courses"}>
                   <button className="p-2 px-3">Browse All Course</button>
                 </Link>
               </div>

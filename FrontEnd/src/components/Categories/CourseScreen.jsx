@@ -5,7 +5,7 @@ import Card from "../common/Card/Card";
 import FilterSidebar from "./FilterSidebar";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import "../../assets/Categories/CourseScreen.css";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getAllCoursesWithoutDispatch } from "../../services/courseService";
 
 const ITEMS_PER_PAGE = 12;
@@ -27,6 +27,12 @@ export default function CourseScreen() {
   const [selectedLevels, setSelectedLevels] = useState([]);
   const [selectedDurations, setSelectedDurations] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const searchParam = params.get("search") || "";
+  useEffect(() => {
+    setSearchQuery(searchParam);
+  }, [searchParam]);
 
   const suggestions = [
     "user interface",
