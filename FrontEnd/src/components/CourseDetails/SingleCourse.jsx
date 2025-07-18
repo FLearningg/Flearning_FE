@@ -181,8 +181,42 @@ export default function SingleCourse() {
     ],
     includes: course.materials ?? [],
     shareButtons: [
-      { icon: Facebook, label: "Facebook" },
-      { icon: Twitter, label: "Twitter" },
+      {
+        icon: Facebook,
+        label: "Facebook",
+        onClick: () => {
+          const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=https://flearningg.vercel.app/course/${courseId}`;
+          const popupWidth = 600;
+          const popupHeight = 400;
+          const left = window.screen.width / 2 - popupWidth / 2;
+          const top = window.screen.height / 2 - popupHeight / 2;
+          window.open(
+            shareUrl,
+            "FacebookSharePopup",
+            `width=${popupWidth},height=${popupHeight},top=${top},left=${left},toolbar=0,status=0,resizable=1`
+          );
+        },
+      },
+      {
+        icon: Twitter,
+        label: "Twitter",
+        onClick: () => {
+          const shareUrl = `https://twitter.com/intent/tweet?url=https://flearningg.vercel.app/course/${courseId}`;
+          const popupWidth = 600;
+          const popupHeight = 400;
+
+          // Lấy vị trí giữa màn hình
+          const left = window.screen.width / 2 - popupWidth / 2;
+          const top = window.screen.height / 2 - popupHeight / 2;
+
+          // Mở popup
+          window.open(
+            shareUrl,
+            "FacebookSharePopup",
+            `width=${popupWidth},height=${popupHeight},top=${top},left=${left},toolbar=0,status=0,resizable=1`
+          );
+        },
+      },
       { icon: Mail, label: "Mail" },
       { icon: MessageCircle, label: "Message" },
     ],

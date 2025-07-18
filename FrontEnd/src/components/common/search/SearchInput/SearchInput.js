@@ -27,6 +27,7 @@ const SearchInput = ({
   onChange,
   onFocus,
   onBlur,
+  onKeyDown,
   placeholder,
   onCategoryClick,
   categoryLabel = "Browse",
@@ -42,6 +43,7 @@ const SearchInput = ({
           onChange={onChange}
           onFocus={onFocus}
           onBlur={onBlur}
+          onKeyDown={onKeyDown}
           placeholder={placeholder}
         />
       </div>

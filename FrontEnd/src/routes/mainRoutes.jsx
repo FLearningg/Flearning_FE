@@ -10,10 +10,14 @@ import CoursePage from "../components/Categories/CoursePage";
 import SingleCourse from "../components/CourseDetails/SingleCourse";
 import CheckoutPage from "../components/ShoppingCart/CheckoutPage";
 import WatchCourse from "../components/WatchCourse/WatchCourse";
+import AboutUs from "../components/AboutPage/AboutUs";
+import ContactUs from "../components/Contact/ContactUs";
 
 const mainRoutesContent = (
   <>
     <Route index element={<HomePage />} />
+    <Route path="about" element={<AboutUs />} />
+    <Route path="contact" element={<ContactUs />} />
     <Route path="faqs" element={<FaqsPage />} />
     <Route path="profile/*" element={<ProfileRoutes />} />
     <Route path="category" element={<CategoryPage />} />

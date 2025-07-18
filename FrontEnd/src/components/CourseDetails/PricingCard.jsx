@@ -166,12 +166,13 @@ const ShareSection = ({ buttons }) => {
     <div>
       <h5 className="fw-semibold text-dark mb-3">Share this course:</h5>
       <div className="d-flex gap-3">
-        {shareButtons.map(({ icon: Icon, label }) => (
+        {shareButtons.map(({ icon: Icon, label, onClick }) => (
           <button
             key={label}
             className="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center"
             style={{ width: "40px", height: "40px" }}
             aria-label={label}
+            onClick={onClick}
           >
             <Icon size={16} />
           </button>
