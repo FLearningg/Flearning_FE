@@ -372,81 +372,6 @@ export default function SingleCourse() {
     ],
   };
 
-  const feedback = course.feedback ?? [
-    {
-      _id: "507f1f77bcf86cd799439011",
-      content:
-        "I appreciate the precise short videos (10 mins or less each) because overly long videos tend to make me lose focus. The instructor is very knowledgeable in Web Design and it shows as he shares his knowledge. These were my best 6 months of training. Thanks, Vako.",
-      rateStar: 5,
-      courseId: "64a7b8c9e1234567890abcde",
-      userId: {
-        name: "Guy Hawkins",
-        avatar: "/images/connect_us.png",
-      },
-      createdAt: "2024-01-03T10:30:00Z",
-    },
-    {
-      _id: "507f1f77bcf86cd799439012",
-      content:
-        "This course is just amazing! has great course content, the best practices, and a lot of real-world knowledge. I love the way of giving examples, the best tips by the instructor which are pretty interesting, fun and knowledgeable and I was never getting bored throughout the course. This course meets more than my expectation and, I made the best investment of time to learn and practice what I am passionate about. Thank you so much to our excellent instructor Vako!! Highly recommend this course! Take the next step.",
-      rateStar: 5,
-      courseId: "64a7b8c9e1234567890abcde",
-      userId: {
-        name: "Dianne Russell",
-        avatar: "/images/connect_us.png",
-      },
-      createdAt: "2024-01-09T14:15:00Z",
-    },
-    {
-      _id: "507f1f77bcf86cd799439013",
-      content:
-        "Webflow course was good, it coves design secrets, and to build responsive web pages, blog, and some more tricks and tips about webflow. I enjoyed the course and it helped me to add web development skills related to webflow in my toolbox. Thank you Vako.",
-      rateStar: 4,
-      courseId: "64a7b8c9e1234567890abcde",
-      userId: {
-        name: "Bessie Cooper",
-        avatar: "/images/connect_us.png",
-      },
-      createdAt: "2024-01-09T08:45:00Z",
-    },
-    {
-      _id: "507f1f77bcf86cd799439014",
-      content:
-        "I appreciate the precise short videos (10 mins or less each) because overly long videos tend to make me lose focus. The instructor is very knowledgeable in Web Design and it shows as he shares his knowledge. These were my best 6 months of training. Thanks, Vako.",
-      rateStar: 5,
-      courseId: "64a7b8c9e1234567890abcde",
-      userId: {
-        name: "Eleanor Pena",
-        avatar: "/images/connect_us.png",
-      },
-      createdAt: "2024-01-08T16:20:00Z",
-    },
-    {
-      _id: "507f1f77bcf86cd799439015",
-      content:
-        "GREAT Course! Instructor was very descriptive and professional. I learned a TON that is going to apply immediately to real life work. Thanks so much, cant wait for the next one!",
-      rateStar: 3,
-      courseId: "64a7b8c9e1234567890abcde",
-      userId: {
-        name: "Ralph Edwards",
-        avatar: "/images/connect_us.png",
-      },
-      createdAt: "2024-01-07T11:10:00Z",
-    },
-    {
-      _id: "507f1f77bcf86cd799439016",
-      content:
-        "This should be one of the best course I ever made about UXUI in Udemy. Highly recommend to those who is new to UXUI and want to become UXUI freelancer!",
-      rateStar: 5,
-      courseId: "64a7b8c9e1234567890abcde",
-      userId: {
-        name: "Arlene McCoy",
-        avatar: "/images/connect_us.png",
-      },
-      createdAt: "2024-01-03T09:00:00Z",
-    },
-  ];
-
   return (
     <div
       className="single-course-wrapper"
@@ -491,16 +416,8 @@ export default function SingleCourse() {
             </div>
 
             <div ref={reviewRef}>
-              {rating ? (
-                <CourseRating rawRatings={rating} />
-              ) : (
-                <p className="text-muted">Rating not available</p>
-              )}
-              {feedback.length > 0 ? (
-                <StudentFeedback feedback={feedback} />
-              ) : (
-                <p className="text-muted">Student feedback not available</p>
-              )}
+              <CourseRating courseId={courseId} />
+              <StudentFeedback courseId={courseId} />
             </div>
           </div>
 

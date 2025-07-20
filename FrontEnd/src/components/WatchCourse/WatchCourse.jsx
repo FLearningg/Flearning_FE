@@ -21,7 +21,7 @@ import {
   getCourseFeedback,
   createCourseFeedback,
   updateCourseFeedback,
-} from "../../services/profileService";
+} from "../../services/feedbackService";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
@@ -52,6 +52,7 @@ const WatchCourse = ({ courseId: propCourseId }) => {
   // Track completed lessons
   const [completedLessons, setCompletedLessons] = useState([]);
   const [courseFeedback, setCourseFeedback] = useState(null);
+  const [allLessonsCompleted, setAllLessonsCompleted] = useState(false);
 
   // Fetch course info and sections/lessons
   useEffect(() => {
@@ -74,6 +75,36 @@ const WatchCourse = ({ courseId: propCourseId }) => {
           ? completedLessonsRes.data.data.map((lesson) => lesson._id)
           : [];
         setCompletedLessons(completedLessonsArr);
+
+        // Calculate total lessons and check if all are completed
+        const totalLessons = sectionsData.reduce((total, section) => {
+          return total + (section.lessons ? section.lessons.length : 0);
+        }, 0);
+
+        // Get all lesson IDs from sections to ensure accurate comparison
+        const allLessonIds = sectionsData.reduce((ids, section) => {
+          if (section.lessons) {
+            ids.push(...section.lessons.map((lesson) => lesson._id));
+          }
+          return ids;
+        }, []);
+
+        const allCompleted =
+          totalLessons > 0 &&
+          allLessonIds.length > 0 &&
+          allLessonIds.every((lessonId) =>
+            completedLessonsArr.includes(lessonId)
+          );
+        setAllLessonsCompleted(allCompleted);
+
+        // Debug logging
+        console.log("Course completion status:", {
+          totalLessons,
+          completedLessons: completedLessonsArr.length,
+          allLessonIds: allLessonIds.length,
+          allCompleted,
+        });
+
         // Set progress percentage
         const progressPercent = progressRes.data?.data?.progressPercentage || 0;
         setProgress(progressPercent);
@@ -110,7 +141,7 @@ const WatchCourse = ({ courseId: propCourseId }) => {
     getCourseFeedback(courseId)
       .then((res) => {
         const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-        const myFeedback = res.data.feedback.find((fb) => {
+        const myFeedback = res.feedback.find((fb) => {
           if (!fb.userId) return false;
           if (typeof fb.userId === "string") {
             return (
@@ -222,7 +253,7 @@ const WatchCourse = ({ courseId: propCourseId }) => {
       // Refetch feedback
       const res = await getCourseFeedback(courseId);
       const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-      const myFeedback = res.data.feedback.find((fb) => {
+      const myFeedback = res.feedback.find((fb) => {
         if (!fb.userId) return false;
         if (typeof fb.userId === "string") {
           return fb.userId === currentUser._id || fb.userId === currentUser.id;
@@ -276,6 +307,7 @@ const WatchCourse = ({ courseId: propCourseId }) => {
           onReviewClick={() => setIsReviewModalOpen(true)}
           reviewMode={!!courseFeedback}
           onNextLecture={handleNextLecture}
+          showReviewButton={allLessonsCompleted}
         />
       </div>
       <div className="f-watch-course-main">
@@ -304,11 +336,51 @@ const WatchCourse = ({ courseId: propCourseId }) => {
                         ? prev
                         : [...prev, currentLesson._id]
                     );
+
                     // Update progress after marking complete
                     const progressRes = await getCourseProgress(courseId);
                     const progressPercent =
                       progressRes.data?.data?.progressPercentage || 0;
                     setProgress(progressPercent);
+
+                    // Check if all lessons are now completed
+                    const updatedCompletedLessons = completedLessons.includes(
+                      currentLesson._id
+                    )
+                      ? completedLessons
+                      : [...completedLessons, currentLesson._id];
+
+                    const totalLessons = sections.reduce((total, section) => {
+                      return (
+                        total + (section.lessons ? section.lessons.length : 0)
+                      );
+                    }, 0);
+
+                    // Get all lesson IDs from sections to ensure accurate comparison
+                    const allLessonIds = sections.reduce((ids, section) => {
+                      if (section.lessons) {
+                        ids.push(
+                          ...section.lessons.map((lesson) => lesson._id)
+                        );
+                      }
+                      return ids;
+                    }, []);
+
+                    const allCompleted =
+                      totalLessons > 0 &&
+                      allLessonIds.length > 0 &&
+                      allLessonIds.every((lessonId) =>
+                        updatedCompletedLessons.includes(lessonId)
+                      );
+                    setAllLessonsCompleted(allCompleted);
+
+                    // Debug logging
+                    console.log("Updated course completion status:", {
+                      totalLessons,
+                      completedLessons: updatedCompletedLessons.length,
+                      allLessonIds: allLessonIds.length,
+                      allCompleted,
+                    });
                   } catch (err) {
                     console.error("Error marking lesson completed:", err);
                     // Optionally: handle error
