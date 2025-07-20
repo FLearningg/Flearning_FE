@@ -21,6 +21,7 @@ import {
   getCourseFeedback,
   createCourseFeedback,
   updateCourseFeedback,
+  getCourseAverageRating,
 } from "../../services/feedbackService";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -263,6 +264,8 @@ const WatchCourse = ({ courseId: propCourseId }) => {
         );
       });
       setCourseFeedback(myFeedback || null);
+      // Gọi API cập nhật rating trung bình
+      await getCourseAverageRating(courseId);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to submit review!");
     }

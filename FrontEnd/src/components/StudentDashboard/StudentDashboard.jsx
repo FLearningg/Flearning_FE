@@ -10,6 +10,7 @@ import {
   createCourseFeedback,
   getCourseFeedback,
   updateCourseFeedback,
+  getCourseAverageRating,
 } from "../../services/feedbackService";
 import "../../assets/StudentDashboard/StudentDashboard.css";
 import { useSelector } from "react-redux";
@@ -398,6 +399,8 @@ const StudentDashboard = () => {
               ...prev,
               [selectedCourseId]: updatedFeedback || null,
             }));
+            // Gọi API cập nhật rating trung bình
+            await getCourseAverageRating(selectedCourseId);
           } catch (err) {
             toast.error(
               err.response?.data?.message || "Failed to submit review!"

@@ -3,6 +3,7 @@ import { IoArrowBack } from "react-icons/io5";
 import { BsBook } from "react-icons/bs";
 import { BiPlay } from "react-icons/bi";
 import { BsClock } from "react-icons/bs";
+import { FaEdit } from "react-icons/fa";
 import "../../assets/WatchCourse/CourseHeader.css";
 
 const CourseHeader = ({
@@ -32,7 +33,7 @@ const CourseHeader = ({
                   (acc, s) => acc + (s.lessons?.length || 0),
                   0
                 )}{" "}
-                Lectures
+                Lessons
               </span>
             </div>
             <div className="f-stat-item">
@@ -60,12 +61,12 @@ const CourseHeader = ({
               gap: "5px",
             }}
           >
-            <span>📝</span>
+            <FaEdit style={{ fontSize: "16px", color: "#fd7e14" }} />
             <span>Complete all lessons to write a review</span>
           </div>
         )}
         <button className="f-next-lecture-button" onClick={onNextLecture}>
-          Next Lecture
+          Next Lesson
         </button>
       </div>
     </div>
