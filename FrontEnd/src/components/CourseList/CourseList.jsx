@@ -6,10 +6,12 @@ import ProfileSection from "./ProfileSection";
 import {
   getEnrolledCourses,
   getAllCoursesProgress,
+} from "../../services/profileService";
+import {
   createCourseFeedback,
   getCourseFeedback,
   updateCourseFeedback,
-} from "../../services/profileService";
+} from "../../services/feedbackService";
 import { useSelector } from "react-redux";
 import "../../assets/CourseList/CourseList.css";
 import ReviewModal from "../WatchCourse/ReviewModal";
@@ -46,7 +48,7 @@ const CourseList = () => {
           courses.map(async (enrollment) => {
             try {
               const res = await getCourseFeedback(enrollment.course.id);
-              const myFeedback = res.data.feedback.find((fb) => {
+              const myFeedback = res.feedback.find((fb) => {
                 if (!fb.userId) return false;
                 if (typeof fb.userId === "string") {
                   return (
@@ -309,7 +311,7 @@ const CourseList = () => {
             }
             // Refetch feedback cho course này
             const res = await getCourseFeedback(selectedCourseId);
-            const updatedFeedback = res.data.feedback.find((fb) => {
+            const updatedFeedback = res.feedback.find((fb) => {
               if (!fb.userId) return false;
               if (typeof fb.userId === "string") {
                 return (

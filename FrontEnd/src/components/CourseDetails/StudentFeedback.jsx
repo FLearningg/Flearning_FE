@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Star, RotateCcw, ChevronDown } from "lucide-react";
+import { getCourseFeedback } from "../../services/feedbackService";
 import "../../assets/CourseDetails/SingleCourse.css";
 
 const RATING_OPTIONS = [
@@ -47,6 +48,16 @@ function StarRating({ rating }) {
 
 function FeedbackItem({ item, isLast }) {
   const { userId, createdAt, rateStar, content } = item;
+
+  // Handle different user data structures from backend
+  const userName =
+    userId?.firstName && userId?.lastName
+      ? `${userId.firstName} ${userId.lastName}`
+      : userId?.name || "Anonymous User";
+
+  const userAvatar =
+    userId?.userImage || userId?.avatar || "/images/defaultImageUser.png";
+
   return (
     <div
       className={`d-flex gap-3 pb-4 mb-4${
@@ -55,8 +66,8 @@ function FeedbackItem({ item, isLast }) {
     >
       <div className="flex-shrink-0">
         <img
-          src={userId?.avatar || "/placeholder.svg?height=48&width=48"}
-          alt={`${userId?.name || "User"}'s avatar`}
+          src={userAvatar}
+          alt={`${userName}'s avatar`}
           className="rounded-circle feedback-avatar"
           width="48"
           height="48"
@@ -65,7 +76,7 @@ function FeedbackItem({ item, isLast }) {
       <div className="flex-grow-1">
         <div className="d-flex align-items-center gap-2 mb-2 feedback-user-info">
           <h5 className="fw-medium mb-0 feedback-name feedback-user">
-            {userId?.name || "Anonymous User"}
+            {userName}
           </h5>
           <span className="feedback-time-separator">•</span>
           <small className="feedback-time">{formatTimeAgo(createdAt)}</small>
@@ -78,6 +89,14 @@ function FeedbackItem({ item, isLast }) {
 }
 
 function FeedbackList({ feedbacks }) {
+  if (!feedbacks || feedbacks.length === 0) {
+    return (
+      <div className="text-center py-4">
+        <p className="text-muted">No feedback available for this course yet.</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       {feedbacks.map((item, idx) => (
@@ -128,20 +147,117 @@ function Dropdown({ options, selected, show, onToggle, onSelect }) {
   );
 }
 
-export default function StudentFeedback({ feedback }) {
+export default function StudentFeedback({ courseId }) {
   const [selectedRating, setSelectedRating] = useState("all");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 0,
+    totalFeedback: 0,
+    hasNext: false,
+    hasPrev: false,
+  });
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      if (!courseId) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await getCourseFeedback(courseId, 1, 10);
+        setFeedbacks(response.feedback || []);
+        setPagination({
+          currentPage: response.pagination?.currentPage || 1,
+          totalPages: response.pagination?.totalPages || 0,
+          totalFeedback: response.pagination?.totalFeedback || 0,
+          hasNext: response.pagination?.hasNext || false,
+          hasPrev: response.pagination?.hasPrev || false,
+        });
+      } catch (err) {
+        console.error("Error fetching feedbacks:", err);
+        setError(err.response?.data?.message || "Failed to load feedback");
+        setFeedbacks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeedbacks();
+  }, [courseId]);
+
+  const loadMoreFeedbacks = async () => {
+    if (!pagination.hasNext || loadingMore) return;
+
+    try {
+      setLoadingMore(true);
+      const nextPage = pagination.currentPage + 1;
+      const response = await getCourseFeedback(courseId, nextPage, 10);
+
+      setFeedbacks((prev) => [...prev, ...(response.feedback || [])]);
+      setPagination({
+        currentPage: response.pagination?.currentPage || nextPage,
+        totalPages: response.pagination?.totalPages || 0,
+        totalFeedback: response.pagination?.totalFeedback || 0,
+        hasNext: response.pagination?.hasNext || false,
+        hasPrev: response.pagination?.hasPrev || false,
+      });
+    } catch (err) {
+      console.error("Error loading more feedbacks:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const filteredFeedbacks =
     selectedRating === "all"
-      ? feedback
-      : feedback.filter((f) => f.rateStar === selectedRating);
+      ? feedbacks
+      : feedbacks.filter((f) => f.rateStar === selectedRating);
 
   const handleDropdown = () => setShowDropdown((prev) => !prev);
   const handleSelect = (value) => {
     setSelectedRating(value);
     setShowDropdown(false);
   };
+
+  if (loading) {
+    return (
+      <div className="container-fluid course-feedback">
+        <div className="row justify-content-center">
+          <div className="col-12 col-lg-12 col-xl-12">
+            <div className="p-4 bg-white">
+              <div className="text-center">
+                <div className="spinner-border" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container-fluid course-feedback">
+        <div className="row justify-content-center">
+          <div className="col-12 col-lg-12 col-xl-12">
+            <div className="p-4 bg-white">
+              <div className="text-center text-danger">
+                <p>Error loading feedback: {error}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container-fluid course-feedback">
@@ -168,15 +284,33 @@ export default function StudentFeedback({ feedback }) {
               />
             </div>
             <FeedbackList feedbacks={filteredFeedbacks} />
-            <div className="text-center mt-4">
-              <button
-                className="btn d-flex align-items-center gap-2 mx-auto px-4 py-2 load-more-btn"
-                aria-label="Load more student reviews"
-              >
-                Load More
-                <RotateCcw size={16} />
-              </button>
-            </div>
+            {pagination.hasNext && (
+              <div className="text-center mt-4">
+                <button
+                  className="btn d-flex align-items-center gap-2 mx-auto px-4 py-2 load-more-btn"
+                  aria-label="Load more student reviews"
+                  onClick={loadMoreFeedbacks}
+                  disabled={loadingMore}
+                >
+                  {loadingMore ? (
+                    <>
+                      <div
+                        className="spinner-border spinner-border-sm"
+                        role="status"
+                      >
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      Load More
+                      <RotateCcw size={16} />
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

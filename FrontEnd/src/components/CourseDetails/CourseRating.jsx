@@ -1,37 +1,7 @@
+import { useState, useEffect } from "react";
 import { Star } from "lucide-react";
+import { getCourseFeedback } from "../../services/feedbackService";
 import "../../assets/CourseDetails/SingleCourse.css";
-
-// Utility function to calculate rating stats
-function calculateRatingStats(rawRatings = []) {
-  if (!Array.isArray(rawRatings) || rawRatings.length === 0) {
-    return {
-      overallRating: 0,
-      ratingBreakdown: [],
-      totalReviews: 0,
-    };
-  }
-
-  const totalStars = rawRatings.reduce((sum, r) => sum + r.rateStar, 0);
-  const overallRating = Math.round((totalStars / rawRatings.length) * 10) / 10;
-
-  const starCounts = [1, 2, 3, 4, 5].reduce((acc, star) => {
-    acc[star] = 0;
-    return acc;
-  }, {});
-  rawRatings.forEach(({ rateStar }) => {
-    if (rateStar >= 1 && rateStar <= 5) starCounts[rateStar]++;
-  });
-
-  const totalReviews = rawRatings.length;
-  const ratingBreakdown = [5, 4, 3, 2, 1].map((stars) => ({
-    stars,
-    count: starCounts[stars],
-    percentage: Math.round((starCounts[stars] / totalReviews) * 100),
-    label: `${stars} Star Rating`,
-  }));
-
-  return { overallRating, ratingBreakdown, totalReviews };
-}
 
 function StarIcons({ count, filled }) {
   return (
@@ -71,11 +41,101 @@ function OverallStars({ rating, totalStars }) {
 
 export default function CourseRating({
   title = "Course Rating",
-  rawRatings,
+  courseId,
   totalStars = 5,
 }) {
-  const { overallRating, ratingBreakdown, totalReviews } =
-    calculateRatingStats(rawRatings);
+  const [ratingData, setRatingData] = useState({
+    overallRating: 0,
+    ratingBreakdown: [],
+    totalReviews: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchRatingData = async () => {
+      if (!courseId) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await getCourseFeedback(courseId, 1, 100); // Get all feedback for rating calculation
+        const { feedback, averageRating } = response;
+
+        // Use backend average rating if available, otherwise calculate from feedback
+        const overallRating = averageRating || 0;
+
+        // Calculate rating breakdown from feedback data
+        const starCounts = [1, 2, 3, 4, 5].reduce((acc, star) => {
+          acc[star] = 0;
+          return acc;
+        }, {});
+
+        feedback.forEach(({ rateStar }) => {
+          if (rateStar >= 1 && rateStar <= 5) starCounts[rateStar]++;
+        });
+
+        const totalReviews = feedback.length;
+        const ratingBreakdown = [5, 4, 3, 2, 1].map((stars) => ({
+          stars,
+          count: starCounts[stars],
+          percentage:
+            totalReviews > 0
+              ? Math.round((starCounts[stars] / totalReviews) * 100)
+              : 0,
+          label: `${stars} Star Rating`,
+        }));
+
+        setRatingData({
+          overallRating,
+          ratingBreakdown,
+          totalReviews,
+        });
+      } catch (err) {
+        console.error("Error fetching rating data:", err);
+        setError(err.response?.data?.message || "Failed to load rating data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRatingData();
+  }, [courseId]);
+
+  if (loading) {
+    return (
+      <div
+        className="course-rating container-fluid py-4"
+        style={{ background: "#fff" }}
+      >
+        <div className="row justify-content-center">
+          <div className="text-center">
+            <div className="spinner-border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        className="course-rating container-fluid py-4"
+        style={{ background: "#fff" }}
+      >
+        <div className="row justify-content-center">
+          <div className="text-center text-danger">
+            <p>Error loading rating data: {error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { overallRating, ratingBreakdown, totalReviews } = ratingData;
 
   return (
     <>
