@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 
 function HomePage() {
   const { token, currentUser } = useSelector((state) => state.auth);
-  console.log(token);
+  // console.log(token);
   console.log(currentUser);
   return (
     <>

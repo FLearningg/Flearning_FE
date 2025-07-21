@@ -183,11 +183,12 @@ const WatchCourse = ({ courseId: propCourseId }) => {
     if (!currentLesson?._id || !content) return;
     setAddingComment(true);
     try {
-      await addLessonComment(currentLesson._id, content);
-      const res = await getLessonComments(currentLesson._id);
-      setLessonComments(res.data.comments || []);
+      const res = await addLessonComment(currentLesson._id, content);
+      toast.success(res.data?.message || "Comment added successfully!");
+      const commentsRes = await getLessonComments(currentLesson._id);
+      setLessonComments(commentsRes.data.comments || []);
     } catch (err) {
-      // handle error (show toast, etc)
+      toast.error(err.response?.data?.message || "Failed to add comment!");
     } finally {
       setAddingComment(false);
     }
@@ -197,11 +198,16 @@ const WatchCourse = ({ courseId: propCourseId }) => {
     if (!currentLesson?._id || !commentId || !content) return;
     setUpdatingCommentId(commentId);
     try {
-      await updateLessonComment(currentLesson._id, commentId, content);
-      const res = await getLessonComments(currentLesson._id);
-      setLessonComments(res.data.comments || []);
+      const res = await updateLessonComment(
+        currentLesson._id,
+        commentId,
+        content
+      );
+      toast.success(res.data?.message || "Comment updated successfully!");
+      const commentsRes = await getLessonComments(currentLesson._id);
+      setLessonComments(commentsRes.data.comments || []);
     } catch (err) {
-      // handle error
+      toast.error(err.response?.data?.message || "Failed to update comment!");
     } finally {
       setUpdatingCommentId(null);
     }
@@ -211,11 +217,12 @@ const WatchCourse = ({ courseId: propCourseId }) => {
     if (!currentLesson?._id || !commentId) return;
     setDeletingCommentId(commentId);
     try {
-      await deleteLessonComment(currentLesson._id, commentId);
-      const res = await getLessonComments(currentLesson._id);
-      setLessonComments(res.data.comments || []);
+      const res = await deleteLessonComment(currentLesson._id, commentId);
+      toast.success(res.data?.message || "Comment deleted successfully!");
+      const commentsRes = await getLessonComments(currentLesson._id);
+      setLessonComments(commentsRes.data.comments || []);
     } catch (err) {
-      // handle error
+      toast.error(err.response?.data?.message || "Failed to delete comment!");
     } finally {
       setDeletingCommentId(null);
     }
