@@ -11,6 +11,7 @@ import {
   createCourseFeedback,
   getCourseFeedback,
   updateCourseFeedback,
+  getCourseAverageRating,
 } from "../../services/feedbackService";
 import { useSelector } from "react-redux";
 import "../../assets/CourseList/CourseList.css";
@@ -314,9 +315,7 @@ const CourseList = () => {
             const updatedFeedback = res.feedback.find((fb) => {
               if (!fb.userId) return false;
               if (typeof fb.userId === "string") {
-                return (
-                  fb.userId === currentUser._id || fb.userId === currentUser.id
-                );
+                return fb.userId === currentUser._id || currentUser.id;
               }
               return (
                 fb.userId._id === currentUser._id ||
@@ -327,6 +326,8 @@ const CourseList = () => {
               ...prev,
               [selectedCourseId]: updatedFeedback || null,
             }));
+            // Gọi API cập nhật rating trung bình
+            await getCourseAverageRating(selectedCourseId);
           } catch (err) {
             toast.error(
               err.response?.data?.message || "Failed to submit review!"

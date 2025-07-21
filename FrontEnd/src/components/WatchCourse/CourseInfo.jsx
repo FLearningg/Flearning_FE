@@ -45,7 +45,7 @@ const CourseInfo = ({
 
   const tabs = [
     { id: "description", label: "Description" },
-    { id: "notes", label: "Lecture Notes" },
+    { id: "notes", label: "Lesson Notes" },
     { id: "attachments", label: "Attach File" },
     { id: "comments", label: "Comments" },
   ];
@@ -88,7 +88,7 @@ const CourseInfo = ({
       case "notes":
         return (
           <div className="ci-notes-content">
-            <h3>Lecture Notes</h3>
+            <h3>Lesson Notes</h3>
             <div>{lesson?.lessonNotes || <i>No notes for this lesson.</i>}</div>
           </div>
         );

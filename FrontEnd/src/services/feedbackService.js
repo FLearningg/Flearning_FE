@@ -97,3 +97,18 @@ export const getUserFeedbackForCourse = async (courseId, userId) => {
     return null;
   }
 };
+
+/**
+ * Get average rating for a specific course
+ * @param {string} courseId - The course ID
+ * @returns {Promise} API response with average rating and total feedback
+ */
+export const getCourseAverageRating = async (courseId) => {
+  try {
+    const response = await apiClient.get(`/courses/${courseId}/average-rating`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching course average rating:", error);
+    throw error;
+  }
+};
