@@ -161,10 +161,17 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
           new Date(b.originalData?.createdAt || 0)
         );
       case "popular":
-        return (
-          parseInt(b.students.replace(/,/g, "")) -
-          parseInt(a.students.replace(/,/g, ""))
-        );
+        const aCount = Array.isArray(a.originalData?.studentsEnrolled)
+          ? a.originalData.studentsEnrolled.length
+          : a.originalData?.enrolledStudents ||
+            a.originalData?.studentsCount ||
+            0;
+        const bCount = Array.isArray(b.originalData?.studentsEnrolled)
+          ? b.originalData.studentsEnrolled.length
+          : b.originalData?.enrolledStudents ||
+            b.originalData?.studentsCount ||
+            0;
+        return bCount - aCount;
       case "rating":
         return b.rating - a.rating;
       default:
