@@ -127,6 +127,24 @@ export default function CourseForm({
       const mediaData = {
         ...(thumbnailUrl && { thumbnail: thumbnailUrl }),
         ...(trailerUrl && { trailer: trailerUrl }),
+
+        // Preserve existing curriculum/sections to avoid data loss
+        ...(initialData.curriculum && { curriculum: initialData.curriculum }),
+        ...(initialData.sections && { sections: initialData.sections }),
+        // Preserve other existing course data
+        ...(initialData.detail && { detail: initialData.detail }),
+        ...(initialData.title && { title: initialData.title }),
+        ...(initialData.description && {
+          description: initialData.description,
+        }),
+        ...(initialData.price && { price: initialData.price }),
+        ...(initialData.category && { category: initialData.category }),
+        ...(initialData.level && { level: initialData.level }),
+        ...(initialData.language && { language: initialData.language }),
+        ...(initialData.requirements && {
+          requirements: initialData.requirements,
+        }),
+        ...(initialData.duration && { duration: initialData.duration }),
       };
 
       // Save to database
@@ -179,19 +197,12 @@ export default function CourseForm({
     const newTrailerUrl =
       initialData.uploadedFiles?.video?.url || initialData.trailer || null;
 
-    // Force update URLs even if they haven't changed to ensure UI consistency
-    if (newThumbnailUrl !== thumbnailUrl) {
-      setThumbnailUrl(newThumbnailUrl);
-    }
-
-    if (newTrailerUrl !== trailerUrl) {
-      setTrailerUrl(newTrailerUrl);
-    }
-
-    // Cập nhật preview từ url nếu có (khi quay lại tab)
-    if (newThumbnailUrl) setThumbnailPreview(newThumbnailUrl);
-    if (newTrailerUrl) setTrailerPreview(newTrailerUrl);
-  }, [initialData, thumbnailUrl, trailerUrl]);
+    // Always update URLs and previews to ensure UI consistency
+    setThumbnailUrl(newThumbnailUrl);
+    setTrailerUrl(newTrailerUrl);
+    setThumbnailPreview(newThumbnailUrl || null);
+    setTrailerPreview(newTrailerUrl || null);
+  }, [initialData]);
 
   const updateInput = (index, value, type) => {
     const newInputs =
@@ -632,6 +643,13 @@ export default function CourseForm({
                       image: thumbnailUrl ? { url: thumbnailUrl } : null,
                       video: trailerUrl ? { url: trailerUrl } : null,
                     },
+                    // Preserve curriculum if exists
+                    ...(initialData.curriculum && {
+                      curriculum: initialData.curriculum,
+                    }),
+                    ...(initialData.sections && {
+                      sections: initialData.sections,
+                    }),
                   };
                   onPrev(data);
                 }}
@@ -654,3 +672,4 @@ export default function CourseForm({
     </div>
   );
 }
+

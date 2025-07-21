@@ -222,7 +222,7 @@ export default function CourseCurriculum({
         videoUrl = res.data.url;
         setUploadedFiles((prev) => ({
           ...prev,
-          video: { url: videoUrl, name: lessonVideoFile.name },
+          lessonVideo: { url: videoUrl, name: lessonVideoFile.name },
         }));
       }
       if (lessonFile) {
@@ -236,7 +236,7 @@ export default function CourseCurriculum({
         fileUrl = res.data.url;
         setUploadedFiles((prev) => ({
           ...prev,
-          file: { url: fileUrl, name: lessonFile.name },
+          lessonFile: { url: fileUrl, name: lessonFile.name },
         }));
       }
 
@@ -628,7 +628,19 @@ export default function CourseCurriculum({
   const handleSaveNext = () => {
     onNext({
       sections: sections,
-      uploadedFiles: uploadedFiles,
+      curriculum: sections,
+      // Preserve media from CourseFormAdvance (thumbnail/trailer) and merge with lesson media
+      uploadedFiles: {
+        // Add lesson-specific uploads (lessonVideo, lessonFile, caption, description, notes)
+        ...uploadedFiles,
+        // Preserve and prioritize course media from CourseFormAdvance
+        ...(initialData.uploadedFiles?.image && {
+          image: initialData.uploadedFiles.image,
+        }),
+        ...(initialData.uploadedFiles?.video && {
+          video: initialData.uploadedFiles.video,
+        }),
+      },
     });
   };
 
@@ -1530,7 +1542,19 @@ export default function CourseCurriculum({
                 onClick={() => {
                   const data = {
                     curriculum: sections,
-                    uploadedFiles: uploadedFiles,
+                    sections: sections,
+                    // Preserve media from CourseFormAdvance (thumbnail/trailer) and merge with lesson media
+                    uploadedFiles: {
+                      // Add lesson-specific uploads (lessonVideo, lessonFile, caption, description, notes)
+                      ...uploadedFiles,
+                      // Preserve and prioritize course media from CourseFormAdvance
+                      ...(initialData.uploadedFiles?.image && {
+                        image: initialData.uploadedFiles.image,
+                      }),
+                      ...(initialData.uploadedFiles?.video && {
+                        video: initialData.uploadedFiles.video,
+                      }),
+                    },
                   };
                   onPrev(data);
                 }}
