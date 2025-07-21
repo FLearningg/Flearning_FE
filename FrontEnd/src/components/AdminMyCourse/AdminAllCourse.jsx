@@ -288,6 +288,30 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
 
   const confirmDelete = async () => {
     if (courseToDelete) {
+      // Check if course has enrolled students
+      const studentsCount = parseInt(courseToDelete.students) || 0;
+      const originalData = courseToDelete.originalData;
+      const enrolledStudents =
+        originalData?.studentsCount ||
+        originalData?.enrolledStudents ||
+        originalData?.studentsEnrolled?.length ||
+        studentsCount;
+
+      if (enrolledStudents > 0) {
+        // If has students, just close modal and show info message
+        toast.info(
+          `Course "${
+            courseToDelete.title
+          }" has ${enrolledStudents} enrolled student${
+            enrolledStudents > 1 ? "s" : ""
+          }. Deletion cancelled for student protection.`
+        );
+        setShowDeleteModal(false);
+        setCourseToDelete(null);
+        return;
+      }
+
+      // Only delete if no students enrolled
       try {
         const response = await deleteCourse(courseToDelete.id);
         console.log("Delete course response:", response);
@@ -502,45 +526,90 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
       )}
 
       {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="amc-modal-overlay">
-          <div className="amc-modal">
-            <div className="amc-modal-header">
-              <h3 className="amc-modal-title">Delete Course</h3>
-              <button className="amc-modal-close" onClick={cancelDelete}>
-                <IoClose size={20} />
-              </button>
-            </div>
-            <div className="amc-modal-body">
-              <div className="amc-modal-icon">
-                <IoWarning size={48} />
+      {showDeleteModal &&
+        courseToDelete &&
+        (() => {
+          const studentsCount = parseInt(courseToDelete.students) || 0;
+          const originalData = courseToDelete.originalData;
+          const enrolledStudents =
+            originalData?.studentsCount ||
+            originalData?.enrolledStudents ||
+            originalData?.studentsEnrolled?.length ||
+            studentsCount;
+          const hasStudents = enrolledStudents > 0;
+
+          return (
+            <div className="amc-modal-overlay">
+              <div className={`amc-modal ${hasStudents ? "info-modal" : ""}`}>
+                <div className="amc-modal-header">
+                  <h3 className="amc-modal-title">
+                    {hasStudents ? "Course Information" : "Delete Course"}
+                  </h3>
+                  <button className="amc-modal-close" onClick={cancelDelete}>
+                    <IoClose size={20} />
+                  </button>
+                </div>
+                <div className="amc-modal-body">
+                  <div className="amc-modal-icon">
+                    <IoWarning size={48} />
+                  </div>
+                  <h4 className="amc-modal-message">
+                    {hasStudents
+                      ? "Cannot Delete Course with Enrolled Students"
+                      : "Are you sure you want to delete this course?"}
+                  </h4>
+                  <p className="amc-modal-description">
+                    {hasStudents ? (
+                      <>
+                        <strong>"{courseToDelete.title}"</strong> currently has{" "}
+                        <strong>
+                          {enrolledStudents} enrolled student
+                          {enrolledStudents > 1 ? "s" : ""}
+                        </strong>
+                        . This course cannot be deleted to protect student
+                        learning progress and data.
+                      </>
+                    ) : (
+                      <>
+                        <strong>"{courseToDelete.title}"</strong> will be
+                        permanently deleted. This action cannot be undone and
+                        all course data will be lost.
+                      </>
+                    )}
+                  </p>
+                  <div className="amc-modal-warning-info">
+                    <p className="amc-students-info">
+                      <strong>Students enrolled:</strong> {enrolledStudents}
+                    </p>
+                    {hasStudents && (
+                      <p className="amc-warning-text">
+                        ⚠️ To delete this course, please wait for students to
+                        complete their learning or contact support for
+                        assistance.
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="amc-modal-footer">
+                  <button
+                    className="amc-modal-button amc-modal-button-secondary"
+                    onClick={cancelDelete}
+                  >
+                    {hasStudents ? "Understood" : "Cancel"}
+                  </button>
+                  {!hasStudents && (
+                    <button
+                      className="amc-modal-button amc-modal-button-danger"
+                      onClick={confirmDelete}
+                    >
+                      Delete Course
+                    </button>
+                  )}
+                </div>
               </div>
-              <h4 className="amc-modal-message">
-                Are you sure you want to delete this course?
-              </h4>
-              <p className="amc-modal-description">
-                <strong>"{courseToDelete?.title}"</strong> will be permanently
-                deleted. This action cannot be undone and all course data will
-                be lost.
-              </p>
             </div>
-            <div className="amc-modal-footer">
-              <button
-                className="amc-modal-button amc-modal-button-secondary"
-                onClick={cancelDelete}
-              >
-                Cancel
-              </button>
-              <button
-                className="amc-modal-button amc-modal-button-danger"
-                onClick={confirmDelete}
-              >
-                Delete Course
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          );
+        })()}
     </div>
   );
 };
