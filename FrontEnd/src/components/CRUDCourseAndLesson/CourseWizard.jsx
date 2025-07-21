@@ -366,27 +366,27 @@ const CourseWizard = () => {
       }
     } catch (err) {
       // For development/testing, simulate success if API fails
-      if (process.env.NODE_ENV === "development" || !err.response) {
-        // Mark the final tab as completed
-        setCompletedTabs((prev) => {
-          if (!prev.includes(3)) {
-            return [...prev, 3];
-          }
-          return prev;
-        });
+      // if (process.env.NODE_ENV === "development" || !err.response) {
+      //   // Mark the final tab as completed
+      //   setCompletedTabs((prev) => {
+      //     if (!prev.includes(3)) {
+      //       return [...prev, 3];
+      //     }
+      //     return prev;
+      //   });
 
-        // Only show success toast once
-        if (!submitToastShownRef.current) {
-          toast.success(
-            `Course ${
-              isEditMode ? "updated" : "created"
-            } successfully! (simulated)`
-          );
-          submitToastShownRef.current = true;
-        }
-        navigate("/admin/courses/all");
-        return;
-      }
+      //   // Only show success toast once
+      //   if (!submitToastShownRef.current) {
+      //     toast.success(
+      //       `Course ${
+      //         isEditMode ? "updated" : "created"
+      //       } successfully! (simulated)`
+      //     );
+      //     submitToastShownRef.current = true;
+      //   }
+      //   navigate("/admin/courses/all");
+      //   return;
+      // }
 
       // Only show error toast once
       if (!submitToastShownRef.current) {

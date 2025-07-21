@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import Card from "../common/Card/Card";
 import SearchBox from "../common/search/SearchBox/SearchBox";
+import { IoClose, IoWarning } from "react-icons/io5";
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import {
   getAdminCourses,
   deleteCourse,
@@ -13,7 +15,6 @@ import "../../assets/AdminMyCourse/AdminAllCourse.css";
 
 const AdminAllCourse = ({ title = "My Courses" }) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const [sortBy, setSortBy] = useState("latest");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [ratingFilter, setRatingFilter] = useState("all");
@@ -22,6 +23,10 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
+
+  // Delete modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -237,17 +242,17 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
     {
       label: "View Details",
       type: "primary",
-      icon: "👁️",
+      icon: <FaEye />,
     },
     {
       label: "Edit Course",
       type: "secondary",
-      icon: "✏️",
+      icon: <FaEdit />,
     },
     {
       label: "Delete Course",
       type: "danger",
-      icon: "🗑️",
+      icon: <FaTrash />,
     },
   ];
 
@@ -267,26 +272,35 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
         });
         break;
       case "Delete Course":
-        if (window.confirm("Are you sure you want to delete this course?")) {
-          handleDeleteCourse(course.id);
-        }
+        setCourseToDelete(course);
+        setShowDeleteModal(true);
         break;
       default:
         break;
     }
   };
 
-  // Handle course deletion
-  const handleDeleteCourse = async (courseId) => {
-    try {
-      const response = await deleteCourse(courseId);
-      console.log("Delete course response:", response);
-      toast.success("Course deleted successfully");
-      // Refresh the courses list
-      fetchCourses();
-    } catch (error) {
-      console.error("Error deleting course:", error);
-      toast.error(error.response?.data?.message || "Failed to delete course");
+  // Modal handlers
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setCourseToDelete(null);
+  };
+
+  const confirmDelete = async () => {
+    if (courseToDelete) {
+      try {
+        const response = await deleteCourse(courseToDelete.id);
+        console.log("Delete course response:", response);
+        toast.success("Course deleted successfully");
+        // Refresh the courses list
+        fetchCourses();
+      } catch (error) {
+        console.error("Error deleting course:", error);
+        toast.error(error.response?.data?.message || "Failed to delete course");
+      } finally {
+        setShowDeleteModal(false);
+        setCourseToDelete(null);
+      }
     }
   };
 
@@ -458,15 +472,7 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
             onClick={goToPrevPage}
             disabled={currentPage === 1}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M15 18L9 12L15 6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <MdKeyboardArrowLeft size={20} />
           </button>
 
           <div className="aac-page-numbers">
@@ -490,16 +496,49 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
             onClick={goToNextPage}
             disabled={currentPage === totalPages}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M9 18L15 12L9 6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <MdKeyboardArrowRight size={20} />
           </button>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="amc-modal-overlay">
+          <div className="amc-modal">
+            <div className="amc-modal-header">
+              <h3 className="amc-modal-title">Delete Course</h3>
+              <button className="amc-modal-close" onClick={cancelDelete}>
+                <IoClose size={20} />
+              </button>
+            </div>
+            <div className="amc-modal-body">
+              <div className="amc-modal-icon">
+                <IoWarning size={48} />
+              </div>
+              <h4 className="amc-modal-message">
+                Are you sure you want to delete this course?
+              </h4>
+              <p className="amc-modal-description">
+                <strong>"{courseToDelete?.title}"</strong> will be permanently
+                deleted. This action cannot be undone and all course data will
+                be lost.
+              </p>
+            </div>
+            <div className="amc-modal-footer">
+              <button
+                className="amc-modal-button amc-modal-button-secondary"
+                onClick={cancelDelete}
+              >
+                Cancel
+              </button>
+              <button
+                className="amc-modal-button amc-modal-button-danger"
+                onClick={confirmDelete}
+              >
+                Delete Course
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -240,6 +240,9 @@ const CourseForm = ({
     const data = {
       title: titleState,
       subTitle: subtitle, // ← Fixed key name
+      detail: {
+        description: "No description provided", // ← Send non-empty description as required by backend
+      },
 
       category: category, // ← Save category name for restoration
       subCategory: subCategory, // ← Save subcategory name for restoration
