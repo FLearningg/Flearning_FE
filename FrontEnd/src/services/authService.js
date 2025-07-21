@@ -6,8 +6,7 @@ import { logout } from "../store/authSlice";
 // Tạo một instance của axios với cấu hình chung
 const apiClient = axios.create({
   baseURL:
-    // "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api",
-    "http://localhost:5000/api",
+    "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api",
   withCredentials: true,
 });
 
