@@ -8,7 +8,7 @@ const routeTitleMap = {
   "/admin/dashboard": "Dashboard",
   "/admin/courses/all": "My Courses",
   "/admin/courses": "Course Details",
-  "/admin/earning": "Earning",
+  // "/admin/earning": "Earning",
   "/admin/discounts": "Discounts",
   "/admin/users": "Manage Users",
   "/admin/settings": "Settings",
