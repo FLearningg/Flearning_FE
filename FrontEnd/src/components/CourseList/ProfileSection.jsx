@@ -18,22 +18,21 @@ const NAV_ITEMS = [
 ];
 
 // Cache for profile data
-let profileDataCache = null;
 
 const ProfileSection = ({
   activePath,
   wrapperBackground = "#FFEEE8",
   useFullWidthWrapper = true,
-  children
+  children,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [profileData, setProfileData] = useState(profileDataCache || {
+  const [profileData, setProfileData] = useState({
     firstName: "",
     lastName: "",
     biography: "",
-    userImage: DEFAULT_PROFILE_IMAGE
+    userImage: DEFAULT_PROFILE_IMAGE,
   });
-  const [isLoading, setIsLoading] = useState(!profileDataCache);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   // Fetch profile data
@@ -49,28 +48,25 @@ const ProfileSection = ({
         firstName: data.firstName || "",
         lastName: data.lastName || "",
         biography: data.biography || "",
-        userImage: data.userImage || DEFAULT_PROFILE_IMAGE
+        userImage: data.userImage || DEFAULT_PROFILE_IMAGE,
       };
 
       setProfileData(newProfileData);
-      profileDataCache = newProfileData; // Update cache
     } catch (error) {
       console.error("Error fetching profile:", error);
       setError("Failed to load profile data");
-      setProfileData(prev => ({
+      setProfileData((prev) => ({
         ...prev,
-        userImage: DEFAULT_PROFILE_IMAGE
+        userImage: DEFAULT_PROFILE_IMAGE,
       }));
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Fetch data only if cache is empty
+  // Luôn fetch profile khi mount
   useEffect(() => {
-    if (!profileDataCache) {
-      fetchProfileData();
-    }
+    fetchProfileData();
   }, []);
 
   // Get mobile header title
@@ -79,9 +75,10 @@ const ProfileSection = ({
     return currentItem ? currentItem.label : "Profile";
   };
 
-  const displayName = profileData.firstName || profileData.lastName
-    ? `${profileData.firstName} ${profileData.lastName}`.trim()
-    : "User";
+  const displayName =
+    profileData.firstName || profileData.lastName
+      ? `${profileData.firstName} ${profileData.lastName}`.trim()
+      : "User";
 
   const profileContent = (
     <>
@@ -128,7 +125,9 @@ const ProfileSection = ({
 
       <div className="course-nav-container">
         <nav
-          className={`course-nav ${mobileMenuOpen ? "course-nav-mobile-open" : ""}`}
+          className={`course-nav ${
+            mobileMenuOpen ? "course-nav-mobile-open" : ""
+          }`}
           role="navigation"
           aria-label="Main navigation"
         >
@@ -172,15 +171,7 @@ ProfileSection.propTypes = {
   activePath: PropTypes.string.isRequired,
   wrapperBackground: PropTypes.string,
   useFullWidthWrapper: PropTypes.bool,
-  children: PropTypes.node
-};
-
-// Export function to update cache from outside
-export const updateProfileSectionCache = (newData) => {
-  profileDataCache = {
-    ...profileDataCache,
-    ...newData
-  };
+  children: PropTypes.node,
 };
 
 export default ProfileSection;
