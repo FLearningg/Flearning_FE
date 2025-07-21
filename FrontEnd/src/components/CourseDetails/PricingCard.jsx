@@ -239,6 +239,7 @@ const ActionButtons = ({ onBuyNowClick }) => {
   };
 
   const handleBuyNow = () => {
+    if (!currentUser) return navigate("/login");
     if (typeof onBuyNowClick === "function") {
       onBuyNowClick(); // use caller‑supplied handler
     } else {
@@ -344,12 +345,6 @@ export default function PricingCard({
   // State to manage the QR code modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const currentUser = useSelector((state) => state.auth.currentUser);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (currentUser === null) navigate("/");
-  }, [currentUser, navigate]);
-
   return (
     <>
       <div className="container-fluid d-flex justify-content-center py-3 course-price">
