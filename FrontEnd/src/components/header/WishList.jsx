@@ -23,19 +23,31 @@ function WishList() {
     };
     fetchWishlist();
   }, [dispatch, currentUser]);
+  const isDiscountValid = (discount) => {
+    if (!discount) return false;
+    if (discount.status && discount.status !== "active") return false;
+    if (discount.endDate && new Date(discount.endDate) < new Date())
+      return false;
+    if (
+      typeof discount.usageLimit === "number" &&
+      discount.usageLimit > 0 &&
+      typeof discount.usage === "number" &&
+      discount.usage >= discount.usageLimit
+    ) {
+      return false;
+    }
+    return true;
+  };
   const courseData = wishlistData?.map((course) => {
     let finalPrice = course.price;
-    // let discountText = "";
-    if (course.discountId) {
-      if (course.discountId.typee === "fixedAmount") {
+    if (isDiscountValid(course.discountId)) {
+      if (course.discountId.type === "fixedAmount") {
         finalPrice = Math.max(0, course.price - course.discountId.value);
-        // discountText = `-${course.discountId.value}$`;
-      } else if (course.discountId.typee === "percent") {
+      } else if (course.discountId.type === "percent") {
         finalPrice = Math.max(
           0,
           course.price * (1 - course.discountId.value / 100)
         );
-        // discountText = `-${course.discountId.value}%`;
       }
     }
     return {
@@ -45,7 +57,9 @@ function WishList() {
       rating: course.rating,
       enrolledCount: course.studentsEnrolled.length,
       price: `${finalPrice.toFixed(2)}`,
-      oldPrice: course.discountId ? `${course.price.toFixed(2)}` : "",
+      oldPrice: isDiscountValid(course.discountId)
+        ? `${course.price.toFixed(2)}`
+        : "",
     };
   });
   return (

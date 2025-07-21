@@ -11,6 +11,7 @@ import {
   saveTransactionToDB,
 } from "../../services/paymentService";
 import { enrollInCourses } from "../../services/courseService";
+import { increaseDiscountUsage } from "../../services/adminService";
 
 const MY_BANK = {
   BANK_ID: process.env.REACT_APP_MY_BANK_ID,
@@ -99,6 +100,26 @@ export default function QRCodePayment({ amount, content, coursesInCart }) {
             coursesInCart.map((course) => course._id)
           );
           console.log("Transaction saved successfully.");
+
+          // STEP 1.5: Increase usage for each valid discount
+          for (const course of coursesInCart) {
+            const discount = course.discountId;
+            if (
+              discount &&
+              discount.status === "active" &&
+              (!discount.endDate || new Date(discount.endDate) >= new Date()) &&
+              (typeof discount.usageLimit !== "number" ||
+                discount.usageLimit === 0 ||
+                (typeof discount.usage === "number" &&
+                  discount.usage < discount.usageLimit))
+            ) {
+              try {
+                await increaseDiscountUsage(discount._id || discount.id);
+              } catch (err) {
+                console.error("Failed to increase discount usage:", err);
+              }
+            }
+          }
 
           // STEP 2: Enroll the user in the purchased courses
           console.log("Step 2: Enrolling user in courses...");

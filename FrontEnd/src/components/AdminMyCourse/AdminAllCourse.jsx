@@ -9,6 +9,8 @@ import {
   getAdminCourses,
   deleteCourse,
   getAllCategories,
+  getAvailableDiscounts,
+  assignDiscountToCourse,
 } from "../../services/adminService";
 import { toast } from "react-toastify";
 import "../../assets/AdminMyCourse/AdminAllCourse.css";
@@ -31,6 +33,14 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [coursesPerPage] = useState(8); // 8 courses per page
+
+  // State for Apply Discount modal
+  const [showDiscountModal, setShowDiscountModal] = useState(false);
+  const [courseToDiscount, setCourseToDiscount] = useState(null);
+  const [discountValue, setDiscountValue] = useState(0);
+  const [discounts, setDiscounts] = useState([]);
+  const [selectedDiscountId, setSelectedDiscountId] = useState("");
+  const [loadingDiscounts, setLoadingDiscounts] = useState(false);
 
   // Fetch courses and categories on component mount
   useEffect(() => {
@@ -80,6 +90,7 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
 
       console.log("Transformed courses:", transformedCourses);
       setCoursesData(transformedCourses);
+      console.log('Tổng số course nhận được từ API:', transformedCourses.length, transformedCourses);
     } catch (error) {
       console.error("Error fetching courses:", error);
       setError(error.response?.data?.message || "Failed to fetch courses");
@@ -257,6 +268,11 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
       icon: <FaEdit />,
     },
     {
+      label: "Apply Discount",
+      type: "info",
+      icon: <span style={{fontWeight:600}}>%</span>,
+    },
+    {
       label: "Delete Course",
       type: "danger",
       icon: <FaTrash />,
@@ -278,12 +294,49 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
           },
         });
         break;
+      case "Apply Discount":
+        setCourseToDiscount(course);
+        setDiscountValue(0);
+        setSelectedDiscountId("");
+        setShowDiscountModal(true);
+        fetchDiscounts();
+        break;
       case "Delete Course":
         setCourseToDelete(course);
         setShowDeleteModal(true);
         break;
       default:
         break;
+    }
+  };
+
+  // Fetch available discounts
+  const fetchDiscounts = async () => {
+    setLoadingDiscounts(true);
+    try {
+      const res = await getAvailableDiscounts();
+      let discountsData = res.data?.data || res.data || [];
+      setDiscounts(discountsData);
+    } catch (err) {
+      setDiscounts([]);
+      toast.error("Failed to load discounts");
+    } finally {
+      setLoadingDiscounts(false);
+    }
+  };
+
+  // Handle apply discount
+  const handleApplyDiscount = async () => {
+    if (!selectedDiscountId) return;
+    try {
+      await assignDiscountToCourse(courseToDiscount.id, selectedDiscountId);
+      toast.success("Discount assigned successfully!");
+      setShowDiscountModal(false);
+      setCourseToDiscount(null);
+      setSelectedDiscountId("");
+      fetchCourses();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to assign discount");
     }
   };
 
@@ -617,6 +670,66 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
             </div>
           );
         })()}
+
+      {/* Apply Discount Modal */}
+      {showDiscountModal && courseToDiscount && (
+        <div className="amc-modal-overlay">
+          <div className="amc-modal">
+            <div className="amc-modal-header">
+              <h3 className="amc-modal-title">Apply Discount</h3>
+              <button className="amc-modal-close" onClick={() => setShowDiscountModal(false)}>
+                <IoClose size={20} />
+              </button>
+            </div>
+            <div className="amc-modal-body">
+              <p>
+                Apply discount for <strong>"{courseToDiscount.title}"</strong>
+              </p>
+              <div style={{margin: '16px 0'}}>
+                {loadingDiscounts ? (
+                  <span>Loading discounts...</span>
+                ) : discounts.length === 0 ? (
+                  <span>No available discounts</span>
+                ) : (
+                  <select
+                    value={selectedDiscountId}
+                    onChange={e => setSelectedDiscountId(e.target.value)}
+                    style={{width: '100%', padding: 6, border: '2px solid #ff6636', borderRadius: 4, color: '#1e1e1e'}}
+                  >
+                    <option value="">-- Select discount --</option>
+                    {discounts.map(discount => (
+                      <option key={discount._id || discount.id} value={discount._id || discount.id}>
+                        {discount.code ? `${discount.code} - ` : ''}
+                        {discount.type === 'fixedAmount'
+                          ? `${discount.value}$`
+                          : `${discount.value}%`
+                        }
+                        (exp: {discount.endDate ? new Date(discount.endDate).toLocaleDateString() : 'No expiry'})
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            </div>
+            <div className="amc-modal-footer">
+              <button
+                className="amc-modal-button amc-modal-button-secondary"
+                onClick={() => setShowDiscountModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="amc-modal-button amc-modal-button-primary"
+                onClick={handleApplyDiscount}
+                disabled={!selectedDiscountId || loadingDiscounts}
+                style={{background: '#ff6636', borderColor: '#ff6636', color: 'white'}}
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -58,3 +58,15 @@ export const deleteCourse = async (courseId) => {
     }
   }
 };
+
+// Get available discounts (active, not expired, usage not full)
+export const getAvailableDiscounts = () =>
+  apiClient.get("/discounts/available");
+
+// Assign discount to course
+export const assignDiscountToCourse = (courseId, discountId) =>
+  apiClient.post(`/courses/${courseId}/assign-discount`, { discountId });
+
+// Increase usage for discount (user)
+export const increaseDiscountUsage = (discountId) =>
+  apiClient.post(`/discounts/${discountId}/increase-usage`);

@@ -48,10 +48,10 @@ function WishListPage() {
     let finalPrice = course.price;
     // let discountText = "";
     if (course.discountId) {
-      if (course.discountId.typee === "fixedAmount") {
+      if (course.discountId.type === "fixedAmount") {
         finalPrice = Math.max(0, course.price - course.discountId.value);
         // discountText = `-${course.discountId.value}$`;
-      } else if (course.discountId.typee === "percent") {
+      } else if (course.discountId.type === "percent") {
         finalPrice = Math.max(
           0,
           course.price * (1 - course.discountId.value / 100)
