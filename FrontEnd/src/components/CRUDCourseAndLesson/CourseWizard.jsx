@@ -298,6 +298,14 @@ const CourseWizard = () => {
             : courseData.language?.toLowerCase() || "",
         duration: courseData.duration || "",
         message: messages,
+        // Extract thumbnail and trailer URLs from uploadedFiles
+        ...(courseData.uploadedFiles?.image?.url && {
+          thumbnail: courseData.uploadedFiles.image.url,
+        }),
+        ...(courseData.uploadedFiles?.video?.url && {
+          trailer: courseData.uploadedFiles.video.url,
+        }),
+        // Also include the full uploadedFiles object for backwards compatibility
         uploadedFiles: courseData.uploadedFiles,
         // Handle categoryIds array - convert to array of ObjectIds
         categoryIds: [
@@ -334,7 +342,6 @@ const CourseWizard = () => {
       } else {
         res = await apiClient.post("/admin/courses", dataToSend);
       }
-
       if (res.data && res.data.data) {
         const courseId = res.data.data._id;
 
@@ -366,27 +373,27 @@ const CourseWizard = () => {
       }
     } catch (err) {
       // For development/testing, simulate success if API fails
-      if (process.env.NODE_ENV === "development" || !err.response) {
-        // Mark the final tab as completed
-        setCompletedTabs((prev) => {
-          if (!prev.includes(3)) {
-            return [...prev, 3];
-          }
-          return prev;
-        });
+      // if (process.env.NODE_ENV === "development" || !err.response) {
+      //   // Mark the final tab as completed
+      //   setCompletedTabs((prev) => {
+      //     if (!prev.includes(3)) {
+      //       return [...prev, 3];
+      //     }
+      //     return prev;
+      //   });
 
-        // Only show success toast once
-        if (!submitToastShownRef.current) {
-          toast.success(
-            `Course ${
-              isEditMode ? "updated" : "created"
-            } successfully! (simulated)`
-          );
-          submitToastShownRef.current = true;
-        }
-        navigate("/admin/courses/all");
-        return;
-      }
+      //   // Only show success toast once
+      //   if (!submitToastShownRef.current) {
+      //     toast.success(
+      //       `Course ${
+      //         isEditMode ? "updated" : "created"
+      //       } successfully! (simulated)`
+      //     );
+      //     submitToastShownRef.current = true;
+      //   }
+      //   navigate("/admin/courses/all");
+      //   return;
+      // }
 
       // Only show error toast once
       if (!submitToastShownRef.current) {
@@ -414,6 +421,16 @@ const CourseWizard = () => {
       onPrev={handlePrev}
       completedTabs={completedTabs}
       onTabClick={handleTabClick}
+      courseId={id}
+      isEditMode={isEditMode}
+      onMediaSaved={() => {
+        // Reload course data when media is saved with small delay to ensure DB is updated
+        if (isEditMode && id) {         
+          setTimeout(() => {
+            fetchCourseData(id);
+          }, 500); // 500ms delay to ensure database update is complete
+        }
+      }}
     />,
     <CourseCurriculum
       key="step-2"

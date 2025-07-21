@@ -208,17 +208,6 @@ const StudentDashboard = () => {
       label: "Completed Courses",
       color: "#22c55e",
     },
-    {
-      id: 4,
-      icon: <FaUsers />,
-      count: [
-        ...new Set(
-          coursesWithProgress.map((course) => course.course.instructor)
-        ),
-      ].length,
-      label: "Course Instructors",
-      color: "#f59e0b",
-    },
   ];
 
   const handlePrevPage = () => {

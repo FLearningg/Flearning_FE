@@ -127,6 +127,7 @@ export default function CourseForm({
       const mediaData = {
         ...(thumbnailUrl && { thumbnail: thumbnailUrl }),
         ...(trailerUrl && { trailer: trailerUrl }),
+
         // Preserve existing curriculum/sections to avoid data loss
         ...(initialData.curriculum && { curriculum: initialData.curriculum }),
         ...(initialData.sections && { sections: initialData.sections }),

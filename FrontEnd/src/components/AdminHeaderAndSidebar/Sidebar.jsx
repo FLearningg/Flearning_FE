@@ -123,13 +123,13 @@ export function Sidebar({ open, setOpen, isMobile }) {
               active={location.pathname.endsWith("/admin/courses/all")}
               onClick={handleNavClick}
             />
-            <NavItem
+            {/* <NavItem
               href="/admin/earning"
               icon="dollar-sign"
               label="Earning"
               active={location.pathname.startsWith("/admin/earning")}
               onClick={handleNavClick}
-            />
+            /> */}
             <NavItem
               href="/admin/discounts"
               icon="tag"

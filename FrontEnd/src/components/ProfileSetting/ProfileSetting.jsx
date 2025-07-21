@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { FaCamera } from 'react-icons/fa';
-import ProfileSection, { updateProfileSectionCache } from "../CourseList/ProfileSection";
+import { FaCamera } from "react-icons/fa";
+import ProfileSection from "../CourseList/ProfileSection";
 import CustomButton from "../common/CustomButton/CustomButton";
 import Input from "../common/Input";
 import { getProfile, updateProfile } from "../../services/profileService";
@@ -14,9 +14,9 @@ const DEFAULT_PROFILE_IMAGE = "/images/defaultImageUser.png";
 // Password Input wrapper component
 const PasswordInput = ({ value, onChange, placeholder, label, disabled }) => {
   const [showPassword, setShowPassword] = useState(false);
-  
+
   return (
-    <div className="ps-form-group" style={{ position: 'relative' }}>
+    <div className="ps-form-group" style={{ position: "relative" }}>
       <Input
         variant="label"
         text={label}
@@ -30,22 +30,26 @@ const PasswordInput = ({ value, onChange, placeholder, label, disabled }) => {
         type="button"
         onClick={() => setShowPassword(!showPassword)}
         style={{
-          position: 'absolute',
-          right: '10px',
-          top: '32px',
-          background: 'none',
-          border: 'none',
-          cursor: disabled ? 'not-allowed' : 'pointer',
-          padding: '8px',
-          color: disabled ? '#ccc' : '#666',
+          position: "absolute",
+          right: "10px",
+          top: "32px",
+          background: "none",
+          border: "none",
+          cursor: disabled ? "not-allowed" : "pointer",
+          padding: "8px",
+          color: disabled ? "#ccc" : "#666",
           zIndex: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
         disabled={disabled}
       >
-        {showPassword ? <AiOutlineEye size={20} /> : <AiOutlineEyeInvisible size={20} />}
+        {showPassword ? (
+          <AiOutlineEye size={20} />
+        ) : (
+          <AiOutlineEyeInvisible size={20} />
+        )}
       </button>
     </div>
   );
@@ -115,7 +119,6 @@ const Component = () => {
         title: data.biography || "",
         userImage: data.userImage || DEFAULT_PROFILE_IMAGE,
       });
-
     } catch (error) {
       console.error("Error fetching profile:", error);
       let errorMessage = "Failed to load profile data";
@@ -127,9 +130,9 @@ const Component = () => {
         errorMessage = error.message;
       }
       setProfileError(errorMessage);
-      setProfileData(prev => ({
+      setProfileData((prev) => ({
         ...prev,
-        userImage: DEFAULT_PROFILE_IMAGE
+        userImage: DEFAULT_PROFILE_IMAGE,
       }));
     } finally {
       setIsLoadingProfile(false);
@@ -178,21 +181,12 @@ const Component = () => {
       // Update success message
       setProfileSuccess("Profile updated successfully!");
 
-      // Update profile section cache
-      updateProfileSectionCache({
-        firstName: profileData.firstName,
-        lastName: profileData.lastName,
-        biography: profileData.title,
-        userImage: profileData.userImage
-      });
-
       // Force update components and refresh data
-      setImageKey(prev => prev + 1);
+      setImageKey((prev) => prev + 1);
       await fetchProfileData();
 
       // Reload the page after successful update
       window.location.reload();
-
     } catch (error) {
       console.error("Error updating profile:", error);
       setProfileError(
@@ -206,7 +200,11 @@ const Component = () => {
   const handlePasswordSave = async () => {
     try {
       // Validate input
-      if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      if (
+        !passwordData.currentPassword ||
+        !passwordData.newPassword ||
+        !passwordData.confirmPassword
+      ) {
         setPasswordError("Please fill in all password fields");
         return;
       }
@@ -229,13 +227,13 @@ const Component = () => {
       // Call the changePassword API
       const response = await changePassword({
         currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
+        newPassword: passwordData.newPassword,
       });
 
       // Check if the response was successful
       if (response.data.message) {
         setPasswordSuccess(response.data.message);
-        
+
         // Clear password fields after successful change
         setPasswordData({
           currentPassword: "",
@@ -245,9 +243,10 @@ const Component = () => {
       }
     } catch (error) {
       console.error("Error changing password:", error);
-      
+
       // Handle specific error messages from the backend
-      const errorMessage = error.response?.data?.message || "Failed to change password";
+      const errorMessage =
+        error.response?.data?.message || "Failed to change password";
       setPasswordError(errorMessage);
     } finally {
       setIsLoadingPassword(false);
@@ -311,24 +310,19 @@ const Component = () => {
 
       if (response.data?.data?.userImage) {
         const imageUrl = response.data.data.userImage;
-        
+
         // Clear existing states
         setImagePreview(null);
         setSelectedFile(null);
-        
+
         // Update profile data with new image
-        setProfileData(prev => ({
+        setProfileData((prev) => ({
           ...prev,
-          userImage: imageUrl
+          userImage: imageUrl,
         }));
 
-        // Update profile section cache with new image
-        updateProfileSectionCache({
-          userImage: imageUrl
-        });
-        
         // Force update both components
-        setImageKey(prev => prev + 1);
+        setImageKey((prev) => prev + 1);
         setProfileSuccess("Profile and image updated successfully!");
 
         // Fetch profile data again to ensure everything is in sync
@@ -337,11 +331,12 @@ const Component = () => {
         // Reload the page after successful update
         window.location.reload();
       }
-
     } catch (error) {
       console.error("Error uploading image:", error);
       setProfileError(
-        error.response?.data?.message || error.message || "Failed to upload image"
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to upload image"
       );
     } finally {
       setIsLoading(false);
@@ -351,20 +346,17 @@ const Component = () => {
 
   // Add this to fetch initial image
   useEffect(() => {
-    const cachedImageUrl = localStorage.getItem('userProfileImage');
+    const cachedImageUrl = localStorage.getItem("userProfileImage");
     if (cachedImageUrl) {
-      setProfileData(prev => ({
+      setProfileData((prev) => ({
         ...prev,
-        userImage: cachedImageUrl
+        userImage: cachedImageUrl,
       }));
     }
   }, []);
 
   return (
-    <ProfileSection
-      activePath={location.pathname}
-      forceUpdate={imageKey}
-    >
+    <ProfileSection activePath={location.pathname} forceUpdate={imageKey}>
       <div className="page-content">
         <div className="profile-card-wrapper">
           {/* Loading State */}
@@ -389,14 +381,25 @@ const Component = () => {
                       <div className="profile-image-container">
                         <img
                           key={`profile-image-${imageKey}`}
-                          src={imagePreview || profileData.userImage || DEFAULT_PROFILE_IMAGE}
+                          src={
+                            imagePreview ||
+                            profileData.userImage ||
+                            DEFAULT_PROFILE_IMAGE
+                          }
                           alt="User profile"
-                          className={`profile-picture-img ${imageLoading ? 'loading' : ''}`}
+                          className={`profile-picture-img ${
+                            imageLoading ? "loading" : ""
+                          }`}
                           onError={(e) => {
-                            console.error("Failed to load image:", e.target.src);
+                            console.error(
+                              "Failed to load image:",
+                              e.target.src
+                            );
                             if (e.target.src !== DEFAULT_PROFILE_IMAGE) {
                               e.target.src = DEFAULT_PROFILE_IMAGE;
-                              setProfileError("Failed to load profile image. Using default image instead.");
+                              setProfileError(
+                                "Failed to load profile image. Using default image instead."
+                              );
                             }
                             setImageLoading(false);
                             e.target.onerror = null;
@@ -414,20 +417,25 @@ const Component = () => {
                             id="profile-image-input"
                             className="profile-file-input"
                           />
-                          <label htmlFor="profile-image-input" className="profile-camera-icon-wrapper">
+                          <label
+                            htmlFor="profile-image-input"
+                            className="profile-camera-icon-wrapper"
+                          >
                             <FaCamera size={24} />
                           </label>
                         </div>
                       </div>
-                      
+
                       <p className="profile-upload-hint">
-                        Image size should be under 1MB and image ratio needs to be 1:1
+                        Image size should be under 1MB and image ratio needs to
+                        be 1:1
                       </p>
 
                       {selectedFile && (
                         <div className="profile-file-info">
                           <p className="profile-file-size">
-                            Size: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                            Size: {(selectedFile.size / 1024 / 1024).toFixed(2)}{" "}
+                            MB
                           </p>
                           <div className="profile-file-actions">
                             <button
@@ -436,7 +444,9 @@ const Component = () => {
                               className="profile-action-btn profile-upload-btn"
                             >
                               {isLoading ? (
-                                <span className="profile-loading-text">Uploading...</span>
+                                <span className="profile-loading-text">
+                                  Uploading...
+                                </span>
                               ) : (
                                 <>Upload</>
                               )}
@@ -572,12 +582,14 @@ const Component = () => {
               {/* Change Password */}
               <div className="change-password-section">
                 <h3 className="section-title">Change password</h3>
-                
+
                 <PasswordInput
                   label="Current Password"
                   placeholder="Enter current password"
                   value={passwordData.currentPassword}
-                  onChange={(e) => handlePasswordInputChange("currentPassword", e.target.value)}
+                  onChange={(e) =>
+                    handlePasswordInputChange("currentPassword", e.target.value)
+                  }
                   disabled={isLoadingPassword}
                 />
 
@@ -585,7 +597,9 @@ const Component = () => {
                   label="New Password"
                   placeholder="Enter new password"
                   value={passwordData.newPassword}
-                  onChange={(e) => handlePasswordInputChange("newPassword", e.target.value)}
+                  onChange={(e) =>
+                    handlePasswordInputChange("newPassword", e.target.value)
+                  }
                   disabled={isLoadingPassword}
                 />
 
@@ -593,7 +607,9 @@ const Component = () => {
                   label="Confirm Password"
                   placeholder="Confirm new password"
                   value={passwordData.confirmPassword}
-                  onChange={(e) => handlePasswordInputChange("confirmPassword", e.target.value)}
+                  onChange={(e) =>
+                    handlePasswordInputChange("confirmPassword", e.target.value)
+                  }
                   disabled={isLoadingPassword}
                 />
 

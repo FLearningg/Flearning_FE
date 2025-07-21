@@ -43,6 +43,9 @@ const CourseInfo = ({
     commentPage * commentsPerPage
   );
 
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+
   const tabs = [
     { id: "description", label: "Description" },
     { id: "notes", label: "Lesson Notes" },
@@ -71,9 +74,21 @@ const CourseInfo = ({
   };
 
   const handleDelete = (commentId) => {
-    if (window.confirm("Delete this comment?")) {
-      onDeleteComment && onDeleteComment(commentId);
+    setPendingDeleteId(commentId);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (pendingDeleteId) {
+      onDeleteComment && onDeleteComment(pendingDeleteId);
+      setPendingDeleteId(null);
+      setDeleteModalOpen(false);
     }
+  };
+
+  const cancelDelete = () => {
+    setPendingDeleteId(null);
+    setDeleteModalOpen(false);
   };
 
   const renderContent = () => {
@@ -281,6 +296,18 @@ const CourseInfo = ({
       </div>
 
       <div className="ci-tab-content">{renderContent()}</div>
+      {deleteModalOpen && (
+        <div className="ci-modal-overlay">
+          <div className="ci-modal">
+            <h4>Confirm Delete</h4>
+            <p>Are you sure you want to delete this comment?</p>
+            <div className="ci-modal-actions">
+              <button onClick={confirmDelete}>Yes, Delete</button>
+              <button onClick={cancelDelete}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

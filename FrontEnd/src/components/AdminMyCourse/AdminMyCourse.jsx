@@ -262,12 +262,47 @@ function AdminMyCourse() {
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    setShowDeleteModal(false);
-    // TODO: Implement delete functionality
-    console.log("Delete course:", id);
-    // You can add delete API call here
-    // Example: deleteCourse(id).then(() => navigate('/admin/courses'));
+  const confirmDelete = async () => {
+    if (courseData) {
+      // Check if course has enrolled students
+      const studentsEnrolled =
+        courseData.enrollmentCount ||
+        (courseData.studentsEnrolled ? courseData.studentsEnrolled.length : 0);
+
+      if (studentsEnrolled > 0) {
+        // Import toast if not already imported
+        const { toast } = await import("react-toastify");
+        toast.info(
+          `Course "${
+            courseData.title
+          }" has ${studentsEnrolled} enrolled student${
+            studentsEnrolled > 1 ? "s" : ""
+          }. Deletion cancelled for student protection.`
+        );
+        setShowDeleteModal(false);
+        return;
+      }
+
+      try {
+        // Import deleteCourse function
+        const { deleteCourse } = await import("../../services/adminService");
+        const response = await deleteCourse(id);
+        console.log("Delete course response:", response);
+
+        // Import toast for success message
+        const { toast } = await import("react-toastify");
+        toast.success("Course deleted successfully");
+
+        // Navigate back to courses list
+        navigate("/admin/courses/all");
+      } catch (error) {
+        console.error("Error deleting course:", error);
+        const { toast } = await import("react-toastify");
+        toast.error(error.response?.data?.message || "Failed to delete course");
+      } finally {
+        setShowDeleteModal(false);
+      }
+    }
   };
 
   const cancelDelete = () => {
@@ -761,59 +796,102 @@ function AdminMyCourse() {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="amc-modal-overlay">
-          <div className="amc-modal">
-            <div className="amc-modal-header">
-              <h3 className="amc-modal-title">Delete Course</h3>
-              <button className="amc-modal-close" onClick={cancelDelete}>
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                </svg>
-              </button>
-            </div>
-            <div className="amc-modal-body">
-              <div className="amc-modal-icon">
-                <svg
-                  width="48"
-                  height="48"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
-                </svg>
+      {showDeleteModal &&
+        courseData &&
+        (() => {
+          const studentsEnrolled =
+            courseData.enrollmentCount ||
+            (courseData.studentsEnrolled
+              ? courseData.studentsEnrolled.length
+              : 0);
+          const hasStudents = studentsEnrolled > 0;
+
+          return (
+            <div className="amc-modal-overlay">
+              <div className={`amc-modal ${hasStudents ? "info-modal" : ""}`}>
+                <div className="amc-modal-header">
+                  <h3 className="amc-modal-title">
+                    {hasStudents ? "Course Information" : "Delete Course"}
+                  </h3>
+                  <button className="amc-modal-close" onClick={cancelDelete}>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="amc-modal-body">
+                  <div className="amc-modal-icon">
+                    <svg
+                      width="48"
+                      height="48"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                    </svg>
+                  </div>
+                  <h4 className="amc-modal-message">
+                    {hasStudents
+                      ? "Cannot Delete Course with Enrolled Students"
+                      : "Are you sure you want to delete this course?"}
+                  </h4>
+                  <p className="amc-modal-description">
+                    {hasStudents ? (
+                      <>
+                        <strong>"{courseData.title}"</strong> currently has{" "}
+                        <strong>
+                          {studentsEnrolled} enrolled student
+                          {studentsEnrolled > 1 ? "s" : ""}
+                        </strong>
+                        . This course cannot be deleted to protect student
+                        learning progress and data.
+                      </>
+                    ) : (
+                      <>
+                        <strong>"{courseData.title}"</strong> will be
+                        permanently deleted. This action cannot be undone and
+                        all course data will be lost.
+                      </>
+                    )}
+                  </p>
+                  <div className="amc-modal-warning-info">
+                    <p className="amc-students-info">
+                      <strong>Students enrolled:</strong> {studentsEnrolled}
+                    </p>
+                    {hasStudents && (
+                      <p className="amc-warning-text">
+                        ⚠️ To delete this course, please wait for students to
+                        complete their learning or contact support for
+                        assistance.
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="amc-modal-footer">
+                  <button
+                    className="amc-modal-button amc-modal-button-secondary"
+                    onClick={cancelDelete}
+                  >
+                    {hasStudents ? "Understood" : "Cancel"}
+                  </button>
+                  {!hasStudents && (
+                    <button
+                      className="amc-modal-button amc-modal-button-danger"
+                      onClick={confirmDelete}
+                    >
+                      Delete Course
+                    </button>
+                  )}
+                </div>
               </div>
-              <h4 className="amc-modal-message">
-                Are you sure you want to delete this course?
-              </h4>
-              <p className="amc-modal-description">
-                <strong>"{courseData?.title}"</strong> will be permanently
-                deleted. This action cannot be undone and all course data will
-                be lost.
-              </p>
             </div>
-            <div className="amc-modal-footer">
-              <button
-                className="amc-modal-button amc-modal-button-secondary"
-                onClick={cancelDelete}
-              >
-                Cancel
-              </button>
-              <button
-                className="amc-modal-button amc-modal-button-danger"
-                onClick={confirmDelete}
-              >
-                Delete Course
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          );
+        })()}
     </>
   );
 }

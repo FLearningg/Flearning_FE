@@ -35,7 +35,11 @@ export const getRecentBankTransactions = async () => {
 /**
  * Saves a processed bank transaction to your application's database.
  */
-export const saveTransactionToDB = async (bankTransaction, currentUser) => {
+export const saveTransactionToDB = async (
+  bankTransaction,
+  currentUser,
+  courseIdArray
+) => {
   if (!currentUser?._id) {
     throw new Error("Cannot save transaction without a valid user ID.");
   }
@@ -48,14 +52,17 @@ export const saveTransactionToDB = async (bankTransaction, currentUser) => {
     const payload = {
       userId: currentUser._id,
       paymentId: createCustomPaymentId(bankTransaction["Mã GD"]),
-      gatewayId: generateGatewayId(),
+      gatewayTransactionId: generateGatewayId(),
       type: "sale",
       amount: Number(bankTransaction["Giá trị"]),
       currency: "VND",
       createdAt: transactionDate,
       updatedAt: transactionDate,
       description: bankTransaction["Mô tả"],
+      courseId: courseIdArray || [],
     };
+
+    console.log("Saving transaction payload:", payload);
 
     const response = await apiClient.post("/payment/transactions", payload);
     return response.data;

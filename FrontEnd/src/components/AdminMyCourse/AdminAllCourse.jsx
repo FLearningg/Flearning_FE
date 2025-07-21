@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import Card from "../common/Card/Card";
 import SearchBox from "../common/search/SearchBox/SearchBox";
+import { IoClose, IoWarning } from "react-icons/io5";
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import {
   getAdminCourses,
   deleteCourse,
@@ -13,7 +15,6 @@ import "../../assets/AdminMyCourse/AdminAllCourse.css";
 
 const AdminAllCourse = ({ title = "My Courses" }) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const [sortBy, setSortBy] = useState("latest");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [ratingFilter, setRatingFilter] = useState("all");
@@ -22,6 +23,10 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
+
+  // Delete modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -156,10 +161,17 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
           new Date(b.originalData?.createdAt || 0)
         );
       case "popular":
-        return (
-          parseInt(b.students.replace(/,/g, "")) -
-          parseInt(a.students.replace(/,/g, ""))
-        );
+        const aCount = Array.isArray(a.originalData?.studentsEnrolled)
+          ? a.originalData.studentsEnrolled.length
+          : a.originalData?.enrolledStudents ||
+            a.originalData?.studentsCount ||
+            0;
+        const bCount = Array.isArray(b.originalData?.studentsEnrolled)
+          ? b.originalData.studentsEnrolled.length
+          : b.originalData?.enrolledStudents ||
+            b.originalData?.studentsCount ||
+            0;
+        return bCount - aCount;
       case "rating":
         return b.rating - a.rating;
       default:
@@ -237,17 +249,17 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
     {
       label: "View Details",
       type: "primary",
-      icon: "👁️",
+      icon: <FaEye />,
     },
     {
       label: "Edit Course",
       type: "secondary",
-      icon: "✏️",
+      icon: <FaEdit />,
     },
     {
       label: "Delete Course",
       type: "danger",
-      icon: "🗑️",
+      icon: <FaTrash />,
     },
   ];
 
@@ -267,26 +279,59 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
         });
         break;
       case "Delete Course":
-        if (window.confirm("Are you sure you want to delete this course?")) {
-          handleDeleteCourse(course.id);
-        }
+        setCourseToDelete(course);
+        setShowDeleteModal(true);
         break;
       default:
         break;
     }
   };
 
-  // Handle course deletion
-  const handleDeleteCourse = async (courseId) => {
-    try {
-      const response = await deleteCourse(courseId);
-      console.log("Delete course response:", response);
-      toast.success("Course deleted successfully");
-      // Refresh the courses list
-      fetchCourses();
-    } catch (error) {
-      console.error("Error deleting course:", error);
-      toast.error(error.response?.data?.message || "Failed to delete course");
+  // Modal handlers
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setCourseToDelete(null);
+  };
+
+  const confirmDelete = async () => {
+    if (courseToDelete) {
+      // Check if course has enrolled students
+      const studentsCount = parseInt(courseToDelete.students) || 0;
+      const originalData = courseToDelete.originalData;
+      const enrolledStudents =
+        originalData?.studentsCount ||
+        originalData?.enrolledStudents ||
+        originalData?.studentsEnrolled?.length ||
+        studentsCount;
+
+      if (enrolledStudents > 0) {
+        // If has students, just close modal and show info message
+        toast.info(
+          `Course "${
+            courseToDelete.title
+          }" has ${enrolledStudents} enrolled student${
+            enrolledStudents > 1 ? "s" : ""
+          }. Deletion cancelled for student protection.`
+        );
+        setShowDeleteModal(false);
+        setCourseToDelete(null);
+        return;
+      }
+
+      // Only delete if no students enrolled
+      try {
+        const response = await deleteCourse(courseToDelete.id);
+        console.log("Delete course response:", response);
+        toast.success("Course deleted successfully");
+        // Refresh the courses list
+        fetchCourses();
+      } catch (error) {
+        console.error("Error deleting course:", error);
+        toast.error(error.response?.data?.message || "Failed to delete course");
+      } finally {
+        setShowDeleteModal(false);
+        setCourseToDelete(null);
+      }
     }
   };
 
@@ -458,15 +503,7 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
             onClick={goToPrevPage}
             disabled={currentPage === 1}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M15 18L9 12L15 6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <MdKeyboardArrowLeft size={20} />
           </button>
 
           <div className="aac-page-numbers">
@@ -490,18 +527,96 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
             onClick={goToNextPage}
             disabled={currentPage === totalPages}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M9 18L15 12L9 6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <MdKeyboardArrowRight size={20} />
           </button>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal &&
+        courseToDelete &&
+        (() => {
+          const studentsCount = parseInt(courseToDelete.students) || 0;
+          const originalData = courseToDelete.originalData;
+          const enrolledStudents =
+            originalData?.studentsCount ||
+            originalData?.enrolledStudents ||
+            originalData?.studentsEnrolled?.length ||
+            studentsCount;
+          const hasStudents = enrolledStudents > 0;
+
+          return (
+            <div className="amc-modal-overlay">
+              <div className={`amc-modal ${hasStudents ? "info-modal" : ""}`}>
+                <div className="amc-modal-header">
+                  <h3 className="amc-modal-title">
+                    {hasStudents ? "Course Information" : "Delete Course"}
+                  </h3>
+                  <button className="amc-modal-close" onClick={cancelDelete}>
+                    <IoClose size={20} />
+                  </button>
+                </div>
+                <div className="amc-modal-body">
+                  <div className="amc-modal-icon">
+                    <IoWarning size={48} />
+                  </div>
+                  <h4 className="amc-modal-message">
+                    {hasStudents
+                      ? "Cannot Delete Course with Enrolled Students"
+                      : "Are you sure you want to delete this course?"}
+                  </h4>
+                  <p className="amc-modal-description">
+                    {hasStudents ? (
+                      <>
+                        <strong>"{courseToDelete.title}"</strong> currently has{" "}
+                        <strong>
+                          {enrolledStudents} enrolled student
+                          {enrolledStudents > 1 ? "s" : ""}
+                        </strong>
+                        . This course cannot be deleted to protect student
+                        learning progress and data.
+                      </>
+                    ) : (
+                      <>
+                        <strong>"{courseToDelete.title}"</strong> will be
+                        permanently deleted. This action cannot be undone and
+                        all course data will be lost.
+                      </>
+                    )}
+                  </p>
+                  <div className="amc-modal-warning-info">
+                    <p className="amc-students-info">
+                      <strong>Students enrolled:</strong> {enrolledStudents}
+                    </p>
+                    {hasStudents && (
+                      <p className="amc-warning-text">
+                        ⚠️ To delete this course, please wait for students to
+                        complete their learning or contact support for
+                        assistance.
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="amc-modal-footer">
+                  <button
+                    className="amc-modal-button amc-modal-button-secondary"
+                    onClick={cancelDelete}
+                  >
+                    {hasStudents ? "Understood" : "Cancel"}
+                  </button>
+                  {!hasStudents && (
+                    <button
+                      className="amc-modal-button amc-modal-button-danger"
+                      onClick={confirmDelete}
+                    >
+                      Delete Course
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
     </div>
   );
 };
