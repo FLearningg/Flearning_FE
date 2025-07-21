@@ -93,7 +93,11 @@ export default function QRCodePayment({ amount, content, coursesInCart }) {
         try {
           // STEP 1: Save the transaction to your database
           console.log("Step 1: Saving transaction to DB...");
-          await saveTransactionToDB(matchedTransaction, currentUser);
+          await saveTransactionToDB(
+            matchedTransaction,
+            currentUser,
+            coursesInCart.map((course) => course._id)
+          );
           console.log("Transaction saved successfully.");
 
           // STEP 2: Enroll the user in the purchased courses

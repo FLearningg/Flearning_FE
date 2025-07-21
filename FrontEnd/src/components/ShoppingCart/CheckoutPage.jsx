@@ -210,7 +210,7 @@ export default function CheckoutPage() {
             ))}
             <PaymentDetails
               selectedMethod={selectedPayment}
-              qrAmount={Math.floor(orderTotals.total * 25000)}
+              qrAmount="{Math.floor(orderTotals.total * 25000)}"
               qrContent={`COURSE${generateContent(currentUser?._id)}`}
               cartCourses={processedCourses}
             />
