@@ -298,6 +298,14 @@ const CourseWizard = () => {
             : courseData.language?.toLowerCase() || "",
         duration: courseData.duration || "",
         message: messages,
+        // Extract thumbnail and trailer URLs from uploadedFiles
+        ...(courseData.uploadedFiles?.image?.url && {
+          thumbnail: courseData.uploadedFiles.image.url,
+        }),
+        ...(courseData.uploadedFiles?.video?.url && {
+          trailer: courseData.uploadedFiles.video.url,
+        }),
+        // Also include the full uploadedFiles object for backwards compatibility
         uploadedFiles: courseData.uploadedFiles,
         // Handle categoryIds array - convert to array of ObjectIds
         categoryIds: [
@@ -334,7 +342,6 @@ const CourseWizard = () => {
       } else {
         res = await apiClient.post("/admin/courses", dataToSend);
       }
-
       if (res.data && res.data.data) {
         const courseId = res.data.data._id;
 
@@ -414,6 +421,16 @@ const CourseWizard = () => {
       onPrev={handlePrev}
       completedTabs={completedTabs}
       onTabClick={handleTabClick}
+      courseId={id}
+      isEditMode={isEditMode}
+      onMediaSaved={() => {
+        // Reload course data when media is saved with small delay to ensure DB is updated
+        if (isEditMode && id) {         
+          setTimeout(() => {
+            fetchCourseData(id);
+          }, 500); // 500ms delay to ensure database update is complete
+        }
+      }}
     />,
     <CourseCurriculum
       key="step-2"

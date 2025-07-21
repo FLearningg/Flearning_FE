@@ -1,17 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Play,
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  Link,
-  List,
-  ListOrdered,
-  Plus,
-  ImageIcon,
-  Trash2,
-} from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import "../../assets/CRUDCourseAndLesson/CourseFormAdvance.css";
 import ProgressTabs from "./ProgressTabs";
 import Input from "../common/Input";
@@ -25,6 +13,9 @@ export default function CourseForm({
   initialData = {},
   completedTabs = [],
   onTabClick = () => {},
+  courseId = null,
+  isEditMode = false,
+  onMediaSaved = () => {},
 }) {
   const [courseInputs, setCourseInputs] = useState(
     initialData.detail?.willLearn?.length > 0
@@ -61,9 +52,99 @@ export default function CourseForm({
   const [loading, setLoading] = useState(false);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [uploadingTrailer, setUploadingTrailer] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const MAX_INPUTS = 8;
+
+  // Helper function to move files from temporary to course folder
+  const moveFilesToCourseFolder = async (courseId, mediaUrls) => {
+    if (!courseId || !mediaUrls) return mediaUrls;
+
+    try {
+      const movePromises = [];
+      const updatedUrls = { ...mediaUrls };
+
+      // Move thumbnail if it's in temporary folder
+      if (mediaUrls.thumbnail && mediaUrls.thumbnail.includes("temporary/")) {
+        const moveRequest = apiClient.post("/admin/move-file", {
+          fromUrl: mediaUrls.thumbnail,
+          courseId: courseId,
+          fileType: "thumbnail",
+        });
+        movePromises.push(
+          moveRequest
+            .then((res) => {
+              if (res.data?.url) {
+                updatedUrls.thumbnail = res.data.url;
+              }
+            })
+            .catch((err) => {
+              console.error("Failed to move thumbnail:", err);
+            })
+        );
+      }
+
+      // Move trailer if it's in temporary folder
+      if (mediaUrls.trailer && mediaUrls.trailer.includes("temporary/")) {
+        const moveRequest = apiClient.post("/admin/move-file", {
+          fromUrl: mediaUrls.trailer,
+          courseId: courseId,
+          fileType: "trailer",
+        });
+        movePromises.push(
+          moveRequest
+            .then((res) => {
+              if (res.data?.url) {
+                updatedUrls.trailer = res.data.url;
+              }
+            })
+            .catch((err) => {
+              console.error("Failed to move trailer:", err);
+            })
+        );
+      }
+
+      // Wait for all moves to complete
+      if (movePromises.length > 0) {
+        await Promise.all(movePromises);
+        console.log("Files moved to course folder:", updatedUrls);
+        return updatedUrls;
+      }
+
+      return mediaUrls;
+    } catch (error) {
+      console.error("Error moving files to course folder:", error);
+      return mediaUrls;
+    }
+  };
+
+  // Helper function to save media to database immediately
+  const saveMediaToDatabase = async (thumbnailUrl, trailerUrl) => {
+    try {
+      // Only save if we're in edit mode and have a courseId
+      if (!isEditMode || !courseId) {
+        return true; // Return true for new course creation (not an error)
+      }
+
+      const mediaData = {
+        ...(thumbnailUrl && { thumbnail: thumbnailUrl }),
+        ...(trailerUrl && { trailer: trailerUrl }),
+      };
+
+      // Save to database
+      await apiClient.put(`/admin/courses/${courseId}`, mediaData);
+
+      // Only trigger reload of course data to ensure UI consistency
+      onMediaSaved();
+
+      return true;
+    } catch (error) {
+      console.error("Failed to save media to database:", error);
+      toast.error(
+        "Failed to save to database: " +
+          (error.response?.data?.message || error.message)
+      );
+      return false;
+    }
+  };
 
   // Update state when initialData changes
   useEffect(() => {
@@ -92,19 +173,25 @@ export default function CourseForm({
     // Always set description, even if empty
     setDescription(initialData.detail?.description || "");
 
-    // Set media URLs from initialData
+    // Set media URLs from initialData - priority: uploadedFiles > direct fields
     const newThumbnailUrl =
       initialData.uploadedFiles?.image?.url || initialData.thumbnail || null;
     const newTrailerUrl =
       initialData.uploadedFiles?.video?.url || initialData.trailer || null;
 
-    setThumbnailUrl(newThumbnailUrl);
-    setTrailerUrl(newTrailerUrl);
+    // Force update URLs even if they haven't changed to ensure UI consistency
+    if (newThumbnailUrl !== thumbnailUrl) {
+      setThumbnailUrl(newThumbnailUrl);
+    }
+
+    if (newTrailerUrl !== trailerUrl) {
+      setTrailerUrl(newTrailerUrl);
+    }
 
     // Cập nhật preview từ url nếu có (khi quay lại tab)
     if (newThumbnailUrl) setThumbnailPreview(newThumbnailUrl);
     if (newTrailerUrl) setTrailerPreview(newTrailerUrl);
-  }, [initialData]);
+  }, [initialData, thumbnailUrl, trailerUrl]);
 
   const updateInput = (index, value, type) => {
     const newInputs =
@@ -135,27 +222,56 @@ export default function CourseForm({
   const handleThumbnailChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Set file and preview immediately for better UX
       setThumbnailFile(file);
       setThumbnailPreview(URL.createObjectURL(file));
-      setError("");
 
       // Auto upload immediately
       setUploadingThumbnail(true);
       try {
         const formData = new FormData();
         formData.append("file", file);
+
+        // Add courseId to help server determine the correct folder
+        if (courseId) {
+          formData.append("courseId", courseId);
+        }
+
+        // Specify this is a course thumbnail
+        formData.append("fileType", "thumbnail");
+
         const res = await apiClient.post("/admin/upload", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
+
         if (!res.data || !res.data.url) {
           throw new Error(res.data?.message || "Failed to upload thumbnail");
         }
-        setThumbnailUrl(res.data.url);
+
+        // Set new URL and clear file after successful upload
+        const newThumbnailUrl = res.data.url;
+
+        // Update state immediately
+        setThumbnailUrl(newThumbnailUrl);
         setThumbnailFile(null);
-        toast.success("Thumbnail uploaded successfully!");
+
+        // Save to database immediately with the NEW URL (not state)
+        const saveResult = await saveMediaToDatabase(
+          newThumbnailUrl,
+          trailerUrl
+        );
+
+        if (saveResult) {
+          toast.success("Thumbnail uploaded and saved successfully!");
+        } else {
+          toast.warn("Thumbnail uploaded but failed to save to database");
+        }
       } catch (err) {
-        setError(err.message || "Failed to upload thumbnail");
+        console.error("Thumbnail upload error:", err);
         toast.error(err.message || "Failed to upload thumbnail");
+        // Clear preview on error
+        setThumbnailPreview(null);
+        setThumbnailFile(null);
       } finally {
         setUploadingThumbnail(false);
       }
@@ -165,27 +281,56 @@ export default function CourseForm({
   const handleTrailerChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Set file and preview immediately for better UX
       setTrailerFile(file);
       setTrailerPreview(URL.createObjectURL(file));
-      setError("");
 
       // Auto upload immediately
       setUploadingTrailer(true);
       try {
         const formData = new FormData();
         formData.append("file", file);
+
+        // Add courseId to help server determine the correct folder
+        if (courseId) {
+          formData.append("courseId", courseId);
+        }
+
+        // Specify this is a course trailer
+        formData.append("fileType", "trailer");
+
         const res = await apiClient.post("/admin/upload", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
+
         if (!res.data || !res.data.url) {
           throw new Error(res.data?.message || "Failed to upload trailer");
         }
-        setTrailerUrl(res.data.url);
+
+        // Set new URL and clear file after successful upload
+        const newTrailerUrl = res.data.url;
+
+        // Update state immediately
+        setTrailerUrl(newTrailerUrl);
         setTrailerFile(null);
-        toast.success("Trailer uploaded successfully!");
+
+        // Save to database immediately with the NEW URL (not state)
+        const saveResult = await saveMediaToDatabase(
+          thumbnailUrl,
+          newTrailerUrl
+        );
+
+        if (saveResult) {
+          toast.success("Trailer uploaded and saved successfully!");
+        } else {
+          toast.warn("Trailer uploaded but failed to save to database");
+        }
       } catch (err) {
-        setError(err.message || "Failed to upload trailer");
+        console.error("Trailer upload error:", err);
         toast.error(err.message || "Failed to upload trailer");
+        // Clear preview on error
+        setTrailerPreview(null);
+        setTrailerFile(null);
       } finally {
         setUploadingTrailer(false);
       }
@@ -196,18 +341,22 @@ export default function CourseForm({
     setThumbnailUrl(null);
     setThumbnailFile(null);
     setThumbnailPreview(null);
+    // Reset file input
+    const input = document.getElementById("image-upload");
+    if (input) input.value = "";
   };
 
   const removeTrailer = () => {
     setTrailerUrl(null);
     setTrailerFile(null);
     setTrailerPreview(null);
+    // Reset file input
+    const input = document.getElementById("video-upload");
+    if (input) input.value = "";
   };
 
   const handleSaveNext = async () => {
     setLoading(true);
-    setError("");
-    setSuccess("");
     try {
       // Upload any pending files first
       if (thumbnailFile) {
@@ -218,8 +367,12 @@ export default function CourseForm({
       }
 
       let uploadedFiles = {};
-      if (thumbnailUrl) uploadedFiles.image = { url: thumbnailUrl };
-      if (trailerUrl) uploadedFiles.video = { url: trailerUrl };
+      if (thumbnailUrl) {
+        uploadedFiles.image = { url: thumbnailUrl };
+      }
+      if (trailerUrl) {
+        uploadedFiles.video = { url: trailerUrl };
+      }
 
       const data = {
         detail: {
@@ -230,9 +383,28 @@ export default function CourseForm({
         },
         uploadedFiles,
       };
+
+      // If in edit mode and files are in temporary folder, try to move them
+      if (isEditMode && courseId && (thumbnailUrl || trailerUrl)) {
+        const movedUrls = await moveFilesToCourseFolder(courseId, {
+          thumbnail: thumbnailUrl,
+          trailer: trailerUrl,
+        });
+
+        // Update URLs if they were moved
+        if (movedUrls.thumbnail !== thumbnailUrl) {
+          setThumbnailUrl(movedUrls.thumbnail);
+          data.uploadedFiles.image = { url: movedUrls.thumbnail };
+        }
+        if (movedUrls.trailer !== trailerUrl) {
+          setTrailerUrl(movedUrls.trailer);
+          data.uploadedFiles.video = { url: movedUrls.trailer };
+        }
+      }
+
       onNext(data);
     } catch (err) {
-      setError(err.message || "Failed to save advance info");
+      console.error("Save next error:", err);
       toast.error(err.message || "Failed to save advance info");
     } finally {
       setLoading(false);
@@ -292,7 +464,7 @@ export default function CourseForm({
     onRemove,
     uploading
   ) => {
-    // Use URL as preview if available, otherwise use preview state
+    // Priority: url > preview (url is uploaded, preview is local)
     const displayUrl = url || preview;
     const isUploaded = !!url;
 
@@ -323,36 +495,44 @@ export default function CourseForm({
               </button>
             </div>
             <p className="media-status">
-              {isUploaded ? "✓ Uploaded successfully" : "📁 Uploading..."}
+              {isUploaded
+                ? "✓ Uploaded successfully"
+                : uploading
+                ? "📁 Uploading..."
+                : "📁 Ready to upload"}
             </p>
           </div>
         )}
 
-        {/* Upload area - show if no URL or when uploading */}
-        {(!displayUrl || uploading) && (
-          <div className="upload-card">
-            {icon}
-            <input
-              type="file"
-              accept={accept}
-              id={`${type}-upload`}
-              style={{ display: "none" }}
-              onChange={onChange}
-              disabled={uploading}
-            />
-            <CustomButton
-              color="primary"
-              type="normal"
-              size="small"
-              onClick={() => document.getElementById(`${type}-upload`).click()}
-              disabled={uploading}
-            >
-              {uploading
-                ? "Uploading..."
-                : `Upload ${type === "image" ? "Image" : "Video"}`}
-            </CustomButton>
-          </div>
-        )}
+        {/* Upload area - always show to allow re-uploading */}
+        <div className="upload-card">
+          {!displayUrl && icon}
+          <input
+            type="file"
+            accept={accept}
+            id={`${type}-upload`}
+            style={{ display: "none" }}
+            onChange={onChange}
+            disabled={uploading}
+          />
+          <CustomButton
+            color={displayUrl ? "grey" : "primary"}
+            type="normal"
+            size="small"
+            onClick={() => {
+              const input = document.getElementById(`${type}-upload`);
+              input.value = ""; // Reset input to allow selecting the same file
+              input.click();
+            }}
+            disabled={uploading}
+          >
+            {uploading
+              ? "Uploading..."
+              : displayUrl
+              ? `Change ${type === "image" ? "Image" : "Video"}`
+              : `Upload ${type === "image" ? "Image" : "Video"}`}
+          </CustomButton>
+        </div>
       </div>
     );
   };
@@ -391,7 +571,7 @@ export default function CourseForm({
                 "image",
                 "Course Thumbnail",
                 "Upload your course thumbnail here. Important guidelines: 1200x800 pixels. Supported: .jpg, .jpeg, .png",
-                <ImageIcon className="upload-icon" />,
+                null,
                 "image/*",
                 thumbnailFile,
                 thumbnailPreview,
@@ -405,7 +585,7 @@ export default function CourseForm({
                 "video",
                 "Course Trailer",
                 "Promo videos increase enrollment 5–10X. Make it awesome!",
-                <Play className="upload-icon" />,
+                null,
                 "video/*",
                 trailerFile,
                 trailerPreview,
