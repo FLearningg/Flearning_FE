@@ -132,13 +132,12 @@ export default function SingleCourse() {
   ];
 
   const subtitle = course.subTitle ?? "S-Subtitle";
-  const instructors = course.instructors ?? [
-    { name: "Thien Huynh", img: "/images/connect_us.png" },
-  ];
   const heroImage =
     course.thumbnail ?? "/images/two-business-partners-working-office.png";
-  const trailer = /*course.trailer ??*/ {
-    url: "https://video.twimg.com/ext_tw_video/1009501301976326144/pu/vid/1280x720/oGf8vbus_bDega0M.mp4?tag=3",
+  const trailer = {
+    url:
+      course.trailer ||
+      "https://video.twimg.com/ext_tw_video/1009501301976326144/pu/vid/1280x720/oGf8vbus_bDega0M.mp4?tag=3",
   };
 
   const detail = course.detail ?? {};
@@ -228,23 +227,6 @@ export default function SingleCourse() {
       { icon: MessageCircle, label: "Message" },
     ],
   };
-
-  const rating = [
-    { rateStar: 5 },
-    { rateStar: 5 },
-    { rateStar: 5 },
-    { rateStar: 5 },
-    { rateStar: 5 },
-    { rateStar: 5 },
-    { rateStar: 5 },
-    { rateStar: 5 },
-    { rateStar: 4 },
-    { rateStar: 4 },
-    { rateStar: 4 },
-    { rateStar: 3 },
-    { rateStar: 2 },
-    { rateStar: 1 },
-  ];
 
   const curriculum = {
     sections: course.sections ?? [
@@ -395,9 +377,6 @@ export default function SingleCourse() {
               breadcrumb={breadcrumbData}
               title={title}
               subtitle={subtitle}
-              instructors={instructors}
-              rating={rating.overall}
-              totalRatings={rating.totalRatings}
               heroImage={heroImage}
               trailer={trailer}
               activeTab={null}

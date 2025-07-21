@@ -31,62 +31,6 @@ function Breadcrumb({ breadcrumb }) {
   );
 }
 
-function Instructors({ instructors }) {
-  return (
-    <div className="d-flex align-items-center">
-      <div className="d-flex me-3 instructors-container">
-        {instructors.map((inst, idx) => (
-          <div
-            key={inst.name}
-            className="rounded-circle border border-white bg-light overflow-hidden instructor-avatar"
-            style={{
-              marginRight: idx === 0 ? "-8px" : undefined,
-              zIndex: instructors.length - idx,
-            }}
-          >
-            <img
-              src={inst.img || "/placeholder.svg"}
-              alt={`${inst.name}'s avatar`}
-              className="instructor-avatar-image"
-            />
-          </div>
-        ))}
-      </div>
-      <div className="">
-        <p className="small text-muted mb-1 created-by">Created by:</p>
-        <p className="fs-5 fw-medium text-dark mb-0 creator">
-          {instructors.map((inst) => inst.name).join(" • ")}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function RatingStars({ rating, totalRatings }) {
-  return (
-    <div className="d-flex align-items-center gap-3">
-      <div className="d-flex align-items-center gap-1">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Star
-            key={i}
-            size={24}
-            fill={i < Math.round(rating) ? "#fd8e1f" : "none"}
-            color="#fd8e1f"
-          />
-        ))}
-      </div>
-      <div className="text-dark">
-        <span className="fs-4 fw-bold">{rating}</span>
-        {typeof totalRatings === "number" && (
-          <span className="text-muted ms-2">
-            ({totalRatings.toLocaleString()} Ratings)
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function HeroImage({ heroImage, trailer }) {
   const [playing, setPlaying] = useState(false);
 
@@ -164,9 +108,6 @@ export default function CourseHeader({
   breadcrumb,
   title,
   subtitle,
-  instructors,
-  rating,
-  totalRatings,
   heroImage,
   trailer,
   activeTab,
@@ -198,10 +139,6 @@ export default function CourseHeader({
             <p className="fs-4 text-secondary mb-5 course-subtitle">
               {subtitle}
             </p>
-            <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-4 pt-4">
-              <Instructors instructors={instructors} />
-              <RatingStars rating={rating} totalRatings={totalRatings} />
-            </div>
             <div className="row mt-5">
               <div className="col-12">
                 <HeroImage heroImage={heroImage} trailer={trailer?.url} />
