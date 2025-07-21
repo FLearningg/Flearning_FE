@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { addToCart } from "../../services/cartService";
 import { useState } from "react";
 import QRCodePayment from "../ShoppingCart/QRCodePayment";
+import { useEffect } from "react";
 
 const ICON_MAP = {
   Level: BarChart3,
@@ -342,6 +343,12 @@ export default function PricingCard({
 }) {
   // State to manage the QR code modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const currentUser = useSelector((state) => state.auth.currentUser);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (currentUser === null) navigate("/");
+  }, [currentUser, navigate]);
 
   return (
     <>
@@ -389,7 +396,9 @@ export default function PricingCard({
           <QRCodePayment
             amount={Math.floor(currentPrice * 25000)}
             // Create a unique transaction content string for "Buy Now"
-            content={`COURSE${course._id.slice(-6)}`}
+            content={`COURSE${course._id.slice(-6)}${
+              currentUser?._id || "guest"
+            }`}
             // For a single purchase, the "cart" is just this one course
             coursesInCart={[course]}
           />
