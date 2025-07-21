@@ -1,15 +1,29 @@
 import { Star, Menu } from "lucide-react";
 import { useState } from "react";
 import "../../assets/CourseDetails/SingleCourse.css"; // Import the new CSS file
+import { Link } from "react-router-dom";
 
 function Breadcrumb({ breadcrumb }) {
+  if (!Array.isArray(breadcrumb)) {
+    return null;
+  }
   return (
     <nav className="mb-4">
       <div className="d-flex align-items-center text-muted small breadcrumb-container">
         {breadcrumb.map((item, idx) => (
-          <span key={item}>
-            {idx > 0 && <span className="mx-2">{">"}</span>}
-            {item}
+          // Sử dụng React.Fragment để bọc logic
+          <span key={idx}>
+            {/* Thêm dấu ">" vào trước item, trừ item đầu tiên */}
+            {idx > 0 && <span className="mx-2">&gt;</span>}
+
+            {/* Kiểm tra nếu item có path thì render Link, không thì render span */}
+            {item.path ? (
+              <Link to={item.path} className="text-dark text-decoration-none">
+                {item.label}
+              </Link>
+            ) : (
+              <span className="text-dark">{item.label}</span>
+            )}
           </span>
         ))}
       </div>

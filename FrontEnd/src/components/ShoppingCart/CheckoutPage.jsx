@@ -67,12 +67,11 @@ const toNumber = (price) => {
   return parseFloat(numericString) || 0;
 };
 
-const generateRandomString = (length) => {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  return Array.from({ length }, () =>
-    chars.charAt(Math.floor(Math.random() * chars.length))
-  ).join("");
+const generateContent = (userId) => {
+  const randomString = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const contentQR = `${randomString}${userId}`;
+  console.log(contentQR);
+  return contentQR;
 };
 
 const PaymentDetails = ({
@@ -212,7 +211,7 @@ export default function CheckoutPage() {
             <PaymentDetails
               selectedMethod={selectedPayment}
               qrAmount={Math.floor(orderTotals.total * 25000)}
-              qrContent={`COURSE${generateRandomString(6)}`}
+              qrContent={`COURSE${generateContent(currentUser?._id)}`}
               cartCourses={processedCourses}
             />
           </div>

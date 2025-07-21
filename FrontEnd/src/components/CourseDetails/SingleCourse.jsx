@@ -9,6 +9,7 @@ import PricingCard from "./PricingCard";
 import { Facebook, Twitter, Mail, MessageCircle } from "lucide-react";
 import "../../assets/CourseDetails/SingleCourse.css";
 import { getCourseById } from "../../services/courseService";
+import { Link } from "react-router-dom";
 
 export default function SingleCourse() {
   const { courseId } = useParams();
@@ -119,11 +120,17 @@ export default function SingleCourse() {
   }
 
   // === Render fallback for missing attributes ===
-  const breadcrumb = course.breadcrumb ?? [
-    "Home > Development > Web Development > Webflow",
+  const categoryInfo = course?.categoryIds?.[0];
+  const title = course.title ?? "Course Details";
+  const breadcrumbData = [
+    { label: "Home", path: "/" },
+    {
+      label: categoryInfo?.name || "Category",
+      path: "/courses",
+    },
+    { label: title, path: null },
   ];
 
-  const title = course.title ?? "S-Title";
   const subtitle = course.subTitle ?? "S-Subtitle";
   const instructors = course.instructors ?? [
     { name: "Thien Huynh", img: "/images/connect_us.png" },
@@ -385,7 +392,7 @@ export default function SingleCourse() {
         <div className="row single-row">
           <div className="col-lg-8 single-col">
             <CourseHeader
-              breadcrumb={breadcrumb}
+              breadcrumb={breadcrumbData}
               title={title}
               subtitle={subtitle}
               instructors={instructors}
