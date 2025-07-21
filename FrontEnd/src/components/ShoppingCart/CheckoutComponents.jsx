@@ -210,10 +210,6 @@ export function OrderSummary({
             <small>Subtotal</small>
             <small>${subtotal.toFixed(2)} USD</small>
           </div>
-          <div className="summary-row">
-            <small>Coupon Discount ({couponDiscountPercent}%)</small>
-            <small>‑${discountAmount.toFixed(2)} USD</small>
-          </div>
         </div>
         <div className="order-summary__total">
           <span>Total:</span>

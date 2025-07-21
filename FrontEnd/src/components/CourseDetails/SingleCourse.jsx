@@ -152,13 +152,28 @@ export default function SingleCourse() {
     requirement: detail.requirement ?? [],
   };
 
+  const isDiscountValid = (discount) => {
+    if (!discount) return false;
+    if (discount.status && discount.status !== "active") return false;
+    if (discount.endDate && new Date(discount.endDate) < new Date())
+      return false;
+    if (
+      typeof discount.usageLimit === "number" &&
+      discount.usageLimit > 0 &&
+      typeof discount.usage === "number" &&
+      discount.usage >= discount.usageLimit
+    ) {
+      return false;
+    }
+    return true;
+  };
+
   const pricing = {
-    // currentPrice: course.price - (course.discountId?.value ?? 0),
     currentPrice: (() => {
-      if (course.discountId) {
-        if (course.discountId.typee === "fixedAmount") {
+      if (isDiscountValid(course.discountId)) {
+        if (course.discountId.type === "fixedAmount") {
           return Math.max(0, course.price - course.discountId.value);
-        } else if (course.discountId.typee === "percent") {
+        } else if (course.discountId.type === "percent") {
           return Math.max(
             0,
             course.price * (1 - course.discountId.value / 100)
@@ -168,10 +183,13 @@ export default function SingleCourse() {
       return course.price;
     })(),
     originalPrice: course.price,
-    discount: course.discountId?.description ?? "",
-    timeLeft: course.discountId?.endDate
-      ? `Ends on ${new Date(course.discountId.endDate).toLocaleDateString()}`
+    discount: isDiscountValid(course.discountId)
+      ? course.discountId?.description ?? ""
       : "",
+    timeLeft:
+      isDiscountValid(course.discountId) && course.discountId?.endDate
+        ? `Ends on ${new Date(course.discountId.endDate).toLocaleDateString()}`
+        : "",
     details: [
       { label: "Level", value: course.level ?? "All levels" },
       { label: "Duration", value: course.duration ?? "0h" },

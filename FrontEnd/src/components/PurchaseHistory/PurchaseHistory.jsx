@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { FaStar } from 'react-icons/fa';
-import ProfileSection from '../CourseList/ProfileSection';
-import { getPurchaseHistory } from '../../services/profileService';
-import '../../assets/PurchaseHistory/PurchaseHistory.css';
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { FaStar } from "react-icons/fa";
+import ProfileSection from "../CourseList/ProfileSection";
+import { getPurchaseHistory } from "../../services/profileService";
+import "../../assets/PurchaseHistory/PurchaseHistory.css";
 
 const CourseItem = ({ course }) => (
   <div className="flearning-course-item">
@@ -16,10 +16,12 @@ const CourseItem = ({ course }) => (
         <span className="flearning-rating-value">{course.rating || 0}</span>
       </div>
       <h4>{course.title}</h4>
-      <p className="flearning-course-category">Category: {course.category || 'Uncategorized'}</p>
+      <p className="flearning-course-category">
+        Category: {course.category || "Uncategorized"}
+      </p>
     </div>
     <div className="flearning-course-price">
-      ${course.price?.toFixed(2) || '0.00'}
+      ${course.price?.toFixed(2) || "0.00"}
     </div>
   </div>
 );
@@ -27,42 +29,60 @@ const CourseItem = ({ course }) => (
 const PurchaseCard = ({ purchase, isExpanded, onToggle }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true
+    return date.toLocaleString("en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
     });
   };
 
   return (
-    <div className={`flearning-purchase-card ${isExpanded ? 'flearning-purchase-card-expanded' : ''}`}>
+    <div
+      className={`flearning-purchase-card ${
+        isExpanded ? "flearning-purchase-card-expanded" : ""
+      }`}
+    >
       <div className="flearning-purchase-header">
         <div className="flearning-purchase-info">
-          <div className="flearning-purchase-date">{formatDate(purchase.paymentDate)}</div>
+          <div className="flearning-purchase-date">
+            {formatDate(purchase.paymentDate)}
+          </div>
           <div className="flearning-purchase-meta">
             <span className="flearning-meta-item">
-              <img src="/icons/PlayCircle.png" alt="Course" className="flearning-meta-icon" />
+              <img
+                src="/icons/PlayCircle.png"
+                alt="Course"
+                className="flearning-meta-icon"
+              />
               1 Course
             </span>
             <span className="flearning-meta-item">
-              <img src="/icons/CurrencyDollarSimple.png" alt="Amount" className="flearning-meta-icon" />
-              ${purchase.amount?.toFixed(2)} USD
+              <img
+                src="/icons/CurrencyDollarSimple.png"
+                alt="Amount"
+                className="flearning-meta-icon"
+              />
+              {purchase.amount?.toLocaleString("vi-VN")} VND
             </span>
             <span className="flearning-meta-item">
-              <img src="/icons/CreditCard.png" alt="Payment" className="flearning-meta-icon" />
+              <img
+                src="/icons/CreditCard.png"
+                alt="Payment"
+                className="flearning-meta-icon"
+              />
               {purchase.paymentMethod}
             </span>
           </div>
         </div>
-        <button 
-          className="flearning-purchase-toggle" 
+        <button
+          className="flearning-purchase-toggle"
           onClick={() => onToggle(purchase.paymentId)}
           aria-label="Toggle purchase details"
         >
-          {isExpanded ? '↑' : '↓'}
+          {isExpanded ? "↑" : "↓"}
         </button>
       </div>
 
@@ -72,32 +92,53 @@ const PurchaseCard = ({ purchase, isExpanded, onToggle }) => {
             <div className="flearning-courses-list">
               <CourseItem course={purchase.course} />
             </div>
-            
+
             <div className="flearning-purchase-summary">
               <div className="flearning-summary-date">
                 {formatDate(purchase.paymentDate)}
               </div>
               <div className="flearning-summary-details">
                 <div className="flearning-summary-item">
-                  <img src="/icons/PlayCircle.png" alt="Course" className="flearning-summary-icon" />
+                  <img
+                    src="/icons/PlayCircle.png"
+                    alt="Course"
+                    className="flearning-summary-icon"
+                  />
                   <span>1 Course</span>
                 </div>
                 <div className="flearning-summary-item">
-                  <img src="/icons/CurrencyDollarSimple.png" alt="Amount" className="flearning-summary-icon" />
-                  <span>${purchase.amount?.toFixed(2)} USD</span>
+                  <img
+                    src="/icons/CurrencyDollarSimple.png"
+                    alt="Amount"
+                    className="flearning-meta-icon"
+                  />
+                  {purchase.amount?.toLocaleString("vi-VN")} VND
                 </div>
                 <div className="flearning-summary-item">
-                  <img src="/icons/CreditCard.png" alt="Payment" className="flearning-summary-icon" />
+                  <img
+                    src="/icons/CreditCard.png"
+                    alt="Payment"
+                    className="flearning-summary-icon"
+                  />
                   <span>{purchase.paymentMethod}</span>
                 </div>
               </div>
               {purchase.transaction && (
                 <div className="flearning-transaction-info">
                   <div className="flearning-transaction-id">
-                    <img src="/icons/CreditCard.png" alt="Transaction" className="flearning-transaction-icon" />
-                    <span>Transaction ID: {purchase.transaction.gatewayTransactionId}</span>
+                    <img
+                      src="/icons/CreditCard.png"
+                      alt="Transaction"
+                      className="flearning-transaction-icon"
+                    />
+                    <span>
+                      Transaction ID:{" "}
+                      {purchase.transaction.gatewayTransactionId}
+                    </span>
                   </div>
-                  <span className="flearning-transaction-status">Status: {purchase.transaction.status}</span>
+                  <span className="flearning-transaction-status">
+                    Status: {purchase.transaction.status}
+                  </span>
                 </div>
               )}
             </div>
@@ -118,7 +159,7 @@ const PurchaseHistory = () => {
     currentPage: 1,
     totalPages: 1,
     hasNext: false,
-    hasPrev: false
+    hasPrev: false,
   });
 
   const fetchPurchases = async (page = 1) => {
@@ -132,7 +173,9 @@ const PurchaseHistory = () => {
         setExpandedId(response.data.data[0].paymentId);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load purchase history');
+      setError(
+        err.response?.data?.message || "Failed to load purchase history"
+      );
     } finally {
       setLoading(false);
     }
@@ -151,9 +194,7 @@ const PurchaseHistory = () => {
   };
 
   return (
-    <ProfileSection 
-      activePath={location.pathname}
-    >
+    <ProfileSection activePath={location.pathname}>
       <div className="flearning-purchase-content">
         <div className="flearning-purchase-header-main">
           <h2>Purchase History</h2>
@@ -163,18 +204,16 @@ const PurchaseHistory = () => {
           <div className="flearning-loading">Loading purchase history...</div>
         )}
 
-        {error && (
-          <div className="flearning-error">{error}</div>
-        )}
+        {error && <div className="flearning-error">{error}</div>}
 
         {!loading && !error && (
           <>
             <div className="flearning-purchase-list">
               {purchases.length > 0 ? (
                 purchases.map((purchase) => (
-                  <PurchaseCard 
-                    key={purchase.paymentId} 
-                    purchase={purchase} 
+                  <PurchaseCard
+                    key={purchase.paymentId}
+                    purchase={purchase}
                     isExpanded={expandedId === purchase.paymentId}
                     onToggle={handleToggle}
                   />
@@ -188,7 +227,7 @@ const PurchaseHistory = () => {
 
             {purchases.length > 0 && (
               <div className="flearning-pagination">
-                <button 
+                <button
                   onClick={() => handlePageChange(pagination.currentPage - 1)}
                   disabled={!pagination.hasPrev}
                   className="flearning-pagination-btn"
@@ -198,7 +237,7 @@ const PurchaseHistory = () => {
                 <span className="flearning-pagination-info">
                   Page {pagination.currentPage} of {pagination.totalPages}
                 </span>
-                <button 
+                <button
                   onClick={() => handlePageChange(pagination.currentPage + 1)}
                   disabled={!pagination.hasNext}
                   className="flearning-pagination-btn"
@@ -210,7 +249,10 @@ const PurchaseHistory = () => {
 
             {purchases.length > 0 && (
               <div className="flearning-purchase-footer">
-                <p>Showing {purchases.length} of {pagination.totalPayments} purchases</p>
+                <p>
+                  Showing {purchases.length} of {pagination.totalPayments}{" "}
+                  purchases
+                </p>
               </div>
             )}
           </>
@@ -220,4 +262,4 @@ const PurchaseHistory = () => {
   );
 };
 
-export default PurchaseHistory; 
+export default PurchaseHistory;

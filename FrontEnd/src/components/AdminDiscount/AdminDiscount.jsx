@@ -7,9 +7,11 @@ import {
   createDiscount,
   updateDiscount,
   deleteDiscount,
-  getDiscountStats
-} from '../../services/discountService';
+  getDiscountStats,
+} from "../../services/discountService";
 import "../../assets/AdminDiscount/AdminDiscount.css";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 
 const AdminDiscount = ({ title = "Discount Management" }) => {
   const [discounts, setDiscounts] = useState([]);
@@ -17,32 +19,32 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingDiscount, setEditingDiscount] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedType, setSelectedType] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedType, setSelectedType] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   // Fetch discounts and stats
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       // Build filter parameters
       const params = {};
       if (searchQuery) params.search = searchQuery;
-      if (selectedStatus !== 'all') params.status = selectedStatus;
-      if (selectedType !== 'all') params.type = selectedType;
-      if (selectedCategory !== 'all') params.category = selectedCategory;
-      
+      if (selectedStatus !== "all") params.status = selectedStatus;
+      if (selectedType !== "all") params.type = selectedType;
+      if (selectedCategory !== "all") params.category = selectedCategory;
+
       const [discountsResponse, statsResponse] = await Promise.all([
         getAllDiscounts(params),
-        getDiscountStats()
+        getDiscountStats(),
       ]);
-      
+
       setDiscounts(discountsResponse.data?.discounts || []);
       setStats(statsResponse.data);
     } catch (error) {
-      console.error('Failed to fetch data:', error);
+      console.error("Failed to fetch data:", error);
       // Set empty data if API fails to show UI without breaking
       setDiscounts([]);
       setStats({ overview: { total: 0, active: 0, expired: 0, inactive: 0 } });
@@ -57,32 +59,87 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
 
   // Icons
   const FilterIcon = () => (
-    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z"
+      />
     </svg>
   );
 
   const EditIcon = () => (
-    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+      />
     </svg>
   );
 
   const DeleteIcon = () => (
-    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+      />
     </svg>
   );
 
   const CopyIcon = () => (
-    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+      />
     </svg>
   );
 
   const TagIcon = () => (
-    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+      />
     </svg>
   );
 
@@ -92,42 +149,42 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
   };
 
   const handleCategoryBrowse = () => {
-    console.log('Category browse clicked');
+    console.log("Category browse clicked");
   };
 
   // Handle form submission
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
-    
+
     const discountData = {
-      discountCode: formData.get('discountCode'),
-      description: formData.get('description'),
-      category: formData.get('category'),
-      type: formData.get('type'),
-      value: Number(formData.get('value')),
-      usageLimit: Number(formData.get('usageLimit')) || 0,
-      minimumOrder: Number(formData.get('minimumOrder')) || 0,
-      maximumDiscount: Number(formData.get('maximumDiscount')) || 0,
-      startDate: formData.get('startDate') || null,
-      endDate: formData.get('endDate') || null,
-      status: formData.get('status') || 'active'
+      discountCode: formData.get("discountCode"),
+      description: formData.get("description"),
+      category: formData.get("category"),
+      type: formData.get("type"),
+      value: Number(formData.get("value")),
+      usageLimit: Number(formData.get("usageLimit")) || 0,
+      minimumOrder: Number(formData.get("minimumOrder")) || 0,
+      maximumDiscount: Number(formData.get("maximumDiscount")) || 0,
+      startDate: formData.get("startDate") || null,
+      endDate: formData.get("endDate") || null,
+      status: formData.get("status") || "active",
     };
 
     try {
       if (editingDiscount) {
         await updateDiscount(editingDiscount._id, discountData);
-        alert('Discount updated successfully!');
+        toast.success("Discount updated successfully!");
       } else {
         await createDiscount(discountData);
-        alert('Discount created successfully!');
+        toast.success("Discount created successfully!");
       }
       setShowCreateModal(false);
       setEditingDiscount(null);
       fetchData();
     } catch (error) {
-      console.error('Operation failed:', error);
-      alert(error.message || 'Operation failed');
+      console.error("Operation failed:", error);
+      toast.error(error.message || "Operation failed");
     }
   };
 
@@ -137,21 +194,21 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this discount?')) {
+    if (window.confirm("Are you sure you want to delete this discount?")) {
       try {
         await deleteDiscount(id);
-        alert('Discount deleted successfully!');
+        toast.success("Discount deleted successfully!");
         fetchData();
       } catch (error) {
-        console.error('Delete failed:', error);
-        alert(error.message || 'Failed to delete discount');
+        console.error("Delete failed:", error);
+        toast.error(error.message || "Failed to delete discount");
       }
     }
   };
 
   const handleCopyCode = (code) => {
     navigator.clipboard.writeText(code);
-    alert(`Discount code "${code}" copied to clipboard!`);
+    toast.info(`Discount code "${code}" copied to clipboard!`);
   };
 
   // Get status badge class
@@ -176,15 +233,15 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
 
   // Format date for display
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString();
   };
 
   // Create search data from current discounts
-  const searchData = discounts.map(d => ({ 
-    id: d._id, 
-    label: d.discountCode, 
-    type: "code" 
+  const searchData = discounts.map((d) => ({
+    id: d._id,
+    label: d.discountCode,
+    type: "code",
   }));
 
   return (
@@ -193,7 +250,9 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
       <div className="admin-discount-header">
         <div className="admin-discount-header-left">
           <h1 className="admin-discount-page-title">{title}</h1>
-          <p className="admin-discount-page-subtitle">Manage discount codes and promotions</p>
+          <p className="admin-discount-page-subtitle">
+            Manage discount codes and promotions
+          </p>
         </div>
         <div className="admin-discount-header-right">
           <CustomButton
@@ -266,7 +325,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
         <div className="admin-discount-filter-controls">
           <div className="admin-discount-filter-group">
             <FilterIcon />
-            <select 
+            <select
               className="admin-discount-filter-select"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
@@ -279,7 +338,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
           </div>
 
           <div className="admin-discount-filter-group">
-            <select 
+            <select
               className="admin-discount-filter-select"
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
@@ -291,7 +350,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
           </div>
 
           <div className="admin-discount-filter-group">
-            <select 
+            <select
               className="admin-discount-filter-select"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
@@ -302,13 +361,13 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
             </select>
           </div>
 
-          <button 
+          <button
             className="admin-discount-clear-all-btn"
             onClick={() => {
-              setSearchQuery('');
-              setSelectedStatus('all');
-              setSelectedType('all');
-              setSelectedCategory('all');
+              setSearchQuery("");
+              setSelectedStatus("all");
+              setSelectedType("all");
+              setSelectedCategory("all");
             }}
           >
             Clear All
@@ -319,7 +378,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
       {/* Search Results Info */}
       <div className="admin-discount-search-results-info">
         <span className="admin-discount-results-count">
-          {discounts.length} discounts {loading && '(Loading...)'}
+          {discounts.length} discounts {loading && "(Loading...)"}
         </span>
       </div>
 
@@ -345,8 +404,10 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                 <tr key={discount._id}>
                   <td>
                     <div className="admin-discount-code">
-                      <span className="admin-discount-code-text">{discount.discountCode}</span>
-                      <button 
+                      <span className="admin-discount-code-text">
+                        {discount.discountCode}
+                      </span>
+                      <button
                         className="admin-discount-copy-btn"
                         onClick={() => handleCopyCode(discount.discountCode)}
                         title="Copy code"
@@ -357,37 +418,53 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                   </td>
                   <td>
                     <div className="admin-discount-description">
-                      <span className="admin-discount-description-text">{discount.description}</span>
+                      <span className="admin-discount-description-text">
+                        {discount.description}
+                      </span>
                       <div className="admin-discount-description-meta">
                         Min order: ${discount.minimumOrder || 0}
-                        {discount.maximumDiscount > 0 && ` • Max: $${discount.maximumDiscount}`}
+                        {discount.maximumDiscount > 0 &&
+                          ` • Max: $${discount.maximumDiscount}`}
                       </div>
                     </div>
                   </td>
                   <td>
-                    <span className={`admin-discount-category-badge admin-discount-category-${discount.category}`}>
+                    <span
+                      className={`admin-discount-category-badge admin-discount-category-${discount.category}`}
+                    >
                       {discount.category}
                     </span>
                   </td>
                   <td>
-                    <span className={`admin-discount-type-badge admin-discount-type-${discount.type}`}>
+                    <span
+                      className={`admin-discount-type-badge admin-discount-type-${discount.type}`}
+                    >
                       {discount.type === "percent" ? "%" : "$"}
                     </span>
                   </td>
                   <td>
                     <span className="admin-discount-value-text">
-                      {discount.type === "percent" ? `${discount.value}%` : `$${discount.value}`}
+                      {discount.type === "percent"
+                        ? `${discount.value}%`
+                        : `$${discount.value}`}
                     </span>
                   </td>
                   <td>
                     <div className="admin-discount-usage-info">
                       <div className="admin-discount-usage-stats">
-                        <span>{discount.usage || 0} / {discount.usageLimit || '∞'}</span>
+                        <span>
+                          {discount.usage || 0} / {discount.usageLimit || "∞"}
+                        </span>
                       </div>
                       <div className="admin-discount-usage-bar">
-                        <div 
+                        <div
                           className="admin-discount-usage-progress"
-                          style={{ width: `${getUsagePercentage(discount.usage || 0, discount.usageLimit)}%` }}
+                          style={{
+                            width: `${getUsagePercentage(
+                              discount.usage || 0,
+                              discount.usageLimit
+                            )}%`,
+                          }}
                         ></div>
                       </div>
                     </div>
@@ -405,7 +482,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                   </td>
                   <td>
                     <div className="admin-discount-action-buttons">
-                      <button 
+                      <button
                         className="admin-discount-action-btn admin-discount-edit-btn"
                         onClick={() => handleEdit(discount)}
                         title="Edit discount"
@@ -413,7 +490,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                         <EditIcon />
                         <span className="admin-discount-fallback-text">✎</span>
                       </button>
-                      <button 
+                      <button
                         className="admin-discount-action-btn admin-discount-delete-btn"
                         onClick={() => handleDelete(discount._id)}
                         title="Delete discount"
@@ -440,11 +517,19 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
 
       {/* Create/Edit Modal */}
       {showCreateModal && (
-        <div className="admin-discount-modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="admin-discount-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="admin-discount-modal-overlay"
+          onClick={() => setShowCreateModal(false)}
+        >
+          <div
+            className="admin-discount-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="admin-discount-modal-header">
-              <h2>{editingDiscount ? 'Edit Discount' : 'Create New Discount'}</h2>
-              <button 
+              <h2>
+                {editingDiscount ? "Edit Discount" : "Create New Discount"}
+              </h2>
+              <button
                 className="admin-discount-close-btn"
                 onClick={() => {
                   setShowCreateModal(false);
@@ -454,7 +539,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                 ×
               </button>
             </div>
-            
+
             <form className="admin-discount-form" onSubmit={handleSubmit}>
               <div className="admin-discount-form-grid">
                 <Input
@@ -465,7 +550,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                   defaultValue={editingDiscount?.discountCode}
                   required
                 />
-                
+
                 <Input
                   variant="label"
                   text="Description"
@@ -474,10 +559,10 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                   defaultValue={editingDiscount?.description}
                   required
                 />
-                
+
                 <div className="admin-discount-form-group">
                   <label>Category</label>
-                  <select 
+                  <select
                     className="admin-discount-form-control"
                     name="category"
                     defaultValue={editingDiscount?.category || "general"}
@@ -492,7 +577,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
 
                 <div className="admin-discount-form-group">
                   <label>Discount Type</label>
-                  <select 
+                  <select
                     className="admin-discount-form-control"
                     name="type"
                     defaultValue={editingDiscount?.type || "percent"}
@@ -512,7 +597,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                   defaultValue={editingDiscount?.value}
                   required
                 />
-                
+
                 <Input
                   variant="label"
                   text="Minimum Order ($)"
@@ -521,7 +606,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                   placeholder="Enter minimum order amount"
                   defaultValue={editingDiscount?.minimumOrder}
                 />
-                
+
                 <Input
                   variant="label"
                   text="Maximum Discount ($)"
@@ -530,7 +615,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                   placeholder="Enter maximum discount amount"
                   defaultValue={editingDiscount?.maximumDiscount}
                 />
-                
+
                 <Input
                   variant="label"
                   text="Usage Limit"
@@ -545,20 +630,32 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                   text="Start Date"
                   name="startDate"
                   type="date"
-                  defaultValue={editingDiscount?.startDate ? new Date(editingDiscount.startDate).toISOString().split('T')[0] : ''}
+                  defaultValue={
+                    editingDiscount?.startDate
+                      ? new Date(editingDiscount.startDate)
+                          .toISOString()
+                          .split("T")[0]
+                      : ""
+                  }
                 />
-                
+
                 <Input
                   variant="label"
                   text="End Date"
                   name="endDate"
                   type="date"
-                  defaultValue={editingDiscount?.endDate ? new Date(editingDiscount.endDate).toISOString().split('T')[0] : ''}
+                  defaultValue={
+                    editingDiscount?.endDate
+                      ? new Date(editingDiscount.endDate)
+                          .toISOString()
+                          .split("T")[0]
+                      : ""
+                  }
                 />
 
                 <div className="admin-discount-form-group">
                   <label>Status</label>
-                  <select 
+                  <select
                     className="admin-discount-form-control"
                     name="status"
                     defaultValue={editingDiscount?.status || "active"}
@@ -568,7 +665,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                   </select>
                 </div>
               </div>
-              
+
               <div className="admin-discount-modal-footer">
                 <button
                   className="admin-discount-cancel-btn"
@@ -580,17 +677,15 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                 >
                   Cancel
                 </button>
-                <button
-                  className="admin-discount-submit-btn"
-                  type="submit"
-                >
-                  {editingDiscount ? 'Update' : 'Create'} Discount
+                <button className="admin-discount-submit-btn" type="submit">
+                  {editingDiscount ? "Update" : "Create"} Discount
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+      <ToastContainer autoClose={3000} />
     </div>
   );
 };

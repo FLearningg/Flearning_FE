@@ -74,6 +74,21 @@ const generateContent = (userId) => {
   return contentQR;
 };
 
+const isDiscountValid = (discount) => {
+  if (!discount) return false;
+  if (discount.status && discount.status !== "active") return false;
+  if (discount.endDate && new Date(discount.endDate) < new Date()) return false;
+  if (
+    typeof discount.usageLimit === "number" &&
+    discount.usageLimit > 0 &&
+    typeof discount.usage === "number" &&
+    discount.usage >= discount.usageLimit
+  ) {
+    return false;
+  }
+  return true;
+};
+
 const PaymentDetails = ({
   selectedMethod,
   qrAmount,
@@ -150,11 +165,11 @@ export default function CheckoutPage() {
       let finalPrice = originalPrice;
       let discountText = "";
 
-      if (course.discountId) {
-        if (course.discountId.typee === "fixedAmount") {
+      if (isDiscountValid(course.discountId)) {
+        if (course.discountId.type === "fixedAmount") {
           finalPrice = Math.max(0, originalPrice - course.discountId.value);
           discountText = `-${course.discountId.value}$`;
-        } else if (course.discountId.typee === "percent") {
+        } else if (course.discountId.type === "percent") {
           finalPrice = Math.max(
             0,
             originalPrice * (1 - course.discountId.value / 100)
@@ -177,8 +192,8 @@ export default function CheckoutPage() {
       (sum, course) => sum + course.currentPrice,
       0
     );
-    const discountAmount = subtotal * 0.08;
-    const total = subtotal - discountAmount;
+    const discountAmount = subtotal;
+    const total = subtotal;
     return { subtotal, discountAmount, total };
   }, [processedCourses]);
 
