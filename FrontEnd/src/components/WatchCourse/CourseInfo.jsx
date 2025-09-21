@@ -3,6 +3,7 @@ import { FaBook, FaClock, FaUsers } from "react-icons/fa";
 import "../../assets/WatchCourse/CourseInfo.css";
 import "../../assets/WatchCourse/CourseTabs.css";
 import { useSelector } from "react-redux";
+import QuizContent from "./QuizContent";
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
@@ -91,6 +92,11 @@ const CourseInfo = ({
     setDeleteModalOpen(false);
   };
 
+  const handleQuizComplete = async (quizResult) => {
+    // TODO: Implement quiz completion handling
+    console.log("Quiz completed:", quizResult);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "description":
@@ -123,6 +129,15 @@ const CourseInfo = ({
             ) : (
               <i>No attachments for this lesson.</i>
             )}
+          </div>
+        );
+      case "quiz":
+        return (
+          <div className="ci-quiz-content">
+            <QuizContent
+              lessonId={lesson?._id}
+              onQuizComplete={handleQuizComplete}
+            />
           </div>
         );
       case "comments":

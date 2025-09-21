@@ -28,6 +28,17 @@
   position: relative;
 }
 
+.f-quiz-section {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  min-height: 600px;
+  height: auto;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
 .f-watch-course-left {
   flex: 1;
   display: flex;
@@ -43,6 +54,19 @@
   overflow: hidden;
   aspect-ratio: 16/9;
   position: relative;
+}
+
+.f-quiz-section {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .f-course-info-section {
