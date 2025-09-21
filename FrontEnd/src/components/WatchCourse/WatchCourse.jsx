@@ -5,6 +5,7 @@ import CourseContents from "./CourseContents";
 import CourseInfo from "./CourseInfo";
 import CourseHeader from "./CourseHeader";
 import ReviewModal from "./ReviewModal";
+import QuizContent from "./QuizContent";
 import "../../assets/WatchCourse/WatchCourse.css";
 import {
   getCourseInfo,
@@ -240,7 +241,17 @@ const WatchCourse = ({ courseId: propCourseId }) => {
   }));
 
   const handleSelectLesson = (lesson) => {
-    setCurrentLesson(lesson);
+    // Nếu là quiz, cập nhật state nhưng không load video
+    if (lesson.type === "quiz") {
+      setCurrentLesson({
+        ...lesson,
+        videoUrl: null, // Không có video cho quiz
+        description: "Complete this quiz to proceed to the next lesson.",
+        title: lesson.title,
+      });
+    } else {
+      setCurrentLesson(lesson);
+    }
   };
 
   const handleReviewSubmit = async ({ rating, feedback }) => {
@@ -322,100 +333,125 @@ const WatchCourse = ({ courseId: propCourseId }) => {
       </div>
       <div className="f-watch-course-main">
         <div className="f-watch-course-left">
-          <div className="f-video-section">
-            <VideoPlayer
-              videoUrl={currentLesson?.videoUrl}
-              onProgress={(progress) => {
-                // Handle video progress
-              }}
-              onEnded={async () => {
-                if (currentLesson?._id && courseId) {
-                  console.log(
-                    "Video ended, marking lesson as completed:",
-                    courseId,
-                    currentLesson._id
-                  );
-                  try {
-                    await markLessonCompleted(courseId, currentLesson._id);
-                    console.log(
-                      "Lesson marked as completed:",
-                      currentLesson._id
-                    );
-                    setCompletedLessons((prev) =>
-                      prev.includes(currentLesson._id)
-                        ? prev
-                        : [...prev, currentLesson._id]
-                    );
+          {currentLesson?.type === "quiz" ? (
+            <div className="f-quiz-section">
+              <QuizContent
+                lessonId={currentLesson?.id}
+                onQuizComplete={async (quizResult) => {
+                  if (quizResult.completed) {
+                    // Tìm lecture tương ứng với quiz này
+                    const quizId = currentLesson.id;
+                    const lectureId = quizId.replace("quiz_", "");
 
-                    // Update progress after marking complete
+                    // Cập nhật trạng thái hoàn thành quiz
+                    const updatedSections = sections.map((section) => ({
+                      ...section,
+                      lectures: section.lectures?.map((lecture) => {
+                        if (lecture.id === lectureId) {
+                          return {
+                            ...lecture,
+                            quizCompleted: true,
+                          };
+                        }
+                        return lecture;
+                      }),
+                    }));
+                    setSections(updatedSections);
+
+                    // Tự động chuyển sang bài tiếp theo
+                    handleNextLecture();
+
+                    // Cập nhật progress
                     const progressRes = await getCourseProgress(courseId);
                     const progressPercent =
                       progressRes.data?.data?.progressPercentage || 0;
                     setProgress(progressPercent);
-
-                    // Check if all lessons are now completed
-                    const updatedCompletedLessons = completedLessons.includes(
-                      currentLesson._id
-                    )
-                      ? completedLessons
-                      : [...completedLessons, currentLesson._id];
-
-                    const totalLessons = sections.reduce((total, section) => {
-                      return (
-                        total + (section.lessons ? section.lessons.length : 0)
-                      );
-                    }, 0);
-
-                    // Get all lesson IDs from sections to ensure accurate comparison
-                    const allLessonIds = sections.reduce((ids, section) => {
-                      if (section.lessons) {
-                        ids.push(
-                          ...section.lessons.map((lesson) => lesson._id)
-                        );
-                      }
-                      return ids;
-                    }, []);
-
-                    const allCompleted =
-                      totalLessons > 0 &&
-                      allLessonIds.length > 0 &&
-                      allLessonIds.every((lessonId) =>
-                        updatedCompletedLessons.includes(lessonId)
-                      );
-                    setAllLessonsCompleted(allCompleted);
-
-                    // Debug logging
-                    console.log("Updated course completion status:", {
-                      totalLessons,
-                      completedLessons: updatedCompletedLessons.length,
-                      allLessonIds: allLessonIds.length,
-                      allCompleted,
-                    });
-                  } catch (err) {
-                    console.error("Error marking lesson completed:", err);
-                    // Optionally: handle error
                   }
-                }
-              }}
-            />
-          </div>
-          <div className="f-course-info-section">
-            <CourseInfo
-              lesson={currentLesson}
-              students={courseData?.studentsCount}
-              lastUpdated={courseData?.lastUpdated}
-              commentsCount={lessonComments.length}
-              loading={loadingLesson}
-              error={errorLesson}
-              comments={lessonComments}
-              onAddComment={handleAddComment}
-              onUpdateComment={handleUpdateComment}
-              onDeleteComment={handleDeleteComment}
-              addingComment={addingComment}
-              updatingCommentId={updatingCommentId}
-              deletingCommentId={deletingCommentId}
-            />
-          </div>
+                }}
+              />
+            </div>
+          ) : (
+            <>
+              <div className="f-video-section">
+                <VideoPlayer
+                  videoUrl={currentLesson?.videoUrl}
+                  onProgress={(progress) => {
+                    // Handle video progress
+                  }}
+                  onEnded={async () => {
+                    if (currentLesson?._id && courseId) {
+                      try {
+                        await markLessonCompleted(courseId, currentLesson._id);
+                        setCompletedLessons((prev) =>
+                          prev.includes(currentLesson._id)
+                            ? prev
+                            : [...prev, currentLesson._id]
+                        );
+
+                        // Update progress after marking complete
+                        const progressRes = await getCourseProgress(courseId);
+                        const progressPercent =
+                          progressRes.data?.data?.progressPercentage || 0;
+                        setProgress(progressPercent);
+
+                        // Check if all lessons are now completed
+                        const updatedCompletedLessons =
+                          completedLessons.includes(currentLesson._id)
+                            ? completedLessons
+                            : [...completedLessons, currentLesson._id];
+
+                        const totalLessons = sections.reduce(
+                          (total, section) => {
+                            return (
+                              total +
+                              (section.lessons ? section.lessons.length : 0)
+                            );
+                          },
+                          0
+                        );
+
+                        const allLessonIds = sections.reduce((ids, section) => {
+                          if (section.lessons) {
+                            ids.push(
+                              ...section.lessons.map((lesson) => lesson._id)
+                            );
+                          }
+                          return ids;
+                        }, []);
+
+                        const allCompleted =
+                          totalLessons > 0 &&
+                          allLessonIds.length > 0 &&
+                          allLessonIds.every((lessonId) =>
+                            updatedCompletedLessons.includes(lessonId)
+                          );
+                        setAllLessonsCompleted(allCompleted);
+                      } catch (err) {
+                        console.error("Error marking lesson completed:", err);
+                      }
+                    }
+                  }}
+                />
+              </div>
+              <div className="f-course-info-section">
+                <CourseInfo
+                  lesson={currentLesson}
+                  students={courseData?.studentsCount}
+                  lastUpdated={courseData?.lastUpdated}
+                  commentsCount={lessonComments.length}
+                  loading={loadingLesson}
+                  error={errorLesson}
+                  comments={lessonComments}
+                  onAddComment={handleAddComment}
+                  onUpdateComment={handleUpdateComment}
+                  onDeleteComment={handleDeleteComment}
+                  addingComment={addingComment}
+                  updatingCommentId={updatingCommentId}
+                  deletingCommentId={deletingCommentId}
+                />
+              </div>
+            </>
+          )}
         </div>
         <div className="f-content-section">
           <CourseContents

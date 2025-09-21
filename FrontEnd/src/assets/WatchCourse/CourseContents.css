@@ -55,7 +55,6 @@
   scrollbar-color: #ff4d4f #f5f5f5;
 }
 
-/* Tùy chỉnh thanh cuộn cho Chrome/Safari */
 .watchcourse-sections-list::-webkit-scrollbar {
   width: 6px;
 }
@@ -95,22 +94,6 @@
 
 .watchcourse-section-header:hover {
   background-color: #f9f9f9;
-}
-
-.watchcourse-section-header::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 0;
-  height: 2px;
-  background: #ff4d4f;
-  transition: all 0.3s ease;
-  transform: translateX(-50%);
-}
-
-.watchcourse-section-header:hover::after {
-  width: 100%;
 }
 
 .watchcourse-section.expanded .watchcourse-section-header {
@@ -180,22 +163,7 @@
   border-bottom: 1px solid #eee;
   position: relative;
   overflow: hidden;
-}
-
-.watchcourse-lecture::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 3px;
-  background: #ff4d4f;
-  transform: scaleY(0);
-  transition: transform 0.3s ease;
-}
-
-.watchcourse-lecture:hover::before {
-  transform: scaleY(1);
+  background-color: #fff;
 }
 
 .watchcourse-lecture:hover {
@@ -205,11 +173,6 @@
 
 .watchcourse-lecture.active {
   background-color: #fff1f0;
-  border-left: 3px solid #ff4d4f;
-}
-
-.watchcourse-lecture.active::before {
-  transform: scaleY(1);
 }
 
 .watchcourse-lecture-info {
@@ -233,9 +196,11 @@
   cursor: pointer;
   position: relative;
 }
+
 .watchcourse-lecture-checkbox {
   display: none;
 }
+
 .custom-checkbox {
   width: 16px;
   height: 16px;
@@ -246,10 +211,12 @@
   margin-right: 8px;
   transition: border 0.2s, background 0.2s;
 }
+
 .watchcourse-lecture-checkbox:checked + .custom-checkbox {
   background: #ff9800;
   border-color: #ff9800;
 }
+
 .watchcourse-lecture-checkbox:checked + .custom-checkbox::after {
   content: "";
   position: absolute;
@@ -277,6 +244,45 @@
   font-size: 0.813rem;
   color: #666;
   white-space: nowrap;
+}
+
+/* Quiz specific styles */
+.quiz-item {
+  background-color: #fff !important;
+}
+
+.quiz-item:hover {
+  background-color: #fff5f5 !important;
+}
+
+.quiz-item.active {
+  background-color: #fff1f0 !important;
+}
+
+.quiz-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #666;
+}
+
+.quiz-icon {
+  font-size: 1rem;
+  color: #ff9800;
+}
+
+.quiz-duration {
+  color: #666;
+  font-weight: 500;
+}
+
+.quiz-item .custom-checkbox {
+  border-color: #ff9800;
+}
+
+.quiz-item .watchcourse-lecture-checkbox:checked + .custom-checkbox {
+  background: #ff9800;
+  border-color: #ff9800;
 }
 
 .watchcourse-play-icon,
@@ -314,7 +320,7 @@
   color: #00c853;
 }
 
-/* Tablet Styles */
+/* Responsive Styles */
 @media (max-width: 1024px) {
   .watchcourse-course-contents-header {
     padding: 1.25rem;
@@ -333,7 +339,6 @@
   }
 }
 
-/* Mobile Styles */
 @media (max-width: 768px) {
   .watchcourse-course-contents {
     border-radius: 10px;
@@ -436,11 +441,9 @@
 
   .watchcourse-lecture.active {
     background-color: #f0f7ff;
-    border-left: 3px solid #1a73e8;
   }
 }
 
-/* Small Mobile Styles */
 @media (max-width: 480px) {
   .watchcourse-course-contents {
     border-radius: 8px;
@@ -499,40 +502,5 @@
   .watchcourse-lecture-duration {
     font-size: 0.688rem;
     margin-right: 0.375rem;
-  }
-}
-
-.watchcourse-f-content-section {
-  background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  height: auto;
-  max-height: 500px;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-@media (max-width: 1024px) {
-  .watchcourse-f-content-section {
-    max-height: 400px;
-  }
-}
-
-@media (max-width: 768px) {
-  .watchcourse-f-content-section {
-    border-radius: 10px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    max-height: 350px;
-  }
-}
-
-@media (max-width: 480px) {
-  .watchcourse-f-content-section {
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
-    max-height: 300px;
   }
 }
