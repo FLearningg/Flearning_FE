@@ -245,9 +245,13 @@ const Component = () => {
       console.error("Error changing password:", error);
 
       // Handle specific error messages from the backend
-      const errorMessage =
-        error.response?.data?.message || "Failed to change password";
-      setPasswordError(errorMessage);
+      if (error.response?.status === 401) {
+        setPasswordError("Current password is incorrect");
+      } else {
+        const errorMessage =
+          error.response?.data?.message || "Failed to change password";
+        setPasswordError(errorMessage);
+      }
     } finally {
       setIsLoadingPassword(false);
     }
