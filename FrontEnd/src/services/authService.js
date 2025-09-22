@@ -48,7 +48,8 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401) {
+    // Skip refresh token for change password API
+    if (error.response?.status === 401 && !originalRequest.url.includes('/user/change-password')) {
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
