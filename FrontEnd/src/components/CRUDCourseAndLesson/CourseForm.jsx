@@ -88,8 +88,8 @@ const CourseForm = ({
       console.error("Error fetching categories:", error);
       setCategoryError("Failed to load categories from database");
       toast.error("Failed to load categories from database");
-      // Fallback to hardcoded options if API fails
-      setAllCategories(["Programming", "Design", "Business"]);
+      // Set empty array if API fails
+      setAllCategories([]);
     } finally {
       setLoadingCategories(false);
     }
@@ -237,27 +237,56 @@ const CourseForm = ({
 
   const handleSaveNext = (e) => {
     if (e && e.preventDefault) e.preventDefault();
+
+    // Validate categories
+    if (!categoryMap || Object.keys(categoryMap).length === 0) {
+      toast.error("Categories not loaded. Please try again.");
+      return;
+    }
+
+    // Collect all valid category IDs
+    const categoryIds = [];
+    if (category && category !== "Select..." && categoryMap[category]) {
+      categoryIds.push(categoryMap[category]);
+    }
+    if (subCategory && subCategory !== "Select..." && categoryMap[subCategory]) {
+      categoryIds.push(categoryMap[subCategory]);
+    }
+
+    // Validate that we have at least one valid category
+    if (categoryIds.length === 0) {
+      toast.error("Please select at least one valid category");
+      return;
+    }
+
     const data = {
       title: titleState,
-      subTitle: subtitle, // ← Fixed key name
+      subTitle: subtitle,
       detail: {
-        description: "No description provided", // ← Send non-empty description as required by backend
+        description: "No description provided", // Required by backend
+        willLearn: [], // Optional array
+        targetAudience: [], // Optional array
+        requirement: [], // Optional array
       },
+      materials: [], // Optional array
+      categoryIds, // Send array of category IDs
+      price: parseFloat(price) || 0,
+      level: level?.toLowerCase() || "beginner",
+      duration: duration ? `${duration} ${durationUnit}` : "",
+      language: convertLanguageToBackend(language) || "vietnam",
+      subtitleLanguage: convertLanguageToBackend(subtitleLanguage) || "vietnam",
+      sections: [], // Will be populated later
 
-      category: category, // ← Save category name for restoration
-      subCategory: subCategory, // ← Save subcategory name for restoration
-      categoryId: categoryMap[category] || "", // ← Send categoryId instead of category
-      subCategoryId: categoryMap[subCategory] || "", // ← Send subCategoryId instead of subCategory
-      // Save display format for restoration
-      language: language, // ← Save display format (English, Vietnamese)
-      subtitleLanguage: subtitleLanguage, // ← Save display format (English, Vietnamese)
-      level: level, // ← Save display format (Beginner, Intermediate, Advanced)
-      // Save backend format for API
-      languageBackend: convertLanguageToBackend(language) || "", // ← Convert to backend format
-      subtitleLanguageBackend: convertLanguageToBackend(subtitleLanguage) || "", // ← Convert to backend format
-      levelBackend: level?.toLowerCase() || "", // ← lowercase for backend
-      duration: duration ? `${duration} ${durationUnit}` : "", // ← format as "123 Hours"
-      price: parseFloat(price) || 0, // ← ensure number
+      // Save display values for form restoration
+      category,
+      subCategory,
+      languageDisplay: language,
+      subtitleLanguageDisplay: subtitleLanguage,
+      levelDisplay: level,
+
+      // Save individual category IDs for backward compatibility
+      categoryId: categoryIds[0] || null,
+      subCategoryId: categoryIds[1] || null,
     };
 
     onNext(data);

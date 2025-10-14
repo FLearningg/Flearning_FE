@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "../../assets/WatchCourse/QuizContent.css";
+import apiClient from "../../services/authService";
 
-const QuizContent = ({ lessonId, onQuizComplete }) => {
+const QuizContent = ({ lessonId, quizData: propQuizData, onQuizComplete }) => {
   const [quizData, setQuizData] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,28 +24,89 @@ const QuizContent = ({ lessonId, onQuizComplete }) => {
     setLoading(true);
     setError(null);
 
-    // TODO: Replace with actual API call
-    // Simulated API call for now
-    setTimeout(() => {
-      setQuizData({
-        questions: [
-          {
-            id: 1,
-            question: "Sample question 1?",
-            options: ["Option A", "Option B", "Option C", "Option D"],
-            correctAnswer: 0,
-          },
-          {
-            id: 2,
-            question: "Sample question 2?",
-            options: ["Option A", "Option B", "Option C", "Option D"],
-            correctAnswer: 1,
-          },
-        ],
-      });
+
+    // If quiz data is passed as prop, use it directly
+    if (propQuizData && propQuizData.questions) {
+      // Transform quiz data to expected format
+      const transformedQuiz = {
+        questions: propQuizData.questions.map((q, index) => ({
+          id: index + 1,
+          question: q.question || q.content,
+          options: q.options || q.answers?.map(a => a.content) || [],
+          correctAnswer: q.correctAnswer !== undefined 
+            ? q.correctAnswer 
+            : q.answers?.findIndex(a => a.isCorrect) || 0,
+        }))
+      };
+      
+      setQuizData(transformedQuiz);
       setLoading(false);
-    }, 1000);
-  }, [lessonId]);
+      return;
+    }
+
+    // Fetch quiz data from API
+    const fetchQuizData = async () => {
+      try {
+        // Try to get quiz data from lesson detail API first
+        const lessonResponse = await apiClient.get(`/watch-course/lesson/${lessonId}`);
+        
+        // Check if lesson has quiz data
+        if (lessonResponse.data && lessonResponse.data.quizData) {
+          const quiz = lessonResponse.data.quizData;
+          
+          // Transform quiz data to expected format
+          const transformedQuiz = {
+            questions: quiz.questions.map((q, index) => ({
+              id: index + 1,
+              question: q.question || q.content,
+              options: q.options || q.answers?.map(a => a.content) || [],
+              correctAnswer: q.correctAnswer !== undefined 
+                ? q.correctAnswer 
+                : q.answers?.findIndex(a => a.isCorrect) || 0,
+            }))
+          };
+          
+          setQuizData(transformedQuiz);
+          setLoading(false);
+          return;
+        }
+        
+        // Fallback: Try to get quiz by lesson ID directly
+        try {
+          const quizResponse = await apiClient.get(`/quiz/by-lesson/${lessonId}`);
+          
+          if (quizResponse.data.success && quizResponse.data.data) {
+            const quiz = quizResponse.data.data;
+            const transformedQuiz = {
+              questions: quiz.questions.map((q, index) => ({
+                id: index + 1,
+                question: q.content,
+                options: q.answers.map(a => a.content),
+                correctAnswer: q.answers.findIndex(a => a.isCorrect),
+              }))
+            };
+            
+            setQuizData(transformedQuiz);
+            setLoading(false);
+            return;
+          }
+        } catch (quizError) {
+          // Quiz API not available, continue to error
+        }
+        
+        // If no quiz found, show error
+        setError("No quiz available for this lesson");
+        setLoading(false);
+        
+      } catch (error) {
+        console.error("Error fetching quiz data:", error);
+        setError("Failed to load quiz data");
+        setLoading(false);
+      }
+    };
+
+    fetchQuizData();
+  }, [lessonId, propQuizData]);
 
   const handleAnswerSelect = (questionId, answerIndex) => {
     setSelectedAnswers((prev) => ({
