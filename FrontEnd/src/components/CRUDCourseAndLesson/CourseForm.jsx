@@ -3,8 +3,9 @@ import "../../assets/CRUDCourseAndLesson/CourseForm.css";
 import Input from "../common/Input";
 import ProgressTabs from "./ProgressTabs";
 import CustomButton from "../common/CustomButton/CustomButton";
-import { useNavigate } from "react-router-dom";
-import { getAllCategories } from "../../services/adminService";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getAllCategories as getAdminCategories } from "../../services/adminService";
+import { getAllCategories as getInstructorCategories } from "../../services/instructorService";
 import { toast } from "react-toastify";
 
 const languageOptions = ["English", "Vietnamese"];
@@ -46,6 +47,11 @@ const CourseForm = ({
   const [categoryError, setCategoryError] = React.useState("");
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Detect if user is admin or instructor based on route
+  const isAdmin = location.pathname.includes("/admin/");
+  const isInstructor = location.pathname.includes("/instructor/");
 
   // Language conversion mapping
   const languageMapping = {
@@ -71,6 +77,8 @@ const CourseForm = ({
     setLoadingCategories(true);
     setCategoryError("");
     try {
+      // Use appropriate service based on user role
+      const getAllCategories = isInstructor ? getInstructorCategories : getAdminCategories;
       const response = await getAllCategories();
 
       if (response.data && response.data.success) {
@@ -293,7 +301,12 @@ const CourseForm = ({
   };
 
   const handleCancel = () => {
-    navigate("/admin/courses/all");
+    // Navigate to appropriate courses page based on user role
+    if (isInstructor) {
+      navigate("/instructor/courses");
+    } else {
+      navigate("/admin/courses/all");
+    }
   };
 
   const allFieldsFilled =

@@ -4,6 +4,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
 import FinalHeaderAndSidebar from "../components/AdminHeaderAndSidebar/FinalHeaderAndSidebar";
+import InstructorLayout from "../components/InstructorHeaderAndSidebar/InstructorLayout";
 
 // Đảm bảo đường dẫn này là chính xác
 const FloatingChatButton = React.lazy(() =>
@@ -15,6 +16,7 @@ const { Content } = Layout;
 function AppLayout() {
   const location = useLocation();
   const isAdminRoute = location.pathname.includes("admin");
+  const isInstructorRoute = location.pathname.includes("instructor");
   const headerHeight = "130px"; // Giả sử chiều cao header của bạn
 
   if (isAdminRoute) {
@@ -22,6 +24,14 @@ function AppLayout() {
       <FinalHeaderAndSidebar>
         <Outlet />
       </FinalHeaderAndSidebar>
+    );
+  }
+
+  if (isInstructorRoute) {
+    return (
+      <InstructorLayout>
+        <Outlet />
+      </InstructorLayout>
     );
   }
 
