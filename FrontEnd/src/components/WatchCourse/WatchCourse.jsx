@@ -333,10 +333,11 @@ const WatchCourse = ({ courseId: propCourseId }) => {
       </div>
       <div className="f-watch-course-main">
         <div className="f-watch-course-left">
-          {currentLesson?.type === "quiz" ? (
+          {(currentLesson?.type === "quiz" || currentLesson?.quizData) ? (
             <div className="f-quiz-section">
               <QuizContent
-                lessonId={currentLesson?.id}
+                lessonId={currentLesson?._id || currentLesson?.id}
+                quizData={currentLesson?.quizData}
                 onQuizComplete={async (quizResult) => {
                   if (quizResult.completed) {
                     // Tìm lecture tương ứng với quiz này

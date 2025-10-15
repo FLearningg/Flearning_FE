@@ -70,3 +70,22 @@ export const assignDiscountToCourse = (courseId, discountId) =>
 // Increase usage for discount (user)
 export const increaseDiscountUsage = (discountId) =>
   apiClient.post(`/discounts/${discountId}/increase-usage`);
+
+// Upload and process quiz document
+export const uploadQuizDocument = async (file, courseId) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (courseId) {
+      formData.append("courseId", courseId);
+    }
+
+    const response = await apiClient.post("/admin/upload-quiz", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

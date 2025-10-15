@@ -6,45 +6,20 @@ import {
   BookOpen,
   HelpCircle,
   Clock,
-  Upload,
   Check,
   GripVertical,
   ChevronRight,
   FileText,
-  X,
 } from "lucide-react";
 import "../../assets/CRUDCourseAndLesson/CourseCurriculum.css";
 import ProgressTabs from "./ProgressTabs";
 import CustomButton from "../common/CustomButton/CustomButton";
+import { toast } from "react-toastify";
+import apiClient from "../../services/authService";
+import { uploadWordQuiz, updateQuiz, linkQuizToCourse } from "../../services/quizService";
+import { deleteLessonFile, updateLessonFile } from "../../services/lessonService";
+import QuizEditorModal from "./QuizEditorModal";
 
-// Mock quiz data - Replace with API call later
-const MOCK_QUIZZES = [
-  {
-    _id: "quiz1",
-    title: "Introduction to JavaScript Quiz",
-    questions: 10,
-    duration: 600,
-  },
-  {
-    _id: "quiz2",
-    title: "React Fundamentals Assessment",
-    questions: 15,
-    duration: 900,
-  },
-  {
-    _id: "quiz3",
-    title: "Advanced CSS Techniques",
-    questions: 8,
-    duration: 480,
-  },
-  { _id: "quiz4", title: "Node.js Backend Quiz", questions: 12, duration: 720 },
-  {
-    _id: "quiz5",
-    title: "Database Design Principles",
-    questions: 10,
-    duration: 600,
-  },
-];
 
 function Modal({ open, onClose, title, children }) {
   if (!open) return null;
@@ -65,22 +40,45 @@ function Modal({ open, onClose, title, children }) {
 
 function defaultLesson(order = 1, type = "video") {
   const baseLesson = {
-    title: `Lesson ${order}`,
+    title: type === "quiz" ? `Quiz ${order}` : `Lesson ${order}`,
     type: type,
     description: "",
     lessonNotes: "",
     order,
     duration: 0,
+    captions: "", // Optional captions
   };
 
   switch (type) {
     case "video":
+      return { 
+        ...baseLesson, 
+        materialUrl: "", // Video URL
+        videoUrl: "", // Backward compatibility
+        materialFile: null 
+      };
+    
     case "article":
-      return { ...baseLesson, materialFile: null };
+      return { 
+        ...baseLesson, 
+        materialUrl: "", // Article URL
+        articleUrl: "", // Clear labeling
+        materialFile: null 
+      };
+    
     case "quiz":
-      return { ...baseLesson, title: `Quiz ${order}`, quizIds: [] };
+      return { 
+        ...baseLesson, 
+        quizIds: [],
+        quizData: null // Will be populated when quiz is created
+      };
+    
     default:
-      return { ...baseLesson, materialFile: null };
+      return { 
+        ...baseLesson, 
+        materialUrl: "",
+        materialFile: null 
+      };
   }
 }
 
@@ -90,21 +88,116 @@ export default function CourseCurriculum({
   onPrev,
   completedTabs,
   onTabClick,
+  courseId,
 }) {
-  const [sections, setSections] = useState(
-    initialData?.sections?.length > 0
-      ? initialData.sections
-      : [{ name: "Section 1", order: 1, lessons: [defaultLesson(1)] }]
+  // Transform backend sections data to frontend format
+  const transformSectionsData = (backendSections) => {
+    if (!backendSections || !Array.isArray(backendSections) || backendSections.length === 0) {
+      return [{ name: "Section 1", order: 1, lessons: [defaultLesson(1)] }];
+    }
+
+    return backendSections.map((section, sIdx) => ({
+      ...section,
+      name: section.name || section.title || `Section ${sIdx + 1}`,
+      order: section.order || sIdx + 1,
+      lessons: section.lessons?.length > 0 
+        ? section.lessons.map((lesson, lIdx) => {
+            const transformedLesson = {
+              ...lesson,
+              title: lesson.title || `Lesson ${lIdx + 1}`,
+              type: lesson.type || "video",
+              description: lesson.description || "",
+              lessonNotes: lesson.lessonNotes || lesson.notes || "",
+              order: lesson.order || lIdx + 1,
+              duration: lesson.duration || 0,
+              captions: lesson.captions || "",
+            };
+
+            // Type-specific URL handling and file info
+            switch (lesson.type) {
+              case "video":
+                transformedLesson.materialUrl = lesson.materialUrl || lesson.videoUrl || "";
+                transformedLesson.videoUrl = lesson.videoUrl || lesson.materialUrl || ""; // Backward compatibility
+                transformedLesson.fileInfo = lesson.fileInfo || null; // File details from backend
+                break;
+              
+              case "article":
+                transformedLesson.materialUrl = lesson.materialUrl || lesson.articleUrl || "";
+                transformedLesson.articleUrl = lesson.articleUrl || lesson.materialUrl || ""; // Clear labeling
+                transformedLesson.fileInfo = lesson.fileInfo || null; // File details from backend
+                break;
+              
+              default:
+                transformedLesson.materialUrl = lesson.materialUrl || "";
+                transformedLesson.fileInfo = lesson.fileInfo || null;
+                break;
+            }
+
+            // Handle quiz data if lesson type is quiz
+            if (lesson.type === "quiz") {
+              if (lesson.quizData) {
+                // Use quizData directly from backend
+                const backendQuizData = lesson.quizData;
+                
+                // Transform backend quiz format to frontend format
+                const transformedQuestions = backendQuizData.questions?.map(q => ({
+                  question: q.content || q.question,
+                  options: q.answers?.map(a => a.content) || q.options || [],
+                  correctAnswer: q.answers?.findIndex(a => a.isCorrect) || 0,
+                  score: q.score || 1
+                })) || [];
+
+                transformedLesson.quizData = {
+                  _id: backendQuizData._id || lesson.quizIds?.[0],
+                  title: backendQuizData.title || lesson.title,
+                  description: backendQuizData.description || lesson.description,
+                  questions: transformedQuestions,
+                  estimatedDuration: backendQuizData.estimatedDuration || 0,
+                  roleCreated: backendQuizData.roleCreated || "instructor",
+                  userId: backendQuizData.userId,
+                  isTemporary: false,
+                  backendQuizId: backendQuizData._id || lesson.quizIds?.[0]
+                };
+              } else if (lesson.quizIds?.length > 0) {
+                // Fallback: create basic quiz data structure for old format
+                transformedLesson.quizData = {
+                  _id: lesson.quizIds[0],
+                  title: lesson.title || `Quiz ${lIdx + 1}`,
+                  description: lesson.description || "",
+                  questions: [], // Will be loaded separately if needed
+                  isTemporary: false,
+                  backendQuizId: lesson.quizIds[0]
+                };
+              }
+            }
+
+            return transformedLesson;
+          })
+        : [defaultLesson(1)]
+    }));
+  };
+
+  const [sections, setSections] = useState(() => 
+    transformSectionsData(initialData?.sections)
   );
   const [expandedSections, setExpandedSections] = useState(new Set([0]));
   const [expandedLessons, setExpandedLessons] = useState(new Set());
   const [showLessonTypeDropdown, setShowLessonTypeDropdown] = useState({});
-  const [showQuizSelector, setShowQuizSelector] = useState({
+  const [showQuizEditor, setShowQuizEditor] = useState({
     open: false,
     sectionIdx: null,
     lessonIdx: null,
+    quizData: null,
   });
-  const [availableQuizzes] = useState(MOCK_QUIZZES);
+  const [isSavingCourse, setIsSavingCourse] = useState(false);
+
+  // Update sections when initialData changes (for course switching)
+  useEffect(() => {
+    if (initialData?.sections) {
+      const transformedSections = transformSectionsData(initialData.sections);
+      setSections(transformedSections);
+    }
+  }, [initialData?.sections]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -158,7 +251,7 @@ export default function CourseCurriculum({
       if (lesson.materialUrl?.trim()) completed++;
     } else if (lesson.type === "quiz") {
       total++;
-      if (lesson.quizIds?.length > 0) completed++;
+      if (lesson.quizData && lesson.quizData.questions?.length > 0) completed++;
     }
 
     return {
@@ -203,7 +296,6 @@ export default function CourseCurriculum({
   };
 
   const handleAddLesson = (sIdx, type = "video") => {
-    console.log("handleAddLesson called with sIdx:", sIdx, "type:", type);
     setSections((prev) => {
       const newSections = prev.map((s, i) =>
         i === sIdx
@@ -216,7 +308,6 @@ export default function CourseCurriculum({
             }
           : s
       );
-      console.log("New sections:", newSections);
       return newSections;
     });
     setShowLessonTypeDropdown({});
@@ -244,6 +335,158 @@ export default function CourseCurriculum({
           : s
       )
     );
+  };
+
+  // Handle deleting lesson file
+  const handleDeleteLessonFile = async (sIdx, lIdx) => {
+    const lesson = sections[sIdx].lessons[lIdx];
+    
+    if (!lesson._id) {
+      // For new lessons, just clear the file info
+      handleLessonFieldChange(sIdx, lIdx, "materialUrl", "");
+      handleLessonFieldChange(sIdx, lIdx, "videoUrl", "");
+      handleLessonFieldChange(sIdx, lIdx, "articleUrl", "");
+      handleLessonFieldChange(sIdx, lIdx, "fileInfo", null);
+      handleLessonFieldChange(sIdx, lIdx, "materialFile", null);
+      toast.success("File removed");
+      return;
+    }
+
+    try {
+      await deleteLessonFile(lesson._id);
+      
+      // Clear file info in state
+      handleLessonFieldChange(sIdx, lIdx, "materialUrl", "");
+      handleLessonFieldChange(sIdx, lIdx, "videoUrl", "");
+      handleLessonFieldChange(sIdx, lIdx, "articleUrl", "");
+      handleLessonFieldChange(sIdx, lIdx, "fileInfo", null);
+      handleLessonFieldChange(sIdx, lIdx, "materialFile", null);
+      
+      toast.success("File deleted successfully");
+    } catch (error) {
+      console.error("Error deleting lesson file:", error);
+      toast.error(`Failed to delete file: ${error.message}`);
+    }
+  };
+
+  // Function to link temporary quizzes to course
+  const saveTemporaryQuizzes = async (actualCourseId, sectionsData) => {
+    
+    if (!actualCourseId) return sectionsData;
+
+    const temporaryQuizzes = [];
+    
+    // Find all temporary quizzes in sections
+    sectionsData.forEach((section, sIdx) => {
+      section.lessons.forEach((lesson, lIdx) => {
+        
+        if (lesson.type === "quiz" && lesson.quizData) {
+          // Check if quiz needs to be processed
+          const quizId = lesson.quizData._id ? lesson.quizData._id.toString() : "";
+          const backendQuizId = lesson.quizData.backendQuizId ? lesson.quizData.backendQuizId.toString() : "";
+          
+          const isTempId = quizId.startsWith("temp");
+          const hasTempBackendId = backendQuizId.startsWith("temp");
+          
+          // Check if quiz was already saved via quiz editor
+          const isAlreadySaved = !lesson.quizData.isTemporary && 
+                                !isTempId && 
+                                !hasTempBackendId &&
+                                lesson.quizData._id &&
+                                lesson.quizData._id.length > 15; // Real MongoDB ID
+          
+          
+          // Process quiz only if it's still temporary (not saved yet)
+          if ((isTempId || hasTempBackendId) && !isAlreadySaved) {
+            temporaryQuizzes.push({
+              sectionIdx: sIdx,
+              lessonIdx: lIdx,
+              sectionId: section._id || section.id,
+              lesson: lesson,
+              quizData: lesson.quizData
+            });
+          }
+        }
+      });
+    });
+
+    if (temporaryQuizzes.length === 0) return sectionsData;
+
+    // Process each quiz (save new ones or link existing ones)
+    for (const quizInfo of temporaryQuizzes) {
+      try {
+        let realQuizId = null;
+
+        // Check if quiz has real backend ID (not temp)
+        const backendQuizId = quizInfo.quizData.backendQuizId ? quizInfo.quizData.backendQuizId.toString() : "";
+        const quizId = quizInfo.quizData._id ? quizInfo.quizData._id.toString() : "";
+        
+        const hasRealBackendId = backendQuizId && 
+          !backendQuizId.startsWith("temp") &&
+          backendQuizId !== quizId;
+        
+        if (hasRealBackendId) {
+          // Use linkQuizToCourse API to link existing quiz
+          try {
+            const linkResponse = await linkQuizToCourse(quizInfo.quizData.backendQuizId, actualCourseId);
+            realQuizId = quizInfo.quizData.backendQuizId;
+          } catch (linkError) {
+            console.error("Failed to link quiz to course:", linkError);
+            throw linkError;
+          }
+        } else {
+          // Create new quiz in database using create-from-data API
+          
+          // Call create-from-data API directly instead of upload-word
+          const requestData = {
+            title: quizInfo.quizData.title,
+            description: quizInfo.quizData.description,
+            courseId: actualCourseId,
+            questions: quizInfo.quizData.questions.map(q => ({
+              content: q.question,
+              type: "multiple-choice",
+              score: q.score || 1,
+              answers: q.options.map((option, idx) => ({
+                content: option,
+                isCorrect: idx === q.correctAnswer
+              }))
+            })),
+            firebaseUrl: quizInfo.quizData.firebaseUrl,
+            userId: JSON.parse(localStorage.getItem("currentUser") || "{}")._id,
+            sectionId: quizInfo.sectionId,
+            autoCreateLesson: 'true'
+          };
+          
+          const response = await apiClient.post("quiz/create-from-data", requestData);
+          
+          if (response.data.success && response.data.data) {
+            realQuizId = response.data.data.quizId;
+          } else {
+            throw new Error(response.data.message || "Failed to save quiz to database");
+          }
+        }
+
+        // Update lesson with real quiz ID
+        const realQuizData = {
+          ...quizInfo.quizData,
+          _id: realQuizId,
+          isTemporary: false
+        };
+        
+        // Update the lesson in sectionsData
+        sectionsData[quizInfo.sectionIdx].lessons[quizInfo.lessonIdx].quizData = realQuizData;
+        
+      } catch (error) {
+        console.error(`Failed to process quiz for lesson ${quizInfo.lesson.title}:`, error);
+        toast.error(`Failed to process quiz: ${quizInfo.quizData.title}`);
+      }
+    }
+
+    if (temporaryQuizzes.length > 0) {
+      toast.success(`Successfully saved ${temporaryQuizzes.length} quiz(es) to database!`);
+    }
+    
+    return sectionsData;
   };
 
   return (
@@ -349,22 +592,10 @@ export default function CourseCurriculum({
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  console.log(
-                                    "Toggling dropdown for section:",
-                                    sIdx
-                                  );
-                                  console.log(
-                                    "Current state:",
-                                    showLessonTypeDropdown
-                                  );
-                                  setShowLessonTypeDropdown((prev) => {
-                                    const newState = {
+                                  setShowLessonTypeDropdown((prev) => ({
                                       ...prev,
                                       [sIdx]: !prev[sIdx],
-                                    };
-                                    console.log("New state:", newState);
-                                    return newState;
-                                  });
+                                  }));
                                 }}
                                 className={`action-button ${
                                   showLessonTypeDropdown[sIdx] ? "active" : ""
@@ -400,12 +631,6 @@ export default function CourseCurriculum({
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        console.log(
-                                          "Adding lesson of type:",
-                                          type,
-                                          "to section:",
-                                          sIdx
-                                        );
                                         handleAddLesson(sIdx, type);
                                       }}
                                       className="dropdown-item"
@@ -617,129 +842,371 @@ export default function CourseCurriculum({
                                             <span className="field-title">
                                               {lesson.type === "video"
                                                 ? "Upload Video"
+                                                : lesson.type === "quiz"
+                                                ? "Upload Quiz Document"
                                                 : "Upload Material"}
                                             </span>
-                                            {lesson.materialFile && (
+                                            {((lesson.type === "quiz" && lesson.quizData) || 
+                                              (lesson.type !== "quiz" && (lesson.materialFile || lesson.fileInfo || lesson.materialUrl))) && (
                                               <Check
                                                 size={14}
                                                 className="field-check"
                                               />
                                             )}
                                           </div>
+
+                                          {/* Show existing file if available */}
+                                          {lesson.type !== "quiz" && (lesson.materialUrl || lesson.videoUrl || lesson.articleUrl) && (
+                                            <div className="existing-file-container">
+                                              <div className="existing-file-info">
+                                                <FileText size={16} />
+                                                <span className="file-name">
+                                                  {lesson.fileInfo?.fileName || "Uploaded File"}
+                                                </span>
+                                                {lesson.fileInfo?.uploadedAt && (
+                                                  <small className="upload-date">
+                                                    Uploaded: {new Date(lesson.fileInfo.uploadedAt).toLocaleDateString()}
+                                                  </small>
+                                                )}
+                                              </div>
+                                              <button
+                                                type="button"
+                                                className="file-remove-btn"
+                                                onClick={() => handleDeleteLessonFile(sIdx, lIdx)}
+                                                title="Remove file"
+                                                style={{
+                                                  background: '#dc3545',
+                                                  color: 'white',
+                                                  border: 'none',
+                                                  borderRadius: '4px',
+                                                  padding: '8px 10px',
+                                                  cursor: 'pointer',
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  justifyContent: 'center',
+                                                  minWidth: '32px',
+                                                  minHeight: '32px',
+                                                  zIndex: 1000
+                                                }}
+                                              >
+                                                <Trash2 size={16} />
+                                              </button>
+                                            </div>
+                                          )}
+                                          
+                                          {lesson.type === "quiz" && (
+                                            <div className="upload-instructions">
+                                              <p>Upload a Word document (.docx) containing your quiz questions</p>
+                                              <small>The system will automatically process and extract questions from your document</small>
+                                            </div>
+                                          )}
+                                          
+                                          {/* Show upload input if no file exists or for quiz type */}
+                                          {(lesson.type === "quiz" || (!lesson.materialUrl && !lesson.videoUrl && !lesson.articleUrl)) && (
+                                            <div>
+                                              {lesson.type !== "quiz" && (
+                                                <p className="upload-instruction">
+                                                  {lesson.type === "video" 
+                                                    ? "Choose a video file to upload" 
+                                                    : "Choose a file to upload"}
+                                                </p>
+                                              )}
                                           <input
                                             type="file"
                                             className="field-input file-input"
                                             accept={
                                               lesson.type === "video"
                                                 ? "video/*"
+                                                    : lesson.type === "quiz"
+                                                    ? ".docx,.doc"
                                                 : "*"
                                             }
-                                            onChange={(e) => {
-                                              const file =
-                                                e.target.files?.[0] || null;
-                                              handleLessonFieldChange(
-                                                sIdx,
-                                                lIdx,
-                                                "materialFile",
-                                                file
-                                              );
+                                            onChange={async (e) => {
+                                              const file = e.target.files?.[0];
+                                              if (!file) return;
+
+                                              if (lesson.type === "quiz") {
+                                                // Quiz upload logic - Parse only, don't save to DB yet
+                                                handleLessonFieldChange(sIdx, lIdx, "uploadingQuiz", true);
+
+                                                try {
+                                                  // Upload file to get Firebase URL but don't create quiz in DB
+                                                  const formData = new FormData();
+                                                  formData.append("file", file);
+                                                  formData.append("fileType", "quiz");
+
+                                                  const uploadResponse = await apiClient.post("/admin/upload", formData, {
+                                                    headers: { "Content-Type": "multipart/form-data" },
+                                                  });
+
+                                                  if (!uploadResponse.data || !uploadResponse.data.url) {
+                                                    throw new Error("Failed to upload quiz file");
+                                                  }
+
+                                                  // Create quiz data structure for frontend state only
+                                                  const fileName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+                                                  const title = fileName || "Untitled Quiz";
+                                                  const description = `Quiz created from ${file.name}`;
+
+                                                  // Try to parse quiz from uploaded Word document
+
+                                                  try {
+                                                    // Test API call to parse Word document
+                                                    const currentSection = sections[sIdx];
+                                                    // Parse Word document WITHOUT saving to database
+                                                    const parseResponse = await uploadWordQuiz(file, null, title, description);
+                                                    
+                                                    if (parseResponse.success && parseResponse.data) {
+                                                      // Use parsed quiz data
+                                                      const parsedQuiz = parseResponse.data;
+
+                                                      // Extract questions from backend response
+                                                      const backendQuestions = 
+                                                        parsedQuiz.quizData?.questions || 
+                                                        parsedQuiz.questions || 
+                                                        parsedQuiz.data?.questions ||
+                                                        [];
+
+                                                      // Transform backend questions to frontend format
+                                                      const transformedQuestions = backendQuestions.map(q => ({
+                                                        question: q.content || q.question,
+                                                        options: q.answers ? q.answers.map(a => a.content) : (q.options || []),
+                                                        correctAnswer: q.answers ? q.answers.findIndex(a => a.isCorrect) : (q.correctAnswer || 0),
+                                                        score: q.score || 1
+                                                      }));
+
+                                                      // Check if backend already created a quiz with real ID
+                                                      const hasRealQuizId = parsedQuiz.tempQuizId && !parsedQuiz.tempQuizId.startsWith("temp-quiz-");
+                                                      
+                                                      // Reuse existing quiz ID if lesson already has quiz, otherwise create new
+                                                      const existingQuizId = lesson.quizData?._id;
+                                                      const quizData = {
+                                                        _id: hasRealQuizId ? parsedQuiz.tempQuizId : (existingQuizId || `temp-quiz-${Date.now()}`), // Reuse existing ID
+                                                        title: title,
+                                                        description: description,
+                                                        fileName: file.name,
+                                                        firebaseUrl: uploadResponse.data.url,
+                                                        isTemporary: !hasRealQuizId, // Not temporary if has real ID
+                                                        questions: transformedQuestions,
+                                                        estimatedDuration: transformedQuestions.length * 60,
+                                                        // Store backend quiz info
+                                                        backendQuizId: parsedQuiz.tempQuizId, // Store backend quiz ID
+                                                        // Store original file data for later processing
+                                                        originalFile: {
+                                                          name: file.name,
+                                                          size: file.size,
+                                                          type: file.type,
+                                                          url: uploadResponse.data.url
+                                                        }
+                                                      };
+
+                                                      // Update lesson with quiz data (state only)
+                                                      handleLessonFieldChange(sIdx, lIdx, "quizData", quizData);
+                                                      handleLessonFieldChange(sIdx, lIdx, "duration", quizData.estimatedDuration);
+                                                      
+                                                      // Auto-expand the lesson to show the Edit button
+                                                      const lessonKey = `${sIdx}-${lIdx}`;
+                                                      setExpandedLessons(prev => new Set([...prev, lessonKey]));
+                                                      
+                                                      // Mark as newly created for animation
+                                                      handleLessonFieldChange(sIdx, lIdx, "newlyCreatedQuiz", true);
+                                                      
+                                                      // Remove the newly created flag after animation
+                                                      setTimeout(() => {
+                                                        handleLessonFieldChange(sIdx, lIdx, "newlyCreatedQuiz", false);
+                                                      }, 2000);
+                                                        
+                                                      toast.success(`Quiz parsed successfully! ${quizData.questions.length} questions found. Quiz will be saved when you save the course.`);
+                                                      return; // Exit successfully
+                                                    }
+                                                  } catch (parseError) {
+                                                  }
+
+                                                  // Fallback: Create empty quiz structure for manual editing
+                                                  // Reuse existing quiz ID if lesson already has quiz, otherwise create new
+                                                  const existingQuizId = lesson.quizData?._id;
+                                                  const quizData = {
+                                                    _id: existingQuizId || `temp-quiz-${Date.now()}`, // Reuse existing ID
+                                                    title: title,
+                                                    description: description,
+                                                    fileName: file.name,
+                                                    firebaseUrl: uploadResponse.data.url,
+                                                    isTemporary: true, // Mark as temporary (not saved to DB)
+                                                    questions: [], // Empty questions for manual editing
+                                                    estimatedDuration: 0,
+                                                    // Store original file data for later processing
+                                                    originalFile: {
+                                                      name: file.name,
+                                                      size: file.size,
+                                                      type: file.type,
+                                                      url: uploadResponse.data.url
+                                                    }
+                                                  };
+
+                                                  // Update lesson with quiz data (state only)
+                                                  handleLessonFieldChange(sIdx, lIdx, "quizData", quizData);
+                                                  handleLessonFieldChange(sIdx, lIdx, "duration", quizData.estimatedDuration);
+                                                  
+                                                  // Auto-expand the lesson to show the Edit button
+                                                  const lessonKey = `${sIdx}-${lIdx}`;
+                                                  setExpandedLessons(prev => new Set([...prev, lessonKey]));
+                                                  
+                                                  // Mark as newly created for animation
+                                                  handleLessonFieldChange(sIdx, lIdx, "newlyCreatedQuiz", true);
+                                                  
+                                                  // Remove the newly created flag after animation
+                                                  setTimeout(() => {
+                                                    handleLessonFieldChange(sIdx, lIdx, "newlyCreatedQuiz", false);
+                                                  }, 2000);
+                                                    
+                                                  toast.success(`Quiz document uploaded! ${quizData.questions.length} questions ready. Click Edit to modify questions. Quiz will be saved when you save the course.`);
+                                                } catch (error) {
+                                                  console.error("Quiz upload error:", error);
+                                                  toast.error(error.message || "Failed to upload quiz");
+                                                } finally {
+                                                  handleLessonFieldChange(sIdx, lIdx, "uploadingQuiz", false);
+                                                }
+                                              } else {
+                                                // Regular file upload logic (video/article)
+                                                try {
+                                                  if (lesson._id) {
+                                                    // Existing lesson - use update API
+                                                    const response = await updateLessonFile(lesson._id, file);
+                                                    
+                                                    if (response.success && response.data) {
+                                                      // Update lesson with new file info
+                                                      handleLessonFieldChange(sIdx, lIdx, "materialUrl", response.data.materialUrl);
+                                                      handleLessonFieldChange(sIdx, lIdx, "videoUrl", response.data.materialUrl);
+                                                      handleLessonFieldChange(sIdx, lIdx, "fileInfo", response.data.fileInfo);
+                                                      
+                                                      toast.success("File updated successfully");
+                                                    } else {
+                                                      throw new Error(response.message || "Failed to update file");
+                                                    }
+                                                  } else {
+                                                    // New lesson - upload to Firebase only
+                                                    const formData = new FormData();
+                                                    formData.append("file", file);
+                                                    formData.append("fileType", "lesson");
+
+                                                    const res = await apiClient.post("/admin/upload", formData, {
+                                                      headers: { "Content-Type": "multipart/form-data" },
+                                                    });
+
+                                                    if (!res.data || !res.data.url) {
+                                                      throw new Error("Failed to upload file");
+                                                    }
+
+                                                    // Update lesson with new URL and file info
+                                                    handleLessonFieldChange(sIdx, lIdx, "materialUrl", res.data.url);
+                                                    handleLessonFieldChange(sIdx, lIdx, "videoUrl", res.data.url);
+                                                    handleLessonFieldChange(sIdx, lIdx, "materialFile", file);
+                                                    
+                                                    // Create temporary file info for display
+                                                    const fileInfo = {
+                                                      fileName: file.name,
+                                                      url: res.data.url,
+                                                      uploadedAt: new Date().toISOString(),
+                                                      canDelete: true
+                                                    };
+                                                    handleLessonFieldChange(sIdx, lIdx, "fileInfo", fileInfo);
+                                                    
+                                                    toast.success("File uploaded successfully");
+                                                  }
+                                                } catch (error) {
+                                                  console.error("File upload error:", error);
+                                                  toast.error(error.message || "Failed to upload file");
+                                                }
+                                              }
                                             }}
-                                          />
-                                          {lesson.materialFile && (
-                                            <div className="field-note">
-                                              {lesson.materialFile.name}
+                                                disabled={lesson.uploadingQuiz}
+                                              />
                                             </div>
+                                          )}
+                                          {lesson.type === "quiz" ? (
+                                            lesson.quizData ? (
+                                            <div className="field-note">
+                                                Quiz uploaded: {lesson.quizData.questions?.length || 0} questions
+                                            </div>
+                                            ) : lesson.uploadingQuiz ? (
+                                              <div className="field-note">
+                                                Processing quiz document...
+                                              </div>
+                                            ) : null
+                                          ) : (
+                                            lesson.materialUrl && (
+                                              <div className="field-note">
+                                                File uploaded successfully
+                                              </div>
+                                            )
                                           )}
                                         </div>
                                       </div>
 
-                                      {/* Quiz Selection */}
-                                      {lesson.type === "quiz" && (
+                                      {/* Quiz Management */}
+                                      {lesson.type === "quiz" && lesson.quizData && (
                                         <div className="field-card field-full">
                                           <div className="field-header">
                                             <HelpCircle size={16} />
                                             <span className="field-title">
-                                              Quiz Selection
+                                              Quiz Management
                                             </span>
-                                            {lesson.quizIds?.length > 0 && (
                                               <Check
                                                 size={14}
                                                 className="field-check"
                                               />
-                                            )}
                                           </div>
 
+                                          {/* Quiz management section when quiz exists */}
+                                          <div className="quiz-management-section">
+                                            <div className="quiz-info-card">
+                                              <div className="quiz-info">
+                                                <div className="quiz-title">
+                                                  {lesson.quizData.title || "Untitled Quiz"}
+                                                </div>
+                                                <div className="quiz-meta">
+                                                  {lesson.quizData.questions?.length || 0} questions
+                                                  {lesson.quizData.estimatedDuration && (
+                                                    <> · {formatDuration(lesson.quizData.estimatedDuration)}</>
+                                                  )}
+                                                </div>
+                                                <div className="quiz-description">
+                                                  {lesson.quizData.description || "No description provided"}
+                                                </div>
+                                          </div>
+
+                                              <div className="quiz-actions">
                                           <button
-                                            onClick={() =>
-                                              setShowQuizSelector({
+                                                  type="button"
+                                                  onClick={() => {
+                                                    setShowQuizEditor({
                                                 open: true,
                                                 sectionIdx: sIdx,
                                                 lessonIdx: lIdx,
-                                              })
-                                            }
-                                            className="quiz-selector-button"
-                                          >
-                                            <Plus size={16} />
-                                            Select Quizzes
+                                                      quizData: lesson.quizData
+                                                    });
+                                                  }}
+                                                  className={`quiz-edit-button ${lesson.newlyCreatedQuiz ? 'newly-created' : ''}`}
+                                                >
+                                                  <FileText size={16} />
+                                                  Edit Quiz
                                           </button>
 
-                                          {lesson.quizIds?.length > 0 ? (
-                                            <div className="quiz-list">
-                                              {lesson.quizIds.map(
-                                                (qId, idx) => {
-                                                  const quiz =
-                                                    availableQuizzes.find(
-                                                      (q) => q._id === qId
-                                                    );
-                                                  return (
-                                                    <div
-                                                      key={idx}
-                                                      className="quiz-item"
-                                                    >
-                                                      <div className="quiz-info">
-                                                        <div className="quiz-title">
-                                                          {quiz?.title ||
-                                                            `Quiz ${qId}`}
-                                                        </div>
-                                                        {quiz && (
-                                                          <div className="quiz-meta">
-                                                            {quiz.questions}{" "}
-                                                            questions ·{" "}
-                                                            {formatDuration(
-                                                              quiz.duration
-                                                            )}
-                                                          </div>
-                                                        )}
-                                                      </div>
                                                       <button
+                                                  type="button"
                                                         onClick={() => {
-                                                          const newQuizIds =
-                                                            lesson.quizIds.filter(
-                                                              (_, i) =>
-                                                                i !== idx
-                                                            );
-                                                          handleLessonFieldChange(
-                                                            sIdx,
-                                                            lIdx,
-                                                            "quizIds",
-                                                            newQuizIds
-                                                          );
-                                                        }}
-                                                        className="quiz-remove"
-                                                      >
-                                                        <X size={16} />
+                                                    if (window.confirm("Are you sure you want to remove this quiz? This action cannot be undone.")) {
+                                                      handleLessonFieldChange(sIdx, lIdx, "quizData", null);
+                                                      handleLessonFieldChange(sIdx, lIdx, "duration", 0);
+                                                    }
+                                                  }}
+                                                  className="quiz-remove-button"
+                                                >
+                                                  <Trash2 size={16} />
                                                       </button>
                                                     </div>
-                                                  );
-                                                }
-                                              )}
                                             </div>
-                                          ) : (
-                                            <div className="empty-state">
-                                              No quizzes selected. Click "Select
-                                              Quizzes" to add.
                                             </div>
-                                          )}
                                         </div>
                                       )}
                                     </div>
@@ -774,7 +1241,25 @@ export default function CourseCurriculum({
                       color="primary"
                       type="normal"
                       size="large"
-                      onClick={() => onNext({ sections })}
+                      onClick={async () => {
+                        if (isSavingCourse) return; // Prevent multiple clicks
+                        
+                        setIsSavingCourse(true);
+                        try {
+                          // Save temporary quizzes to database if courseId is available
+                          let updatedSections = sections;
+                          if (courseId && courseId !== "undefined" && courseId !== "null") {
+                            updatedSections = await saveTemporaryQuizzes(courseId, sections);
+                          }
+                          onNext({ sections: updatedSections });
+                        } catch (error) {
+                          console.error("Error saving course:", error);
+                          toast.error("Failed to save course");
+                        } finally {
+                          setIsSavingCourse(false);
+                        }
+                      }}
+                      disabled={isSavingCourse}
                     >
                       Next
                     </CustomButton>
@@ -782,106 +1267,27 @@ export default function CourseCurriculum({
                 </div>
               </div>
 
-              {/* Quiz Selector Modal */}
-              <Modal
-                open={showQuizSelector.open}
+              {/* Quiz Editor Modal */}
+              <QuizEditorModal
+                isOpen={showQuizEditor.open}
                 onClose={() =>
-                  setShowQuizSelector({
+                  setShowQuizEditor({
                     open: false,
                     sectionIdx: null,
                     lessonIdx: null,
+                    quizData: null,
                   })
                 }
-                title="Select Quizzes"
-              >
-                <div className="modal-body">
-                  {availableQuizzes.map((quiz) => {
-                    const currentLesson =
-                      showQuizSelector.sectionIdx !== null &&
-                      showQuizSelector.lessonIdx !== null
-                        ? sections[showQuizSelector.sectionIdx]?.lessons[
-                            showQuizSelector.lessonIdx
-                          ]
-                        : null;
-                    const isSelected = currentLesson?.quizIds?.includes(
-                      quiz._id
-                    );
-
-                    return (
-                      <div
-                        key={quiz._id}
-                        onClick={() => {
-                          const sIdx = showQuizSelector.sectionIdx;
-                          const lIdx = showQuizSelector.lessonIdx;
-                          if (sIdx !== null && lIdx !== null) {
-                            const currentQuizIds = currentLesson?.quizIds || [];
-                            const newQuizIds = isSelected
-                              ? currentQuizIds.filter((id) => id !== quiz._id)
-                              : [...currentQuizIds, quiz._id];
-                            // Update quizIds
-                            handleLessonFieldChange(
-                              sIdx,
-                              lIdx,
-                              "quizIds",
-                              newQuizIds
-                            );
-                            // Calculate total duration from selected quizzes
-                            const totalSec = newQuizIds.reduce((sum, id) => {
-                              const q = availableQuizzes.find(
-                                (q) => q._id === id
-                              );
-                              return sum + (q?.duration || 0);
-                            }, 0);
-                            handleLessonFieldChange(
-                              sIdx,
-                              lIdx,
-                              "duration",
-                              totalSec
-                            );
-                          }
-                        }}
-                        className={`quiz-option ${
-                          isSelected ? "selected" : ""
-                        }`}
-                      >
-                        <div className="quiz-option-content">
-                          <div className="quiz-option-info">
-                            <div className="quiz-option-title">
-                              {quiz.title}
+                quizData={showQuizEditor.quizData}
+                sectionIdx={showQuizEditor.sectionIdx}
+                lessonIdx={showQuizEditor.lessonIdx}
+                onQuizUpdate={(sectionIdx, lessonIdx, updatedQuizData) => {
+                  handleLessonFieldChange(sectionIdx, lessonIdx, "quizData", updatedQuizData);
+                }}
+              />
                             </div>
-                            <div className="quiz-option-meta">
-                              {quiz.questions} questions ·{" "}
-                              {formatDuration(quiz.duration)} duration
                             </div>
                           </div>
-                          {isSelected && (
-                            <div className="quiz-option-check">
-                              <Check size={14} style={{ color: "white" }} />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="modal-footer">
-                  <button
-                    onClick={() =>
-                      setShowQuizSelector({
-                        open: false,
-                        sectionIdx: null,
-                        lessonIdx: null,
-                      })
-                    }
-                    className="modal-button"
-                  >
-                    Done
-                  </button>
-                </div>
-              </Modal>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

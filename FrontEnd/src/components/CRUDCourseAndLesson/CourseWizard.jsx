@@ -150,8 +150,7 @@ const CourseWizard = () => {
 
           category: "Development",
           subCategory: "Web Development",
-          categoryId: "dev-category-id",
-          subCategoryId: "web-dev-subcategory-id",
+          categoryIds: [], // Empty array for sample data to avoid validation issues
           language: "English",
           subtitleLanguage: "Vietnamese",
           level: "Beginner",
@@ -258,16 +257,6 @@ const CourseWizard = () => {
 
   const handleSubmit = async (messages) => {
     try {
-      // Convert category name to ID if needed
-      let categoryId = courseData.categoryId;
-      if (!categoryId && courseData.category) {
-        // If we have category name but no ID, try to find it
-        // This would need to be implemented based on your categories API
-        console.log(
-          "Category name found but no ID, using name as fallback:",
-          courseData.category
-        );
-      }
 
       // Format data according to API requirements based on Course model
       const dataToSend = {
@@ -307,11 +296,21 @@ const CourseWizard = () => {
         }),
         // Also include the full uploadedFiles object for backwards compatibility
         uploadedFiles: courseData.uploadedFiles,
-        // Handle categoryIds array - convert to array of ObjectIds
-        categoryIds: [
-          ...(courseData.categoryId ? [courseData.categoryId] : []),
-          ...(courseData.subCategoryId ? [courseData.subCategoryId] : []),
-        ],
+        // Handle categoryIds array - extract IDs from different possible formats
+        categoryIds: (() => {
+          // If we have categoryIds array with objects, extract _id
+          if (Array.isArray(courseData.categoryIds) && courseData.categoryIds.length > 0) {
+            return courseData.categoryIds.map(cat => 
+              typeof cat === 'object' && cat._id ? cat._id : cat
+            ).filter(Boolean);
+          }
+          
+          // Fallback to individual categoryId and subCategoryId
+          const ids = [];
+          if (courseData.categoryId) ids.push(courseData.categoryId);
+          if (courseData.subCategoryId) ids.push(courseData.subCategoryId);
+          return ids;
+        })(),
         // Include other fields if they exist
 
         ...(courseData.subtitleLanguage && {
@@ -439,6 +438,7 @@ const CourseWizard = () => {
       onPrev={handlePrev}
       completedTabs={completedTabs}
       onTabClick={handleTabClick}
+      courseId={id || courseData._id || courseData.id}
     />,
     <CoursePublish
       key="step-3"

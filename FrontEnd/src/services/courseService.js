@@ -102,3 +102,69 @@ export const enrollInCourses = async (userId, courseIds) => {
     throw new Error(message);
   }
 };
+
+// Create a new course
+export const createCourse = async (courseData) => {
+  try {
+    const response = await apiClient.post("/admin/courses", courseData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating course:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to create course";
+    throw new Error(message);
+  }
+};
+
+// Create a new section in a course
+export const createSection = async (courseId, sectionData) => {
+  try {
+    const response = await apiClient.post(`/admin/courses/${courseId}/sections`, sectionData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating section:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to create section";
+    throw new Error(message);
+  }
+};
+
+// Create a new lesson in a section
+export const createLesson = async (courseId, sectionId, lessonData) => {
+  try {
+    const response = await apiClient.post(
+      `/admin/courses/${courseId}/sections/${sectionId}/lessons`,
+      lessonData
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error creating lesson:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to create lesson";
+    throw new Error(message);
+  }
+};
+
+// Move lesson video from temporary to course folder
+export const moveLessonVideo = async (courseId, lessonId, videoUrl) => {
+  try {
+    const response = await apiClient.post(
+      `/admin/courses/${courseId}/lessons/${lessonId}/move-video`,
+      { videoUrl }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error moving lesson video:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to move lesson video";
+    throw new Error(message);
+  }
+};

@@ -383,12 +383,14 @@ export default function CourseForm({
 
       const data = {
         detail: {
-          description,
+          description: description || "No description provided", // Required by backend
           willLearn: courseInputs.filter((item) => item.trim() !== ""),
           targetAudience: audienceInputs.filter((item) => item.trim() !== ""),
           requirement: requirementInputs.filter((item) => item.trim() !== ""),
         },
         uploadedFiles,
+        thumbnail: thumbnailUrl || "", // Required by backend
+        trailer: trailerUrl || "", // Required by backend
       };
 
       // If in edit mode and files are in temporary folder, try to move them
@@ -609,7 +611,7 @@ export default function CourseForm({
                   // Save current data before going back
                   const data = {
                     detail: {
-                      description,
+                      description: description || "No description provided", // Required by backend
                       willLearn: courseInputs.filter(
                         (item) => item.trim() !== ""
                       ),
@@ -624,10 +626,9 @@ export default function CourseForm({
                       image: thumbnailUrl ? { url: thumbnailUrl } : null,
                       video: trailerUrl ? { url: trailerUrl } : null,
                     },
-                    // Preserve curriculum if exists
-                    ...(initialData.curriculum && {
-                      curriculum: initialData.curriculum,
-                    }),
+                    thumbnail: thumbnailUrl || "", // Required by backend
+                    trailer: trailerUrl || "", // Required by backend
+                    // Preserve sections if exists
                     ...(initialData.sections && {
                       sections: initialData.sections,
                     }),
