@@ -1,58 +1,59 @@
 import { useState, useEffect } from "react";
-import CustomButton from "../common/CustomButton/CustomButton";
-import { Plus, Trash2, FileText, Video, Type, StickyNote } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Video,
+  BookOpen,
+  HelpCircle,
+  Clock,
+  Upload,
+  Check,
+  GripVertical,
+  ChevronRight,
+  FileText,
+  X,
+} from "lucide-react";
 import "../../assets/CRUDCourseAndLesson/CourseCurriculum.css";
 import ProgressTabs from "./ProgressTabs";
-import apiClient from "../../services/authService";
-import { toast } from "react-toastify";
+import CustomButton from "../common/CustomButton/CustomButton";
+
+// Mock quiz data - Replace with API call later
+const MOCK_QUIZZES = [
+  {
+    _id: "quiz1",
+    title: "Introduction to JavaScript Quiz",
+    questions: 10,
+    duration: 600,
+  },
+  {
+    _id: "quiz2",
+    title: "React Fundamentals Assessment",
+    questions: 15,
+    duration: 900,
+  },
+  {
+    _id: "quiz3",
+    title: "Advanced CSS Techniques",
+    questions: 8,
+    duration: 480,
+  },
+  { _id: "quiz4", title: "Node.js Backend Quiz", questions: 12, duration: 720 },
+  {
+    _id: "quiz5",
+    title: "Database Design Principles",
+    questions: 10,
+    duration: 600,
+  },
+];
 
 function Modal({ open, onClose, title, children }) {
   if (!open) return null;
   return (
-    <div
-      style={{
-        position: "fixed",
-        zIndex: 1000,
-        left: 0,
-        top: 0,
-        width: "100vw",
-        height: "100vh",
-        background: "rgba(0,0,0,0.2)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 8,
-          width: 500,
-          minWidth: 500,
-          maxWidth: 500,
-          padding: 32,
-          boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-          position: "relative",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 500 }}>{title}</h3>
-          <button
-            onClick={onClose}
-            style={{
-              background: "none",
-              border: "none",
-              fontSize: 20,
-              cursor: "pointer",
-            }}
-          >
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h3 className="modal-title">{title}</h3>
+          <button onClick={onClose} className="modal-close">
             ×
           </button>
         </div>
@@ -62,502 +63,124 @@ function Modal({ open, onClose, title, children }) {
   );
 }
 
-// Định nghĩa hàm defaultLesson để tránh lỗi no-undef
-function defaultLesson(order = 1) {
-  return {
+function defaultLesson(order = 1, type = "video") {
+  const baseLesson = {
     title: `Lesson ${order}`,
-    videoUrl: "",
-    captions: "",
+    type: type,
     description: "",
     lessonNotes: "",
     order,
+    duration: 0,
   };
+
+  switch (type) {
+    case "video":
+    case "article":
+      return { ...baseLesson, materialFile: null };
+    case "quiz":
+      return { ...baseLesson, title: `Quiz ${order}`, quizIds: [] };
+    default:
+      return { ...baseLesson, materialFile: null };
+  }
 }
 
 export default function CourseCurriculum({
-  onNext = () => {},
-  onPrev = () => {},
-  initialData = {},
-  completedTabs = [],
-  onTabClick = () => {},
+  initialData,
+  onNext,
+  onPrev,
+  completedTabs,
+  onTabClick,
 }) {
-  const [expandedLecture, setExpandedLecture] = useState(1);
-  const [modal, setModal] = useState({ open: false, type: null });
-  const [lessonVideoFile, setLessonVideoFile] = useState(null);
-  const [lessonVideoPreview, setLessonVideoPreview] = useState(null);
-  const [lessonFile, setLessonFile] = useState(null);
-  const [lessonFilePreview, setLessonFilePreview] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState(
-    initialData.uploadedFiles || {}
-  ); // Track uploaded files by type
-  const [captionText, setCaptionText] = useState(""); // State for caption text
-  const [descriptionText, setDescriptionText] = useState(""); // State for description text
-  const [notesText, setNotesText] = useState(""); // State for notes text
   const [sections, setSections] = useState(
-    (initialData.sections && Array.isArray(initialData.sections)
+    initialData?.sections?.length > 0
       ? initialData.sections
-      : initialData.curriculum && Array.isArray(initialData.curriculum)
-      ? initialData.curriculum
-      : [
-          {
-            name: "Section 1",
-            order: 1,
-            lessons: [defaultLesson(1)],
-          },
-        ]
-    ).map((section, idx) => {
-      const lessons =
-        Array.isArray(section.lessons) && section.lessons.length > 0
-          ? section.lessons
-          : [defaultLesson(1)];
-      return {
-        ...section,
-        lessons,
-        order: section.order || idx + 1,
-      };
-    })
+      : [{ name: "Section 1", order: 1, lessons: [defaultLesson(1)] }]
   );
-  const [editing, setEditing] = useState({
+  const [expandedSections, setExpandedSections] = useState(new Set([0]));
+  const [expandedLessons, setExpandedLessons] = useState(new Set());
+  const [showLessonTypeDropdown, setShowLessonTypeDropdown] = useState({});
+  const [showQuizSelector, setShowQuizSelector] = useState({
+    open: false,
     sectionIdx: null,
     lessonIdx: null,
-    field: null,
   });
-  const [modalValue, setModalValue] = useState("");
-  const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [selectedVideoFile, setSelectedVideoFile] = useState(null);
-  const [selectedVideoPreview, setSelectedVideoPreview] = useState(null);
-  const [uploadedVideoUrl, setUploadedVideoUrl] = useState("");
-  const [expandedSectionIdx, setExpandedSectionIdx] = useState(null);
-  const [expandedLessonIdx, setExpandedLessonIdx] = useState({}); // {sectionIdx: lessonIdx}
+  const [availableQuizzes] = useState(MOCK_QUIZZES);
 
+  // Close dropdown when clicking outside
   useEffect(() => {
-    if (initialData.uploadedFiles) {
-      setUploadedFiles(initialData.uploadedFiles);
-    }
-  }, [initialData]);
-
-  const toggleLecture = (index) => {
-    setExpandedLecture(expandedLecture === index ? null : index);
-  };
-
-  // Remove redundant button style objects and use only CustomButton for actions
-
-  const inputStyle = {
-    width: "100%",
-    padding: "12px",
-    border: "1px solid #e9eaf0",
-    borderRadius: "6px",
-    fontSize: "15px",
-    marginTop: "8px",
-    background: "#fafbfc",
-    color: "#1d2026",
-    outline: "none",
-    boxSizing: "border-box",
-  };
-
-  const textareaStyle = {
-    ...inputStyle,
-    minHeight: 100,
-    resize: "vertical",
-  };
-
-  const fileBoxStyle = {
-    border: "1px solid #e9eaf0",
-    borderRadius: "6px",
-    background: "#fafbfc",
-    padding: "24px 0",
-    textAlign: "center",
-    marginTop: "8px",
-    marginBottom: "16px",
-  };
-
-  const labelStyle = {
-    fontWeight: 500,
-    marginBottom: 8,
-    display: "block",
-    color: "#1d2026",
-    fontSize: 14,
-  };
-
-  const noteStyle = {
-    fontSize: 12,
-    color: "#8c94a3",
-    marginTop: 4,
-    textAlign: "left",
-  };
-
-  const modalFooterStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 16,
-    marginTop: 16,
-  };
-
-  // Handlers for file input
-  const handleLessonVideoChange = (e) => {
-    const file = e.target.files[0];
-    setLessonVideoFile(file);
-    setLessonVideoPreview(file ? URL.createObjectURL(file) : null);
-  };
-  const handleLessonFileChange = (e) => {
-    const file = e.target.files[0];
-    setLessonFile(file);
-    setLessonFilePreview(file ? URL.createObjectURL(file) : null);
-  };
-
-  // Handler for uploading lesson video/file and creating lesson
-  const handleUploadLessonFile = async () => {
-    setUploading(true);
-    try {
-      let videoUrl, fileUrl;
-      if (lessonVideoFile) {
-        const formData = new FormData();
-        formData.append("file", lessonVideoFile);
-        const res = await apiClient.post("/admin/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        videoUrl = res.data.url;
-        setUploadedFiles((prev) => ({
-          ...prev,
-          lessonVideo: { url: videoUrl, name: lessonVideoFile.name },
-        }));
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".dropdown-container")) {
+        setShowLessonTypeDropdown({});
       }
-      if (lessonFile) {
-        const formData = new FormData();
-        formData.append("file", lessonFile);
-        const res = await apiClient.post("/admin/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        fileUrl = res.data.url;
-        setUploadedFiles((prev) => ({
-          ...prev,
-          lessonFile: { url: fileUrl, name: lessonFile.name },
-        }));
-      }
+    };
 
-      toast.success("Lesson uploaded successfully!");
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
-      // Close modal after successful upload
-      setTimeout(() => {
-        setModal({ open: false, type: null });
-        // Clear file inputs
-        setLessonVideoFile(null);
-        setLessonVideoPreview(null);
-        setLessonFile(null);
-        setLessonFilePreview(null);
-      }, 1500);
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || err.message || "Failed to upload lesson"
-      );
-    } finally {
-      setUploading(false);
-    }
+  const formatDuration = (seconds) => {
+    if (!seconds) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${String(secs).padStart(2, "0")}`;
   };
 
-  // Handler for adding caption
-  const handleAddCaption = () => {
-    if (!captionText.trim()) return;
-
-    setUploadedFiles((prev) => ({
-      ...prev,
-      caption: { text: captionText.trim() },
-    }));
-
-    toast.success("Caption added successfully!");
-
-    // Close modal after successful add
-    setTimeout(() => {
-      setModal({ open: false, type: null });
-      setCaptionText(""); // Clear caption text
-    }, 1500);
-  };
-
-  // Handler for adding description
-  const handleAddDescription = () => {
-    if (!descriptionText.trim()) return;
-
-    setUploadedFiles((prev) => ({
-      ...prev,
-      description: { text: descriptionText.trim() },
-    }));
-
-    toast.success("Description added successfully!");
-
-    // Close modal after successful add
-    setTimeout(() => {
-      setModal({ open: false, type: null });
-      setDescriptionText(""); // Clear description text
-    }, 1500);
-  };
-
-  // Handler for adding notes
-  const handleAddNotes = () => {
-    if (!notesText.trim()) return;
-
-    setUploadedFiles((prev) => ({
-      ...prev,
-      notes: { text: notesText.trim() },
-    }));
-
-    toast.success("Notes added successfully!");
-
-    // Close modal after successful add
-    setTimeout(() => {
-      setModal({ open: false, type: null });
-      setNotesText(""); // Clear notes text
-    }, 1500);
-  };
-
-  const renderModalContent = () => {
-    switch (modal.type) {
+  const getLessonIcon = (type) => {
+    switch (type) {
       case "video":
-        return (
-          <>
-            <div>
-              <label style={labelStyle}>Upload Video</label>
-              <div style={fileBoxStyle}>
-                <input
-                  type="file"
-                  accept="video/*"
-                  id="lesson-video-upload"
-                  style={{ display: "none" }}
-                  onChange={handleLessonVideoChange}
-                />
-                <CustomButton
-                  color="primary"
-                  type="normal"
-                  size="small"
-                  onClick={() =>
-                    document.getElementById("lesson-video-upload").click()
-                  }
-                  disabled={uploading}
-                >
-                  {uploading ? "Uploading..." : "Choose Video File"}
-                </CustomButton>
-                {lessonVideoPreview && (
-                  <video
-                    src={lessonVideoPreview}
-                    controls
-                    style={{ maxWidth: 300, marginTop: 8 }}
-                  />
-                )}
-              </div>
-            </div>
-            <div style={modalFooterStyle}>
-              <CustomButton
-                color="transparent"
-                type="normal"
-                size="medium"
-                onClick={() => setModal({ open: false, type: null })}
-              >
-                Cancel
-              </CustomButton>
-              <CustomButton
-                color="primary"
-                type="normal"
-                size="medium"
-                onClick={handleUploadLessonFile}
-                disabled={uploading || (!lessonVideoFile && !lessonFile)}
-              >
-                {uploading ? "Uploading..." : "Upload Video"}
-              </CustomButton>
-            </div>
-          </>
-        );
-      case "file":
-        return (
-          <>
-            <div>
-              <label style={labelStyle}>Attach File</label>
-              <div style={fileBoxStyle}>
-                <input
-                  type="file"
-                  id="lesson-file-upload"
-                  style={{ display: "none" }}
-                  onChange={handleLessonFileChange}
-                />
-                <CustomButton
-                  color="primary"
-                  type="normal"
-                  size="small"
-                  onClick={() =>
-                    document.getElementById("lesson-file-upload").click()
-                  }
-                  disabled={uploading}
-                >
-                  {uploading ? "Uploading..." : "Choose File"}
-                </CustomButton>
-                {lessonFilePreview && (
-                  <a
-                    href={lessonFilePreview}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Preview File
-                  </a>
-                )}
-              </div>
-            </div>
-            <div style={modalFooterStyle}>
-              <CustomButton
-                color="transparent"
-                type="normal"
-                size="medium"
-                onClick={() => setModal({ open: false, type: null })}
-              >
-                Cancel
-              </CustomButton>
-              <CustomButton
-                color="primary"
-                type="normal"
-                size="medium"
-                onClick={handleUploadLessonFile}
-                disabled={uploading || (!lessonVideoFile && !lessonFile)}
-              >
-                {uploading ? "Uploading..." : "Attach File"}
-              </CustomButton>
-            </div>
-          </>
-        );
-      case "caption":
-        return (
-          <>
-            <div>
-              <label style={labelStyle}>Caption</label>
-              <textarea
-                placeholder="Write your lesson caption here..."
-                style={textareaStyle}
-                value={captionText}
-                onChange={(e) => setCaptionText(e.target.value)}
-              />
-            </div>
-            <div style={modalFooterStyle}>
-              <CustomButton
-                color="transparent"
-                type="normal"
-                size="medium"
-                onClick={() => setModal({ open: false, type: null })}
-              >
-                Cancel
-              </CustomButton>
-              <CustomButton
-                color="primary"
-                type="normal"
-                size="medium"
-                onClick={handleAddCaption}
-                disabled={!captionText.trim()}
-              >
-                Add Caption
-              </CustomButton>
-            </div>
-          </>
-        );
-      case "description":
-        return (
-          <>
-            <div>
-              <label style={labelStyle}>Description</label>
-              <textarea
-                placeholder="Write your Lesson description here..."
-                style={textareaStyle}
-                value={descriptionText}
-                onChange={(e) => setDescriptionText(e.target.value)}
-              />
-            </div>
-            <div style={modalFooterStyle}>
-              <CustomButton
-                color="transparent"
-                type="normal"
-                size="medium"
-                onClick={() => setModal({ open: false, type: null })}
-              >
-                Cancel
-              </CustomButton>
-              <CustomButton
-                color="primary"
-                type="normal"
-                size="medium"
-                onClick={handleAddDescription}
-                disabled={!descriptionText.trim()}
-              >
-                Add Description
-              </CustomButton>
-            </div>
-          </>
-        );
-      case "notes":
-        return (
-          <>
-            <div>
-              <label style={labelStyle}>Notes</label>
-              <textarea
-                placeholder="Write your Lesson Notes here..."
-                style={textareaStyle}
-                value={notesText}
-                onChange={(e) => setNotesText(e.target.value)}
-              />
-            </div>
-            <div>
-              <label style={labelStyle}>Uploads Notes</label>
-              <div style={fileBoxStyle}>
-                <input
-                  type="file"
-                  style={{ display: "none" }}
-                  id="notes-upload"
-                />
-                <label
-                  htmlFor="notes-upload"
-                  style={{
-                    ...inputStyle,
-                    background: "#fff",
-                    cursor: "pointer",
-                    border: "none",
-                    margin: 0,
-                  }}
-                >
-                  <span style={{ color: "#8c94a3" }}>Upload File</span>
-                </label>
-                <div style={noteStyle}>
-                  Drag an drop a file or{" "}
-                  <span style={{ color: "##ff6636", cursor: "pointer" }}>
-                    browse file
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div style={modalFooterStyle}>
-              <CustomButton
-                color="transparent"
-                type="normal"
-                size="medium"
-                onClick={() => setModal({ open: false, type: null })}
-              >
-                Cancel
-              </CustomButton>
-              <CustomButton
-                color="primary"
-                type="normal"
-                size="medium"
-                onClick={handleAddNotes}
-                disabled={!notesText.trim()}
-              >
-                Add Notes
-              </CustomButton>
-            </div>
-          </>
-        );
+        return Video;
+      case "article":
+        return BookOpen;
+      case "quiz":
+        return HelpCircle;
       default:
-        return null;
+        return Video;
     }
   };
 
-  // Section/lesson handlers
+  const getLessonProgress = (lesson) => {
+    let completed = 0,
+      total = 0;
+
+    total++;
+    if (lesson.title?.trim()) completed++;
+    total++;
+    if (lesson.duration > 0) completed++;
+    total++;
+    if (lesson.description?.trim()) completed++;
+    total++;
+    if (lesson.lessonNotes?.trim()) completed++;
+
+    if (lesson.type === "video" || lesson.type === "article") {
+      total++;
+      if (lesson.materialUrl?.trim()) completed++;
+    } else if (lesson.type === "quiz") {
+      total++;
+      if (lesson.quizIds?.length > 0) completed++;
+    }
+
+    return {
+      completed,
+      total,
+      percentage: Math.round((completed / total) * 100),
+    };
+  };
+
+  const toggleSection = (idx) => {
+    const newExpanded = new Set(expandedSections);
+    newExpanded.has(idx) ? newExpanded.delete(idx) : newExpanded.add(idx);
+    setExpandedSections(newExpanded);
+  };
+
+  const toggleLesson = (sIdx, lIdx) => {
+    const key = `${sIdx}-${lIdx}`;
+    const newExpanded = new Set(expandedLessons);
+    newExpanded.has(key) ? newExpanded.delete(key) : newExpanded.add(key);
+    setExpandedLessons(newExpanded);
+  };
+
   const handleAddSection = () => {
     setSections((prev) => [
       ...prev,
@@ -569,147 +192,58 @@ export default function CourseCurriculum({
     ]);
   };
 
-  const handleDeleteSection = (sectionIdx) => {
-    setSections((prev) => prev.filter((_, idx) => idx !== sectionIdx));
+  const handleDeleteSection = (idx) => {
+    setSections((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const handleSectionNameChange = (sectionIdx, value) => {
+  const handleSectionNameChange = (idx, value) => {
     setSections((prev) =>
-      prev.map((section, idx) =>
-        idx === sectionIdx ? { ...section, name: value, title: value } : section
-      )
+      prev.map((s, i) => (i === idx ? { ...s, name: value } : s))
     );
   };
 
-  const handleAddLesson = (sectionIdx) => {
-    setSections((prev) =>
-      prev.map((section, idx) =>
-        idx === sectionIdx
+  const handleAddLesson = (sIdx, type = "video") => {
+    console.log("handleAddLesson called with sIdx:", sIdx, "type:", type);
+    setSections((prev) => {
+      const newSections = prev.map((s, i) =>
+        i === sIdx
           ? {
-              ...section,
+              ...s,
               lessons: [
-                ...section.lessons,
-                defaultLesson(section.lessons.length + 1),
+                ...s.lessons,
+                defaultLesson(s.lessons.length + 1, type),
               ],
             }
-          : section
-      )
-    );
+          : s
+      );
+      console.log("New sections:", newSections);
+      return newSections;
+    });
+    setShowLessonTypeDropdown({});
   };
 
-  const handleDeleteLesson = (sectionIdx, lessonIdx) => {
+  const handleDeleteLesson = (sIdx, lIdx) => {
     setSections((prev) =>
-      prev.map((section, idx) => {
-        if (idx !== sectionIdx) return section;
-        if (section.lessons.length <= 1) return section; // Không cho xóa lesson cuối cùng
-        return {
-          ...section,
-          lessons: section.lessons.filter((_, lidx) => lidx !== lessonIdx),
-        };
+      prev.map((s, i) => {
+        if (i !== sIdx || s.lessons.length <= 1) return s;
+        return { ...s, lessons: s.lessons.filter((_, li) => li !== lIdx) };
       })
     );
   };
 
-  const handleLessonFieldChange = (sectionIdx, lessonIdx, field, value) => {
+  const handleLessonFieldChange = (sIdx, lIdx, field, value) => {
     setSections((prev) =>
-      prev.map((section, idx) =>
-        idx === sectionIdx
+      prev.map((s, i) =>
+        i === sIdx
           ? {
-              ...section,
-              lessons: section.lessons.map((lesson, lidx) =>
-                lidx === lessonIdx ? { ...lesson, [field]: value } : lesson
+              ...s,
+              lessons: s.lessons.map((l, li) =>
+                li === lIdx ? { ...l, [field]: value } : l
               ),
             }
-          : section
+          : s
       )
     );
-  };
-
-  const handleSaveNext = () => {
-    onNext({
-      sections: sections,
-      curriculum: sections,
-      // Preserve media from CourseFormAdvance (thumbnail/trailer) and merge with lesson media
-      uploadedFiles: {
-        // Add lesson-specific uploads (lessonVideo, lessonFile, caption, description, notes)
-        ...uploadedFiles,
-        // Preserve and prioritize course media from CourseFormAdvance
-        ...(initialData.uploadedFiles?.image && {
-          image: initialData.uploadedFiles.image,
-        }),
-        ...(initialData.uploadedFiles?.video && {
-          video: initialData.uploadedFiles.video,
-        }),
-      },
-    });
-  };
-
-  const openFieldModal = (sectionIdx, lessonIdx, field, value) => {
-    setEditing({ sectionIdx, lessonIdx, field });
-    setModalValue(value || "");
-    setModal({ open: true, type: field });
-  };
-
-  const handleSelectVideoFile = (e) => {
-    const file = e.target.files[0];
-    setSelectedVideoFile(file);
-    setSelectedVideoPreview(file ? URL.createObjectURL(file) : null);
-    setUploadedVideoUrl("");
-  };
-
-  const handleUploadVideoFile = async () => {
-    if (!selectedVideoFile) return;
-    setUploadingVideo(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedVideoFile);
-      formData.append("fileType", "lessonvideo");
-      const res = await apiClient.post("/admin/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      setUploadedVideoUrl(res.data.url);
-      toast.success("Upload successful!");
-      // Cập nhật luôn videoUrl vào lesson tương ứng trong sections
-      if (editing.sectionIdx !== null && editing.lessonIdx !== null) {
-        setSections((prev) =>
-          prev.map((section, sidx) =>
-            sidx === editing.sectionIdx
-              ? {
-                  ...section,
-                  lessons: section.lessons.map((lesson, lidx) =>
-                    lidx === editing.lessonIdx
-                      ? { ...lesson, videoUrl: res.data.url }
-                      : lesson
-                  ),
-                }
-              : section
-          )
-        );
-      }
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || err.message || "Upload failed!"
-      );
-    } finally {
-      setUploadingVideo(false);
-    }
-  };
-
-  const handleSaveFieldModal = () => {
-    if (editing.field !== "videoUrl") {
-      handleLessonFieldChange(
-        editing.sectionIdx,
-        editing.lessonIdx,
-        editing.field,
-        modalValue
-      );
-    }
-    setModal({ open: false, type: null });
-    setEditing({ sectionIdx: null, lessonIdx: null, field: null });
-    setModalValue("");
-    setSelectedVideoFile(null);
-    setSelectedVideoPreview(null);
-    setUploadedVideoUrl("");
   };
 
   return (
@@ -724,1126 +258,631 @@ export default function CourseCurriculum({
           <div className="cf-form-content">
             <div className="cf-form-header">
               <h2 className="cf-form-title">Course Curriculum</h2>
-              <div className="cf-form-actions">
-                <CustomButton color="primary" type="normal" size="medium">
-                  Save
-                </CustomButton>
-                <CustomButton color="transparent" type="normal" size="medium">
-                  Save & Preview
-                </CustomButton>
-              </div>
             </div>
-            {/* Curriculum-specific content */}
-            <div className="acc-course-structure">
-              {sections.map((section, sectionIdx) => (
-                <div className="acc-section-card" key={sectionIdx}>
-                  <div
-                    className="acc-section-header"
-                    style={{ cursor: "pointer" }}
-                    onClick={() =>
-                      setExpandedSectionIdx(
-                        expandedSectionIdx === sectionIdx ? null : sectionIdx
-                      )
-                    }
-                  >
-                    <div className="acc-section-title-container">
-                      <div className="acc-section-indicator">
-                        <div className="acc-section-line"></div>
-                        <span className="acc-section-label">
-                          Sections {String(section.order).padStart(2, "0")}:
-                        </span>
-                      </div>
-                      <input
-                        className="acc-section-name"
-                        value={section.title || section.name || ""}
-                        onChange={(e) =>
-                          handleSectionNameChange(sectionIdx, e.target.value)
-                        }
-                        style={{
-                          fontWeight: 600,
-                          fontSize: 16,
-                          border: "none",
-                          background: "transparent",
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
-                    <div className="acc-section-actions">
-                      <CustomButton
-                        size="sm"
-                        variant="ghost"
-                        className="acc-action-button"
-                        color="transparent"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddLesson(sectionIdx);
-                        }}
-                      >
-                        <Plus className="acc-icon-xs" />
-                      </CustomButton>
-                      <CustomButton
-                        size="sm"
-                        variant="ghost"
-                        className="acc-action-button"
-                        color="transparent"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteSection(sectionIdx);
-                        }}
-                      >
-                        <Trash2 className="acc-icon-xs" />
-                      </CustomButton>
-                    </div>
+            <div className="curriculum-container">
+              <div className="curriculum-header">
+                <h2 className="curriculum-title">Course Curriculum</h2>
+
+                {/* Stats Overview */}
+                <div className="stats-overview">
+                  <div className="stat-item">
+                    <div className="stat-number">{sections.length}</div>
+                    <div className="stat-label">Sections</div>
                   </div>
-                  {/* Lectures */}
-                  {expandedSectionIdx === sectionIdx && (
-                    <div className="acc-lectures-container">
-                      {section.lessons.map((lesson, lessonIdx) => (
-                        <div className="acc-lecture-item" key={lessonIdx}>
-                          <div
-                            className="acc-lecture-content"
-                            style={{ cursor: "pointer" }}
-                            onClick={() =>
-                              setExpandedLessonIdx((prev) => ({
-                                ...prev,
-                                [sectionIdx]:
-                                  prev[sectionIdx] === lessonIdx
-                                    ? null
-                                    : lessonIdx,
-                              }))
-                            }
-                          >
-                            <div className="acc-lecture-title-container">
-                              <div className="acc-lecture-line"></div>
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 8,
-                                  flex: 1,
-                                  padding: "8px 12px",
-                                  borderRadius: "6px",
-                                  background: lesson.title
-                                    ? "#f0fdf4"
-                                    : "#fafbfc",
-                                  border: "1px solid #e9eaf0",
-                                  transition: "all 0.2s ease",
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    width: "24px",
-                                    height: "24px",
-                                    borderRadius: "4px",
-                                    background: lesson.title
-                                      ? "#10b981"
-                                      : "#e5e7eb",
-                                    marginRight: "8px",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      color: lesson.title
-                                        ? "#ffffff"
-                                        : "#6b7280",
-                                      fontSize: "12px",
-                                      fontWeight: "bold",
-                                    }}
-                                  >
-                                    {lessonIdx + 1}
-                                  </span>
-                                </div>
-                                <span
-                                  className="acc-lecture-label"
-                                  style={{
-                                    fontWeight: 600,
-                                    color: "#64748b",
-                                    marginRight: 8,
-                                  }}
-                                >
-                                  Lesson{" "}
-                                  {String(lessonIdx + 1).padStart(2, "0")}:
+                  <div className="stat-item">
+                    <div className="stat-number">
+                      {sections.reduce((acc, s) => acc + s.lessons.length, 0)}
+                    </div>
+                    <div className="stat-label">Lessons</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">
+                      {formatDuration(
+                        sections.reduce(
+                          (acc, s) =>
+                            acc +
+                            s.lessons.reduce(
+                              (sum, l) => sum + (l.duration || 0),
+                              0
+                            ),
+                          0
+                        )
+                      )}
+                    </div>
+                    <div className="stat-label">Total Duration</div>
+                  </div>
+                </div>
+
+                {/* Sections List */}
+                <div className="sections-container">
+                  {sections.map((section, sIdx) => {
+                    const isExpanded = expandedSections.has(sIdx);
+
+                    return (
+                      <div key={sIdx} className="section-card">
+                        {/* Section Header */}
+                        <div
+                          className="section-header"
+                          onClick={() => toggleSection(sIdx)}
+                        >
+                          <div className="section-left">
+                            <ChevronRight
+                              size={20}
+                              className={`section-chevron ${
+                                isExpanded ? "expanded" : ""
+                              }`}
+                            />
+                            <div className="section-info">
+                              <div className="section-title-row">
+                                <span className="section-number">
+                                  Section {sIdx + 1}
                                 </span>
                                 <input
-                                  className="acc-lecture-name"
-                                  value={lesson.title}
+                                  value={section.name}
                                   onChange={(e) =>
-                                    handleLessonFieldChange(
-                                      sectionIdx,
-                                      lessonIdx,
-                                      "title",
+                                    handleSectionNameChange(
+                                      sIdx,
                                       e.target.value
                                     )
                                   }
-                                  style={{
-                                    fontWeight: 500,
-                                    fontSize: 15,
-                                    border: "none",
-                                    background: "transparent",
-                                    flex: 1,
-                                    color: lesson.title ? "#1d2026" : "#6b7280",
-                                    minWidth: 80,
-                                  }}
-                                  placeholder="Enter lesson title..."
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="section-title-input"
+                                  placeholder="Enter section title..."
                                 />
-                                {lesson.title && (
-                                  <span
-                                    style={{
-                                      color: "#10b981",
-                                      fontSize: "12px",
-                                      fontWeight: "500",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: "4px",
-                                    }}
-                                  >
-                                    ✓ Title added
-                                  </span>
+                              </div>
+                              <div className="section-meta">
+                                {section.lessons.length} lessons ·{" "}
+                                {formatDuration(
+                                  section.lessons.reduce(
+                                    (sum, l) => sum + (l.duration || 0),
+                                    0
+                                  )
                                 )}
                               </div>
                             </div>
-                            <div className="acc-lecture-actions">
-                              {section.lessons.length > 1 && (
-                                <CustomButton
-                                  size="sm"
-                                  variant="ghost"
-                                  className="acc-action-button"
-                                  color="transparent"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteLesson(sectionIdx, lessonIdx);
-                                  }}
+                          </div>
+
+                          <div className="section-right">
+                            <div className="dropdown-container">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  console.log(
+                                    "Toggling dropdown for section:",
+                                    sIdx
+                                  );
+                                  console.log(
+                                    "Current state:",
+                                    showLessonTypeDropdown
+                                  );
+                                  setShowLessonTypeDropdown((prev) => {
+                                    const newState = {
+                                      ...prev,
+                                      [sIdx]: !prev[sIdx],
+                                    };
+                                    console.log("New state:", newState);
+                                    return newState;
+                                  });
+                                }}
+                                className={`action-button ${
+                                  showLessonTypeDropdown[sIdx] ? "active" : ""
+                                }`}
+                                aria-label="Add lesson"
+                              >
+                                <Plus size={20} />
+                              </button>
+                              {showLessonTypeDropdown[sIdx] && (
+                                <div
+                                  className="lesson-type-dropdown"
+                                  onClick={(e) => e.stopPropagation()}
                                 >
-                                  <Trash2 className="acc-icon-xs" />
-                                </CustomButton>
+                                  {[
+                                    {
+                                      type: "video",
+                                      icon: Video,
+                                      label: "Video",
+                                    },
+                                    {
+                                      type: "article",
+                                      icon: BookOpen,
+                                      label: "Article",
+                                    },
+                                    {
+                                      type: "quiz",
+                                      icon: HelpCircle,
+                                      label: "Quiz",
+                                    },
+                                  ].map(({ type, icon: Icon, label }) => (
+                                    <button
+                                      key={type}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        console.log(
+                                          "Adding lesson of type:",
+                                          type,
+                                          "to section:",
+                                          sIdx
+                                        );
+                                        handleAddLesson(sIdx, type);
+                                      }}
+                                      className="dropdown-item"
+                                      type="button"
+                                    >
+                                      <Icon size={16} />
+                                      <span>{label}</span>
+                                    </button>
+                                  ))}
+                                </div>
                               )}
                             </div>
-                          </div>
-                          {/* Field list, click để mở modal */}
-                          {expandedLessonIdx[sectionIdx] === lessonIdx && (
-                            <div
-                              className="acc-expanded-content"
-                              style={{ marginTop: 8, marginBottom: 8 }}
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  gap: 12,
+
+                            {sections.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleDeleteSection(sIdx);
                                 }}
+                                className="action-button delete"
+                                style={{ border: "none", outline: "none" }}
+                                aria-label="Delete section"
                               >
-                                {/* Video Field */}
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    cursor: "pointer",
-                                    padding: "12px",
-                                    borderRadius: "8px",
-                                    border: "1px solid #e9eaf0",
-                                    background: lesson.videoUrl
-                                      ? "#f0fdf4"
-                                      : "#fafbfc",
-                                    transition: "all 0.2s ease",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.target.style.background = lesson.videoUrl
-                                      ? "#ecfdf5"
-                                      : "#f8fafc";
-                                    e.target.style.borderColor = "#d1d5db";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.target.style.background = lesson.videoUrl
-                                      ? "#f0fdf4"
-                                      : "#fafbfc";
-                                    e.target.style.borderColor = "#e9eaf0";
-                                  }}
-                                  onClick={(e) => {
-                                    // Only open modal if not clicking on video preview
-                                    if (
-                                      !e.target.closest("[data-video-preview]")
-                                    ) {
-                                      openFieldModal(
-                                        sectionIdx,
-                                        lessonIdx,
-                                        "videoUrl",
-                                        lesson.videoUrl
-                                      );
-                                    }
-                                  }}
-                                >
+                                <Trash2 size={20} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Lessons */}
+                        {isExpanded && (
+                          <div className="lessons-container">
+                            {section.lessons.map((lesson, lIdx) => {
+                              const LessonIcon = getLessonIcon(lesson.type);
+                              // const progress = getLessonProgress(lesson); (removed since percentage hidden)
+                              const lessonKey = `${sIdx}-${lIdx}`;
+                              const isLessonExpanded =
+                                expandedLessons.has(lessonKey);
+
+                              return (
+                                <div key={lIdx} className="lesson-item">
                                   <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      width: "32px",
-                                      height: "32px",
-                                      borderRadius: "6px",
-                                      background: lesson.videoUrl
-                                        ? "#10b981"
-                                        : "#e5e7eb",
-                                      marginRight: "12px",
-                                    }}
+                                    className="lesson-header"
+                                    onClick={() => toggleLesson(sIdx, lIdx)}
                                   >
-                                    <Video
-                                      size={16}
-                                      color={
-                                        lesson.videoUrl ? "#ffffff" : "#6b7280"
-                                      }
-                                    />
-                                  </div>
-                                  <div
-                                    style={{ flex: 1 }}
-                                    onClick={(e) => {
-                                      // Only open modal if not clicking on video preview
-                                      if (
-                                        !e.target.closest(
-                                          "[data-video-preview]"
-                                        )
-                                      ) {
-                                        openFieldModal(
-                                          sectionIdx,
-                                          lessonIdx,
-                                          "videoUrl",
-                                          lesson.videoUrl
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    <div
-                                      style={{
-                                        fontWeight: 600,
-                                        fontSize: "14px",
-                                        color: "#1d2026",
-                                        marginBottom: "2px",
-                                      }}
-                                    >
-                                      Video
+                                    <div className="lesson-drag-handle">
+                                      <GripVertical size={16} />
                                     </div>
-                                    {lesson.videoUrl && (
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: "12px",
-                                        }}
-                                      >
-                                        <span
-                                          style={{
-                                            color: "#10b981",
-                                            fontSize: "12px",
-                                            fontWeight: "500",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "4px",
-                                            background: "#f0fdf4",
-                                            padding: "4px 8px",
-                                            borderRadius: "12px",
-                                            border: "1px solid #dcfce7",
-                                          }}
-                                        >
-                                          ✓ Added
+                                    <div className="lesson-icon">
+                                      <LessonIcon size={20} />
+                                    </div>
+
+                                    <div className="lesson-info">
+                                      <div className="lesson-title-row">
+                                        <span className="lesson-number">
+                                          {lesson.type === "quiz"
+                                            ? "Quiz"
+                                            : "Lesson"}{" "}
+                                          {lIdx + 1}
                                         </span>
-                                        {(lesson.videoUrl.includes("blob:") ||
-                                          lesson.videoUrl.startsWith(
-                                            "http"
-                                          )) && (
-                                          <div
-                                            data-video-preview
-                                            style={{
-                                              position: "relative",
-                                              borderRadius: "8px",
-                                              overflow: "hidden",
-                                              border: "2px solid #e5e7eb",
-                                              background: "#f8fafc",
-                                              transition: "all 0.3s ease",
-                                              cursor: "pointer",
-                                            }}
-                                            onMouseEnter={(e) => {
-                                              e.target.style.transform =
-                                                "scale(1.05)";
-                                              e.target.style.borderColor =
-                                                "#3b82f6";
-                                              e.target.style.boxShadow =
-                                                "0 4px 12px rgba(59, 130, 246, 0.15)";
-                                            }}
-                                            onMouseLeave={(e) => {
-                                              e.target.style.transform =
-                                                "scale(1)";
-                                              e.target.style.borderColor =
-                                                "#e5e7eb";
-                                              e.target.style.boxShadow = "none";
-                                            }}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              window.open(
-                                                lesson.videoUrl,
-                                                "_blank"
+                                        <input
+                                          value={lesson.title}
+                                          onChange={(e) =>
+                                            handleLessonFieldChange(
+                                              sIdx,
+                                              lIdx,
+                                              "title",
+                                              e.target.value
+                                            )
+                                          }
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="lesson-title-input"
+                                          placeholder="Enter lesson title..."
+                                        />
+                                      </div>
+                                      <div className="lesson-meta">
+                                        {lesson.type} ·{" "}
+                                        {formatDuration(lesson.duration)}
+                                      </div>
+                                    </div>
+
+                                    <div className="lesson-actions">
+                                      <ChevronRight
+                                        size={16}
+                                        className={`lesson-chevron ${
+                                          isLessonExpanded ? "expanded" : ""
+                                        }`}
+                                      />
+                                      {/* Progress display removed */}
+                                      {section.lessons.length > 1 && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteLesson(sIdx, lIdx);
+                                          }}
+                                          className="action-button delete"
+                                        >
+                                          <Trash2 size={16} />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Lesson Fields */}
+                                  {isLessonExpanded && (
+                                    <div className="lesson-fields">
+                                      {/* Description */}
+                                      <div className="field-card">
+                                        <div className="field-header">
+                                          <FileText size={16} />
+                                          <span className="field-title">
+                                            Description
+                                          </span>
+                                          {lesson.description?.trim() && (
+                                            <Check
+                                              size={14}
+                                              className="field-check"
+                                            />
+                                          )}
+                                        </div>
+                                        <textarea
+                                          value={lesson.description || ""}
+                                          onChange={(e) =>
+                                            handleLessonFieldChange(
+                                              sIdx,
+                                              lIdx,
+                                              "description",
+                                              e.target.value
+                                            )
+                                          }
+                                          className="field-textarea"
+                                          rows={3}
+                                          placeholder="Enter lesson description..."
+                                        />
+                                      </div>
+
+                                      {/* Lesson Notes */}
+                                      <div className="field-card">
+                                        <div className="field-header">
+                                          <BookOpen size={16} />
+                                          <span className="field-title">
+                                            Lesson Notes
+                                          </span>
+                                          {lesson.lessonNotes?.trim() && (
+                                            <Check
+                                              size={14}
+                                              className="field-check"
+                                            />
+                                          )}
+                                        </div>
+                                        <textarea
+                                          value={lesson.lessonNotes || ""}
+                                          onChange={(e) =>
+                                            handleLessonFieldChange(
+                                              sIdx,
+                                              lIdx,
+                                              "lessonNotes",
+                                              e.target.value
+                                            )
+                                          }
+                                          className="field-textarea"
+                                          rows={4}
+                                          placeholder="Enter lesson notes (supports Markdown)..."
+                                        />
+                                      </div>
+
+                                      <div className="fields-grid">
+                                        {/* Duration */}
+                                        <div className="field-card">
+                                          <div className="field-header">
+                                            <Clock size={16} />
+                                            <span className="field-title">
+                                              Duration
+                                            </span>
+                                            {lesson.duration > 0 && (
+                                              <Check
+                                                size={14}
+                                                className="field-check"
+                                              />
+                                            )}
+                                          </div>
+                                          <input
+                                            type="number"
+                                            value={lesson.duration || ""}
+                                            onChange={(e) =>
+                                              handleLessonFieldChange(
+                                                sIdx,
+                                                lIdx,
+                                                "duration",
+                                                parseInt(e.target.value) || 0
+                                              )
+                                            }
+                                            className="field-input"
+                                            placeholder="Seconds (e.g. 300)"
+                                          />
+                                          {lesson.duration > 0 && (
+                                            <div className="field-note">
+                                              {formatDuration(lesson.duration)}
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        {/* Material File Upload */}
+                                        <div className="field-card">
+                                          <div className="field-header">
+                                            <LessonIcon size={16} />
+                                            <span className="field-title">
+                                              {lesson.type === "video"
+                                                ? "Upload Video"
+                                                : "Upload Material"}
+                                            </span>
+                                            {lesson.materialFile && (
+                                              <Check
+                                                size={14}
+                                                className="field-check"
+                                              />
+                                            )}
+                                          </div>
+                                          <input
+                                            type="file"
+                                            className="field-input file-input"
+                                            accept={
+                                              lesson.type === "video"
+                                                ? "video/*"
+                                                : "*"
+                                            }
+                                            onChange={(e) => {
+                                              const file =
+                                                e.target.files?.[0] || null;
+                                              handleLessonFieldChange(
+                                                sIdx,
+                                                lIdx,
+                                                "materialFile",
+                                                file
                                               );
                                             }}
-                                          >
-                                            <video
-                                              src={lesson.videoUrl}
-                                              style={{
-                                                width: "120px",
-                                                height: "68px",
-                                                objectFit: "cover",
-                                              }}
-                                              muted
-                                            />
+                                          />
+                                          {lesson.materialFile && (
+                                            <div className="field-note">
+                                              {lesson.materialFile.name}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Quiz Selection */}
+                                      {lesson.type === "quiz" && (
+                                        <div className="field-card field-full">
+                                          <div className="field-header">
+                                            <HelpCircle size={16} />
+                                            <span className="field-title">
+                                              Quiz Selection
+                                            </span>
+                                            {lesson.quizIds?.length > 0 && (
+                                              <Check
+                                                size={14}
+                                                className="field-check"
+                                              />
+                                            )}
                                           </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div
-                                    style={{
-                                      color: "#9ca3af",
-                                      fontSize: "12px",
-                                      fontWeight: "500",
-                                      cursor: "pointer",
-                                      padding: "4px 8px",
-                                      borderRadius: "4px",
-                                      transition: "all 0.2s ease",
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      e.target.style.background = "#f3f4f6";
-                                      e.target.style.color = "#6b7280";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.target.style.background = "transparent";
-                                      e.target.style.color = "#9ca3af";
-                                    }}
-                                    onClick={(e) => {
-                                      // Only open modal if not clicking on video preview
-                                      if (
-                                        !e.target.closest(
-                                          "[data-video-preview]"
-                                        )
-                                      ) {
-                                        openFieldModal(
-                                          sectionIdx,
-                                          lessonIdx,
-                                          "videoUrl",
-                                          lesson.videoUrl
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    Edit
-                                  </div>
-                                </div>
 
-                                {/* Captions Field */}
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    cursor: "pointer",
-                                    padding: "12px",
-                                    borderRadius: "8px",
-                                    border: "1px solid #e9eaf0",
-                                    background: lesson.captions
-                                      ? "#f0fdf4"
-                                      : "#fafbfc",
-                                    transition: "all 0.2s ease",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.target.style.background = lesson.captions
-                                      ? "#ecfdf5"
-                                      : "#f8fafc";
-                                    e.target.style.borderColor = "#d1d5db";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.target.style.background = lesson.captions
-                                      ? "#f0fdf4"
-                                      : "#fafbfc";
-                                    e.target.style.borderColor = "#e9eaf0";
-                                  }}
-                                  onClick={() =>
-                                    openFieldModal(
-                                      sectionIdx,
-                                      lessonIdx,
-                                      "captions",
-                                      lesson.captions
-                                    )
-                                  }
-                                >
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      width: "32px",
-                                      height: "32px",
-                                      borderRadius: "6px",
-                                      background: lesson.captions
-                                        ? "#10b981"
-                                        : "#e5e7eb",
-                                      marginRight: "12px",
-                                    }}
-                                  >
-                                    <Type
-                                      size={16}
-                                      color={
-                                        lesson.captions ? "#ffffff" : "#6b7280"
-                                      }
-                                    />
-                                  </div>
-                                  <div style={{ flex: 1 }}>
-                                    <div
-                                      style={{
-                                        fontWeight: 600,
-                                        fontSize: "14px",
-                                        color: "#1d2026",
-                                        marginBottom: "2px",
-                                      }}
-                                    >
-                                      Captions
-                                    </div>
-                                    {lesson.captions ? (
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: "8px",
-                                        }}
-                                      >
-                                        <span
-                                          style={{
-                                            color: "#10b981",
-                                            fontSize: "12px",
-                                            fontWeight: "500",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "4px",
-                                          }}
-                                        >
-                                          ✓ Added
-                                        </span>
-                                        <span
-                                          style={{
-                                            color: "#4e5566",
-                                            fontSize: "12px",
-                                            maxWidth: "200px",
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis",
-                                            whiteSpace: "nowrap",
-                                            fontStyle: "italic",
-                                          }}
-                                        >
-                                          "{lesson.captions}"
-                                        </span>
-                                      </div>
-                                    ) : (
-                                      <span
-                                        style={{
-                                          color: "#6b7280",
-                                          fontSize: "12px",
-                                        }}
-                                      >
-                                        Click to add captions
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div
-                                    style={{
-                                      color: "#9ca3af",
-                                      fontSize: "12px",
-                                      fontWeight: "500",
-                                    }}
-                                  >
-                                    Edit
-                                  </div>
-                                </div>
+                                          <button
+                                            onClick={() =>
+                                              setShowQuizSelector({
+                                                open: true,
+                                                sectionIdx: sIdx,
+                                                lessonIdx: lIdx,
+                                              })
+                                            }
+                                            className="quiz-selector-button"
+                                          >
+                                            <Plus size={16} />
+                                            Select Quizzes
+                                          </button>
 
-                                {/* Description Field */}
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    cursor: "pointer",
-                                    padding: "12px",
-                                    borderRadius: "8px",
-                                    border: "1px solid #e9eaf0",
-                                    background: lesson.description
-                                      ? "#f0fdf4"
-                                      : "#fafbfc",
-                                    transition: "all 0.2s ease",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.target.style.background =
-                                      lesson.description
-                                        ? "#ecfdf5"
-                                        : "#f8fafc";
-                                    e.target.style.borderColor = "#d1d5db";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.target.style.background =
-                                      lesson.description
-                                        ? "#f0fdf4"
-                                        : "#fafbfc";
-                                    e.target.style.borderColor = "#e9eaf0";
-                                  }}
-                                  onClick={() =>
-                                    openFieldModal(
-                                      sectionIdx,
-                                      lessonIdx,
-                                      "description",
-                                      lesson.description
-                                    )
-                                  }
-                                >
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      width: "32px",
-                                      height: "32px",
-                                      borderRadius: "6px",
-                                      background: lesson.description
-                                        ? "#10b981"
-                                        : "#e5e7eb",
-                                      marginRight: "12px",
-                                    }}
-                                  >
-                                    <StickyNote
-                                      size={16}
-                                      color={
-                                        lesson.description
-                                          ? "#ffffff"
-                                          : "#6b7280"
-                                      }
-                                    />
-                                  </div>
-                                  <div style={{ flex: 1 }}>
-                                    <div
-                                      style={{
-                                        fontWeight: 600,
-                                        fontSize: "14px",
-                                        color: "#1d2026",
-                                        marginBottom: "2px",
-                                      }}
-                                    >
-                                      Description
+                                          {lesson.quizIds?.length > 0 ? (
+                                            <div className="quiz-list">
+                                              {lesson.quizIds.map(
+                                                (qId, idx) => {
+                                                  const quiz =
+                                                    availableQuizzes.find(
+                                                      (q) => q._id === qId
+                                                    );
+                                                  return (
+                                                    <div
+                                                      key={idx}
+                                                      className="quiz-item"
+                                                    >
+                                                      <div className="quiz-info">
+                                                        <div className="quiz-title">
+                                                          {quiz?.title ||
+                                                            `Quiz ${qId}`}
+                                                        </div>
+                                                        {quiz && (
+                                                          <div className="quiz-meta">
+                                                            {quiz.questions}{" "}
+                                                            questions ·{" "}
+                                                            {formatDuration(
+                                                              quiz.duration
+                                                            )}
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                      <button
+                                                        onClick={() => {
+                                                          const newQuizIds =
+                                                            lesson.quizIds.filter(
+                                                              (_, i) =>
+                                                                i !== idx
+                                                            );
+                                                          handleLessonFieldChange(
+                                                            sIdx,
+                                                            lIdx,
+                                                            "quizIds",
+                                                            newQuizIds
+                                                          );
+                                                        }}
+                                                        className="quiz-remove"
+                                                      >
+                                                        <X size={16} />
+                                                      </button>
+                                                    </div>
+                                                  );
+                                                }
+                                              )}
+                                            </div>
+                                          ) : (
+                                            <div className="empty-state">
+                                              No quizzes selected. Click "Select
+                                              Quizzes" to add.
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
                                     </div>
-                                    {lesson.description ? (
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: "8px",
-                                        }}
-                                      >
-                                        <span
-                                          style={{
-                                            color: "#10b981",
-                                            fontSize: "12px",
-                                            fontWeight: "500",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "4px",
-                                          }}
-                                        >
-                                          ✓ Added
-                                        </span>
-                                        <span
-                                          style={{
-                                            color: "#4e5566",
-                                            fontSize: "12px",
-                                            maxWidth: "200px",
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis",
-                                            whiteSpace: "nowrap",
-                                          }}
-                                        >
-                                          {lesson.description}
-                                        </span>
-                                      </div>
-                                    ) : (
-                                      <span
-                                        style={{
-                                          color: "#6b7280",
-                                          fontSize: "12px",
-                                        }}
-                                      >
-                                        Click to add description
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div
-                                    style={{
-                                      color: "#9ca3af",
-                                      fontSize: "12px",
-                                      fontWeight: "500",
-                                    }}
-                                  >
-                                    Edit
-                                  </div>
+                                  )}
                                 </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
 
-                                {/* Lecture Notes Field */}
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    cursor: "pointer",
-                                    padding: "12px",
-                                    borderRadius: "8px",
-                                    border: "1px solid #e9eaf0",
-                                    background: lesson.lessonNotes
-                                      ? "#f0fdf4"
-                                      : "#fafbfc",
-                                    transition: "all 0.2s ease",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.target.style.background =
-                                      lesson.lessonNotes
-                                        ? "#ecfdf5"
-                                        : "#f8fafc";
-                                    e.target.style.borderColor = "#d1d5db";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.target.style.background =
-                                      lesson.lessonNotes
-                                        ? "#f0fdf4"
-                                        : "#fafbfc";
-                                    e.target.style.borderColor = "#e9eaf0";
-                                  }}
-                                  onClick={() =>
-                                    openFieldModal(
-                                      sectionIdx,
-                                      lessonIdx,
-                                      "lessonNotes",
-                                      lesson.lessonNotes
-                                    )
-                                  }
-                                >
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      width: "32px",
-                                      height: "32px",
-                                      borderRadius: "6px",
-                                      background: lesson.lessonNotes
-                                        ? "#10b981"
-                                        : "#e5e7eb",
-                                      marginRight: "12px",
-                                    }}
-                                  >
-                                    <FileText
-                                      size={16}
-                                      color={
-                                        lesson.lessonNotes
-                                          ? "#ffffff"
-                                          : "#6b7280"
-                                      }
-                                    />
-                                  </div>
-                                  <div style={{ flex: 1 }}>
-                                    <div
-                                      style={{
-                                        fontWeight: 600,
-                                        fontSize: "14px",
-                                        color: "#1d2026",
-                                        marginBottom: "2px",
-                                      }}
-                                    >
-                                      Lesson Notes
-                                    </div>
-                                    {lesson.lessonNotes ? (
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: "8px",
-                                        }}
-                                      >
-                                        <span
-                                          style={{
-                                            color: "#10b981",
-                                            fontSize: "12px",
-                                            fontWeight: "500",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "4px",
-                                          }}
-                                        >
-                                          ✓ Added
-                                        </span>
-                                        <span
-                                          style={{
-                                            color: "#4e5566",
-                                            fontSize: "12px",
-                                            maxWidth: "200px",
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis",
-                                            whiteSpace: "nowrap",
-                                          }}
-                                        >
-                                          {lesson.lessonNotes}
-                                        </span>
-                                      </div>
-                                    ) : (
-                                      <span
-                                        style={{
-                                          color: "#6b7280",
-                                          fontSize: "12px",
-                                        }}
-                                      >
-                                        Click to add lesson notes
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div
-                                    style={{
-                                      color: "#9ca3af",
-                                      fontSize: "12px",
-                                      fontWeight: "500",
-                                    }}
-                                  >
-                                    Edit
-                                  </div>
-                                </div>
-                              </div>
+                  {/* Add Section Button */}
+                  <button
+                    onClick={handleAddSection}
+                    className="add-section-button"
+                  >
+                    <Plus size={20} />
+                    <span>Add New Section</span>
+                  </button>
+                  <div className="acc-navigation-buttons">
+                    <CustomButton
+                      color="transparent"
+                      type="normal"
+                      size="large"
+                      onClick={() => onPrev({ sections })}
+                    >
+                      Previous
+                    </CustomButton>
+                    <CustomButton
+                      color="primary"
+                      type="normal"
+                      size="large"
+                      onClick={() => onNext({ sections })}
+                    >
+                      Next
+                    </CustomButton>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quiz Selector Modal */}
+              <Modal
+                open={showQuizSelector.open}
+                onClose={() =>
+                  setShowQuizSelector({
+                    open: false,
+                    sectionIdx: null,
+                    lessonIdx: null,
+                  })
+                }
+                title="Select Quizzes"
+              >
+                <div className="modal-body">
+                  {availableQuizzes.map((quiz) => {
+                    const currentLesson =
+                      showQuizSelector.sectionIdx !== null &&
+                      showQuizSelector.lessonIdx !== null
+                        ? sections[showQuizSelector.sectionIdx]?.lessons[
+                            showQuizSelector.lessonIdx
+                          ]
+                        : null;
+                    const isSelected = currentLesson?.quizIds?.includes(
+                      quiz._id
+                    );
+
+                    return (
+                      <div
+                        key={quiz._id}
+                        onClick={() => {
+                          const sIdx = showQuizSelector.sectionIdx;
+                          const lIdx = showQuizSelector.lessonIdx;
+                          if (sIdx !== null && lIdx !== null) {
+                            const currentQuizIds = currentLesson?.quizIds || [];
+                            const newQuizIds = isSelected
+                              ? currentQuizIds.filter((id) => id !== quiz._id)
+                              : [...currentQuizIds, quiz._id];
+                            // Update quizIds
+                            handleLessonFieldChange(
+                              sIdx,
+                              lIdx,
+                              "quizIds",
+                              newQuizIds
+                            );
+                            // Calculate total duration from selected quizzes
+                            const totalSec = newQuizIds.reduce((sum, id) => {
+                              const q = availableQuizzes.find(
+                                (q) => q._id === id
+                              );
+                              return sum + (q?.duration || 0);
+                            }, 0);
+                            handleLessonFieldChange(
+                              sIdx,
+                              lIdx,
+                              "duration",
+                              totalSec
+                            );
+                          }
+                        }}
+                        className={`quiz-option ${
+                          isSelected ? "selected" : ""
+                        }`}
+                      >
+                        <div className="quiz-option-content">
+                          <div className="quiz-option-info">
+                            <div className="quiz-option-title">
+                              {quiz.title}
+                            </div>
+                            <div className="quiz-option-meta">
+                              {quiz.questions} questions ·{" "}
+                              {formatDuration(quiz.duration)} duration
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <div className="quiz-option-check">
+                              <Check size={14} style={{ color: "white" }} />
                             </div>
                           )}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-              <CustomButton
-                variant="outline"
-                className="acc-add-sections-button"
-                color="primary"
-                onClick={handleAddSection}
-              >
-                <div className="acc-add-sections-container">
-                  <Plus className="acc-icon-sm acc-add-icon" />
-                  <span>Add Sections</span>
+                <div className="modal-footer">
+                  <button
+                    onClick={() =>
+                      setShowQuizSelector({
+                        open: false,
+                        sectionIdx: null,
+                        lessonIdx: null,
+                      })
+                    }
+                    className="modal-button"
+                  >
+                    Done
+                  </button>
                 </div>
-              </CustomButton>
-            </div>
-            {/* Navigat on Buttons */}
-            <div className="cf-form-actions-bottom">
-              <CustomButton
-                variant="outline"
-                className="acc-nav-button"
-                color="transparent"
-                onClick={() => {
-                  const data = {
-                    curriculum: sections,
-                    sections: sections,
-                    // Preserve media from CourseFormAdvance (thumbnail/trailer) and merge with lesson media
-                    uploadedFiles: {
-                      // Add lesson-specific uploads (lessonVideo, lessonFile, caption, description, notes)
-                      ...uploadedFiles,
-                      // Preserve and prioritize course media from CourseFormAdvance
-                      ...(initialData.uploadedFiles?.image && {
-                        image: initialData.uploadedFiles.image,
-                      }),
-                      ...(initialData.uploadedFiles?.video && {
-                        video: initialData.uploadedFiles.video,
-                      }),
-                    },
-                  };
-                  onPrev(data);
-                }}
-              >
-                Previous
-              </CustomButton>
-              <CustomButton
-                className="acc-nav-button acc-nav-button-primary"
-                onClick={handleSaveNext}
-              >
-                Save & Next
-              </CustomButton>
+              </Modal>
             </div>
           </div>
         </div>
       </div>
-      {/* Modal */}
-      <Modal
-        open={modal.open}
-        onClose={() => {
-          setModal({ open: false, type: null });
-          setEditing({ sectionIdx: null, lessonIdx: null, field: null });
-          setModalValue("");
-          setSelectedVideoFile(null);
-          setSelectedVideoPreview(null);
-          setUploadedVideoUrl("");
-        }}
-        title={
-          editing.field === "videoUrl"
-            ? "Lesson Video Upload"
-            : editing.field === "captions"
-            ? "Lesson Captions"
-            : editing.field === "description"
-            ? "Lesson Description"
-            : editing.field === "lessonNotes"
-            ? "Lesson Notes"
-            : ""
-        }
-      >
-        {editing.field === "videoUrl" ? (
-          <>
-            <div
-              style={{
-                border: "2px dashed #d1d5db",
-                borderRadius: "12px",
-                padding: "32px 24px",
-                textAlign: "center",
-                background: "#fafbfc",
-                marginBottom: "16px",
-                transition: "all 0.3s ease",
-                cursor: "pointer",
-                position: "relative",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.borderColor = "#3b82f6";
-                e.target.style.background = "#f0f9ff";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.borderColor = "#d1d5db";
-                e.target.style.background = "#fafbfc";
-              }}
-              onClick={() =>
-                document.getElementById("video-file-input").click()
-              }
-            >
-              <input
-                id="video-file-input"
-                type="file"
-                accept="video/*"
-                onChange={handleSelectVideoFile}
-                style={{
-                  position: "absolute",
-                  opacity: 0,
-                  pointerEvents: "none",
-                }}
-              />
-              <div style={{ marginBottom: "16px" }}>
-                <Video
-                  size={48}
-                  color="#6b7280"
-                  style={{ marginBottom: "8px" }}
-                />
-              </div>
-              <div style={{ marginBottom: "8px" }}>
-                <h4
-                  style={{
-                    margin: "0 0 8px 0",
-                    fontSize: "16px",
-                    fontWeight: "600",
-                    color: "#1d2026",
-                  }}
-                >
-                  Upload Video File
-                </h4>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "14px",
-                    color: "#6b7280",
-                    lineHeight: "1.5",
-                  }}
-                >
-                  Click to browse or drag and drop your video file here
-                </p>
-                <p
-                  style={{
-                    margin: "8px 0 0 0",
-                    fontSize: "12px",
-                    color: "#9ca3af",
-                  }}
-                >
-                  Supports MP4, AVI, MOV, and other video formats
-                </p>
-              </div>
-            </div>
-
-            {!modal.open ||
-              (editing.field !== "videoUrl" && selectedVideoFile && (
-                <div
-                  style={{
-                    background: "#f0fdf4",
-                    border: "1px solid #dcfce7",
-                    borderRadius: "8px",
-                    padding: "16px",
-                    marginBottom: "16px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                      marginBottom: "12px",
-                    }}
-                  >
-                    <Video size={20} color="#10b981" />
-                    <div>
-                      <div
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: "600",
-                          color: "#1d2026",
-                        }}
-                      >
-                        {selectedVideoFile.name}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          color: "#6b7280",
-                        }}
-                      >
-                        {(selectedVideoFile.size / (1024 * 1024)).toFixed(2)} MB
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-            {selectedVideoPreview && (
-              <div
-                style={{
-                  background: "#f8fafc",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "8px",
-                  padding: "16px",
-                  marginBottom: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    color: "#1d2026",
-                    marginBottom: "12px",
-                  }}
-                >
-                  Video Preview
-                </div>
-                <div
-                  style={{
-                    position: "relative",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    border: "1px solid #e5e7eb",
-                  }}
-                >
-                  <video
-                    src={selectedVideoPreview}
-                    controls
-                    style={{
-                      width: "100%",
-                      maxHeight: "200px",
-                      objectFit: "contain",
-                      background: "#000",
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-
-            <CustomButton
-              color="primary"
-              onClick={handleUploadVideoFile}
-              disabled={uploadingVideo || !selectedVideoFile}
-              style={{
-                width: "100%",
-                marginBottom: "16px",
-                padding: "12px 24px",
-                fontSize: "14px",
-                fontWeight: "600",
-              }}
-            >
-              {uploadingVideo ? (
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <div
-                    style={{
-                      width: "16px",
-                      height: "16px",
-                      border: "2px solid #ffffff",
-                      borderTop: "2px solid transparent",
-                      borderRadius: "50%",
-                      animation: "spin 1s linear infinite",
-                    }}
-                  />
-                  Uploading...
-                </div>
-              ) : (
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <Video size={16} />
-                  Upload Video
-                </div>
-              )}
-            </CustomButton>
-          </>
-        ) : (
-          <textarea
-            value={modalValue}
-            onChange={(e) => setModalValue(e.target.value)}
-            style={{
-              width: "100%",
-              padding: 8,
-              border: "1px solid #e9eaf0",
-              borderRadius: 4,
-              minHeight: 80,
-            }}
-            placeholder={
-              editing.field === "captions"
-                ? "Captions..."
-                : editing.field === "description"
-                ? "Description..."
-                : "Lesson notes..."
-            }
-          />
-        )}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: 8,
-            marginTop: 16,
-          }}
-        >
-          <CustomButton
-            color="transparent"
-            onClick={() => {
-              setModal({ open: false, type: null });
-              setEditing({ sectionIdx: null, lessonIdx: null, field: null });
-              setModalValue("");
-              setSelectedVideoFile(null);
-              setSelectedVideoPreview(null);
-              setUploadedVideoUrl("");
-            }}
-          >
-            Cancel
-          </CustomButton>
-          <CustomButton
-            color="primary"
-            onClick={handleSaveFieldModal}
-            disabled={editing.field === "videoUrl" && !uploadedVideoUrl}
-          >
-            Save
-          </CustomButton>
-        </div>
-      </Modal>
     </div>
   );
 }

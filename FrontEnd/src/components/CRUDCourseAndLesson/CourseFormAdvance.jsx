@@ -52,7 +52,6 @@ export default function CourseForm({
   const [loading, setLoading] = useState(false);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [uploadingTrailer, setUploadingTrailer] = useState(false);
-  const MAX_INPUTS = 8;
 
   // Helper function to move files from temporary to course folder
   const moveFilesToCourseFolder = async (courseId, mediaUrls) => {
@@ -218,14 +217,11 @@ export default function CourseForm({
   };
 
   const addInput = (type) => {
-    if (type === "course" && courseInputs.length < MAX_INPUTS) {
+    if (type === "course") {
       setCourseInputs([...courseInputs, ""]);
-    } else if (type === "audience" && audienceInputs.length < MAX_INPUTS) {
+    } else if (type === "audience") {
       setAudienceInputs([...audienceInputs, ""]);
-    } else if (
-      type === "requirement" &&
-      requirementInputs.length < MAX_INPUTS
-    ) {
+    } else if (type === "requirement") {
       setRequirementInputs([...requirementInputs, ""]);
     }
   };
@@ -426,14 +422,13 @@ export default function CourseForm({
     <div className="section">
       <div className="section-header">
         <h3>
-          {label} ({items.length}/{MAX_INPUTS})
+          {label} ({items.length})
         </h3>
         <CustomButton
           color="grey"
           type="normal"
           size="small"
           onClick={() => addInput(type)}
-          disabled={items.length >= MAX_INPUTS}
         >
           <div className="acc-add-sections-container">
             <Plus className="icon-sm" />
@@ -560,20 +555,6 @@ export default function CourseForm({
           <div className="cf-form-content">
             <div className="cf-form-header">
               <h2 className="cf-form-title">Advance Information</h2>
-              <div className="cf-form-actions">
-                <CustomButton
-                  color="primary"
-                  type="normal"
-                  size="medium"
-                  onClick={handleSaveNext}
-                  disabled={loading || uploadingThumbnail || uploadingTrailer}
-                >
-                  {loading ? "Saving..." : "Save & Next"}
-                </CustomButton>
-                <CustomButton color="transparent" type="normal" size="medium">
-                  Save & Preview
-                </CustomButton>
-              </div>
             </div>
 
             {/* Media Uploads */}
@@ -672,4 +653,3 @@ export default function CourseForm({
     </div>
   );
 }
-
