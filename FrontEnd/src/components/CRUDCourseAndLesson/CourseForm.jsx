@@ -322,14 +322,6 @@ const CourseForm = ({
           <div className="cf-form-content">
             <div className="cf-form-header">
               <h2 className="cf-form-title">{title}</h2>
-              <div className="cf-form-actions">
-                <CustomButton color="primary" type="normal" size="medium">
-                  Save
-                </CustomButton>
-                <CustomButton color="transparent" type="normal" size="medium">
-                  Save & Preview
-                </CustomButton>
-              </div>
             </div>
 
             {/* Show category error if any */}
@@ -408,7 +400,7 @@ const CourseForm = ({
                   />
                 </div>
               </div>
-              <div className="cf-form-row-4">
+              <div className="cf-form-row">
                 <div className="cf-form-group">
                   <label className="cf-form-label">Course Language</label>
                   <Input
@@ -431,6 +423,8 @@ const CourseForm = ({
                     onChange={(val) => setSubtitleLanguage(val)}
                   />
                 </div>
+              </div>
+              <div className="cf-form-row-3">
                 <div className="cf-form-group">
                   <label className="cf-form-label">Course Level</label>
                   <Input
@@ -441,7 +435,7 @@ const CourseForm = ({
                     onChange={(val) => setLevel(val)}
                   />
                 </div>
-                <div className="cf-form-group">
+                <div className="cf-form-group cf-small-input">
                   <label className="cf-form-label">Durations</label>
                   <div className="cf-duration-container">
                     <Input
@@ -455,21 +449,21 @@ const CourseForm = ({
                     </span>
                   </div>
                 </div>
-              </div>
-              <div className="cf-form-group">
-                <label htmlFor="price" className="cf-form-label">
-                  Course Price
-                </label>
-                <div className="cf-input-container">
-                  <Input
-                    id="price"
-                    placeholder="Enter course price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                  />
+                <div className="cf-form-group cf-price-input">
+                  <label htmlFor="price" className="cf-form-label">
+                    Course Price
+                  </label>
+                  <div className="cf-input-container">
+                    <Input
+                      id="price"
+                      placeholder="Enter course price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="acc-navigation-buttons">
@@ -488,7 +482,7 @@ const CourseForm = ({
                   onClick={handleSaveNext}
                   disabled={!allFieldsFilled}
                 >
-                  Save & Next
+                  Next
                 </CustomButton>
               </div>
             </form>
