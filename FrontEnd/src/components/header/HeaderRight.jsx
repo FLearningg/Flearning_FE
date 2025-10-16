@@ -66,6 +66,17 @@ function HeaderRight({ user: currentUser }) {
                   </Link>
                 </li>
               )}
+              {currentUser.role === "instructor" && (
+                <li>
+                  <Link
+                    to="/instructor/dashboard"
+                    className="dropdown-item dropdown-item-hover"
+                  >
+                    <FontAwesomeIcon icon={faTachometerAlt} className="me-2" />{" "}
+                    Dashboard
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   to="/profile/dashboard"

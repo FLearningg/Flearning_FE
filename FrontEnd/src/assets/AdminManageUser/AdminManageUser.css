@@ -333,6 +333,22 @@
   color: #dc2626;
 }
 
+/* Role Badge Styles */
+.amu-role-admin {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.amu-role-instructor {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.amu-role-student {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+}
+
 .amu-date-joined {
   color: #64748b;
   font-size: 13px;

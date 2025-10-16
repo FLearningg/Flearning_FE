@@ -10,6 +10,7 @@ import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute";
 import RoleBasedRoute from "../components/ProtectedRoute/RoleBasedRoute";
 
 import adminRoutesContent from "./adminRoutes";
+import instructorRoutesContent from "./instructorRoutes";
 
 import ErrorPage from "../pages/MainPage/ErrorPage";
 
@@ -35,6 +36,18 @@ const AppRouter = () => {
       >
         {/* Các route của admin sẽ được render bên trong <Outlet /> của AppLayout */}
         {adminRoutesContent}
+      </Route>
+      <Route
+        path="/instructor/*" // Dùng wildcard '*' để khớp với tất cả các đường dẫn con
+        element={
+          <RoleBasedRoute allowedRoles={["instructor"]}>
+            {/* Nếu user là instructor, AppLayout sẽ được render */}
+            <AppLayout />
+          </RoleBasedRoute>
+        }
+      >
+        {/* Các route của instructor sẽ được render bên trong <Outlet /> của AppLayout */}
+        {instructorRoutesContent}
       </Route>
       <Route
         path="*"

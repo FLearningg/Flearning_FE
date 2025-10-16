@@ -8,6 +8,18 @@ export const getAllUsers = (params) =>
 export const updateUserStatus = (userId, status) =>
   apiClient.put(`/admin/users/${userId}/status`, { status });
 
+// Update user role (approve instructor, change role)
+export const updateUserRole = (userId, role) =>
+  apiClient.put(`/admin/users/${userId}/role`, { role });
+
+// Get pending instructor applications
+export const getInstructorApplications = (params) =>
+  apiClient.get(`/admin/instructor-applications`, { params });
+
+// Approve or reject an instructor application
+export const reviewInstructorApplication = (applicationId, action) =>
+  apiClient.put(`/admin/instructor-applications/${applicationId}`, { action });
+
 // Get all categories
 export const getAllCategories = () => apiClient.get("/admin/categories");
 

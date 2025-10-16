@@ -6,7 +6,8 @@ import { logout } from "../store/authSlice";
 // Tạo một instance của axios với cấu hình chung
 const apiClient = axios.create({
   baseURL:
-    "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api",
+    // "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api",
+    "http://localhost:5000/api",
   withCredentials: true,
 });
 
@@ -49,7 +50,10 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
 
     // Skip refresh token for change password API
-    if (error.response?.status === 401 && !originalRequest.url.includes('/user/change-password')) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest.url.includes("/user/change-password")
+    ) {
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });

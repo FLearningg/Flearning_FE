@@ -4,7 +4,8 @@ import CourseFormAdvance from "./CourseFormAdvance";
 import CourseCurriculum from "./CourseCurriculum";
 import CoursePublish from "./CoursePublish";
 import apiClient from "../../services/authService";
-import { getCourseById } from "../../services/adminService";
+import { getCourseById as getAdminCourseById } from "../../services/adminService";
+import { getCourseById as getInstructorCourseById } from "../../services/instructorService";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -23,6 +24,10 @@ const CourseWizard = () => {
   const toastShownRef = useRef(false);
   const submitToastShownRef = useRef(false);
   const currentCourseIdRef = useRef(null);
+
+  // Detect if user is admin or instructor based on route
+  const isAdmin = location.pathname.includes("/admin/");
+  const isInstructor = location.pathname.includes("/instructor/");
 
   // Reset dataLoaded when switching to a different course
   useEffect(() => {
@@ -47,6 +52,8 @@ const CourseWizard = () => {
   const fetchCourseData = async (courseId) => {
     setIsLoading(true);
     try {
+      // Use appropriate service based on user role
+      const getCourseById = isInstructor ? getInstructorCourseById : getAdminCourseById;
       const response = await getCourseById(courseId);
 
       // Handle different response structures
@@ -217,7 +224,12 @@ const CourseWizard = () => {
       }
 
       toast.error(errorMessage);
-      navigate("/admin/courses/all");
+      // Navigate to appropriate page based on role
+      if (isInstructor) {
+        navigate("/instructor/courses");
+      } else {
+        navigate("/admin/courses/all");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -337,9 +349,13 @@ const CourseWizard = () => {
 
       let res;
       if (isEditMode) {
-        res = await apiClient.put(`/admin/courses/${id}`, dataToSend);
+        // Use appropriate endpoint based on role
+        const endpoint = isInstructor ? `/instructor/courses/${id}` : `/admin/courses/${id}`;
+        res = await apiClient.put(endpoint, dataToSend);
       } else {
-        res = await apiClient.post("/admin/courses", dataToSend);
+        // Use appropriate endpoint based on role
+        const endpoint = isInstructor ? "/instructor/courses" : "/admin/courses";
+        res = await apiClient.post(endpoint, dataToSend);
       }
       if (res.data && res.data.data) {
         const courseId = res.data.data._id;
@@ -359,7 +375,12 @@ const CourseWizard = () => {
           );
           submitToastShownRef.current = true;
         }
-        navigate("/admin/courses/all");
+        // Navigate to appropriate page based on role
+        if (isInstructor) {
+          navigate("/instructor/courses");
+        } else {
+          navigate("/admin/courses/all");
+        }
       } else if (res.data) {
         // Only show success toast once
         if (!submitToastShownRef.current) {
@@ -368,7 +389,12 @@ const CourseWizard = () => {
           );
           submitToastShownRef.current = true;
         }
-        navigate("/admin/courses/all");
+        // Navigate to appropriate page based on role
+        if (isInstructor) {
+          navigate("/instructor/courses");
+        } else {
+          navigate("/admin/courses/all");
+        }
       }
     } catch (err) {
       // For development/testing, simulate success if API fails
