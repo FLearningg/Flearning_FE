@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import VideoPlayer from "./VideoPlayer";
+import ArticleContent from "./ArticleContent";
 import CourseContents from "./CourseContents";
 import CourseInfo from "./CourseInfo";
 import CourseHeader from "./CourseHeader";
@@ -129,7 +130,24 @@ const WatchCourse = ({ courseId: propCourseId }) => {
         ) {
           firstUncompleted = sectionsData[0].lessons[0];
         }
-        setCurrentLesson(firstUncompleted);
+        // Ensure quiz lessons are prepared properly
+        if (firstUncompleted?.type === "quiz") {
+          setCurrentLesson({
+            ...firstUncompleted,
+            id: firstUncompleted._id,
+            videoUrl: null,
+            description: firstUncompleted.description || "Complete this quiz to proceed to the next lesson.",
+            title: firstUncompleted.title,
+            quizId:
+              firstUncompleted?.quizId?._id ||
+              firstUncompleted?.quizId ||
+              (Array.isArray(firstUncompleted?.quizIds)
+                ? firstUncompleted.quizIds[0]
+                : undefined),
+          });
+        } else {
+          setCurrentLesson(firstUncompleted);
+        }
         setLoadingCourse(false);
       })
       .catch((err) => {
@@ -230,15 +248,29 @@ const WatchCourse = ({ courseId: propCourseId }) => {
   };
 
   // Map API sections/lessons to CourseContents expected format
-  const mappedSections = sections.map((section) => ({
-    ...section,
-    title: section.name,
-    lectures: (section.lessons || []).map((lesson) => ({
-      ...lesson,
-      id: lesson._id,
-      completed: completedLessons.includes(lesson._id),
-    })),
-  }));
+  // Also compute sequential locking: only lessons up to the first incomplete are unlocked
+  let encounteredFirstIncomplete = false;
+  const mappedSections = sections.map((section) => {
+    const lectures = (section.lessons || []).map((lesson) => {
+      const isCompleted = completedLessons.includes(lesson._id);
+      let locked = false;
+      if (!isCompleted) {
+        if (!encounteredFirstIncomplete) {
+          locked = false; // first incomplete is unlocked
+          encounteredFirstIncomplete = true;
+        } else {
+          locked = true; // subsequent incompletes are locked
+        }
+      }
+      return {
+        ...lesson,
+        id: lesson._id,
+        completed: isCompleted,
+        locked,
+      };
+    });
+    return { ...section, title: section.name, lectures };
+  });
 
   const handleSelectLesson = (lesson) => {
     // Nếu là quiz, cập nhật state nhưng không load video
@@ -248,6 +280,8 @@ const WatchCourse = ({ courseId: propCourseId }) => {
         videoUrl: null, // Không có video cho quiz
         description: "Complete this quiz to proceed to the next lesson.",
         title: lesson.title,
+        // ensure quizId is available for QuizContent
+        quizId: lesson.quizId?._id || lesson.quizId || (Array.isArray(lesson.quizIds) ? lesson.quizIds[0] : undefined),
       });
     } else {
       setCurrentLesson(lesson);
@@ -329,44 +363,80 @@ const WatchCourse = ({ courseId: propCourseId }) => {
           reviewMode={!!courseFeedback}
           onNextLecture={handleNextLecture}
           showReviewButton={allLessonsCompleted}
+          isLastLesson={(() => {
+            if (!sections?.length || !currentLesson?._id) return false;
+            const flat = sections.flatMap(s => s.lessons || []);
+            if (!flat.length) return false;
+            const last = flat[flat.length - 1];
+            return last?._id === currentLesson._id;
+          })()}
         />
       </div>
       <div className="f-watch-course-main">
         <div className="f-watch-course-left">
-          {(currentLesson?.type === "quiz" || currentLesson?.quizData) ? (
+          {(currentLesson?.type === "quiz" || Boolean(currentLesson?.quizData?.questions?.length)) ? (
             <div className="f-quiz-section">
               <QuizContent
                 lessonId={currentLesson?._id || currentLesson?.id}
+                quizId={currentLesson?.quizId?._id || currentLesson?.quizId || (Array.isArray(currentLesson?.quizIds) ? currentLesson.quizIds[0] : undefined)}
                 quizData={currentLesson?.quizData}
+                duration={currentLesson?.duration}
                 onQuizComplete={async (quizResult) => {
-                  if (quizResult.completed) {
-                    // Tìm lecture tương ứng với quiz này
-                    const quizId = currentLesson.id;
-                    const lectureId = quizId.replace("quiz_", "");
+                  if (quizResult.completed && currentLesson?._id && courseId) {
+                    try {
+                      // Mark quiz lesson as completed like video lessons
+                      await markLessonCompleted(courseId, currentLesson._id);
+                      setCompletedLessons((prev) =>
+                        prev.includes(currentLesson._id) ? prev : [...prev, currentLesson._id]
+                      );
 
-                    // Cập nhật trạng thái hoàn thành quiz
-                    const updatedSections = sections.map((section) => ({
-                      ...section,
-                      lectures: section.lectures?.map((lecture) => {
-                        if (lecture.id === lectureId) {
-                          return {
-                            ...lecture,
-                            quizCompleted: true,
-                          };
-                        }
-                        return lecture;
-                      }),
-                    }));
-                    setSections(updatedSections);
+                      // Update progress
+                      const progressRes = await getCourseProgress(courseId);
+                      const progressPercent = progressRes.data?.data?.progressPercentage || 0;
+                      setProgress(progressPercent);
 
-                    // Tự động chuyển sang bài tiếp theo
-                    handleNextLecture();
-
-                    // Cập nhật progress
-                    const progressRes = await getCourseProgress(courseId);
-                    const progressPercent =
-                      progressRes.data?.data?.progressPercentage || 0;
-                    setProgress(progressPercent);
+                      // Auto move to next lesson
+                      handleNextLecture();
+                    } catch (e) {
+                      console.error("Error updating completion after quiz:", e);
+                    }
+                  }
+                }}
+              />
+            </div>
+          ) : currentLesson?.type === "article" ? (
+            <div className="f-article-section">
+              <ArticleContent
+                title={currentLesson?.title}
+                description={currentLesson?.description}
+                lessonNotes={currentLesson?.lessonNotes}
+                materialUrl={currentLesson?.materialUrl}
+                onNext={handleNextLecture}
+                onAutoComplete={async () => {
+                  if (currentLesson?._id && courseId) {
+                    try {
+                      await markLessonCompleted(courseId, currentLesson._id);
+                      // refresh completed lessons from server to ensure persistence across reloads
+                      try {
+                        const completedLessonsRes = await getCompletedLessonsDetails(courseId);
+                        const completedLessonsArr = Array.isArray(
+                          completedLessonsRes.data?.data
+                        )
+                          ? completedLessonsRes.data.data.map((lesson) => lesson._id)
+                          : [];
+                        setCompletedLessons(completedLessonsArr);
+                      } catch (e) {
+                        // fallback to optimistic update
+                        setCompletedLessons((prev) =>
+                          prev.includes(currentLesson._id) ? prev : [...prev, currentLesson._id]
+                        );
+                      }
+                      const progressRes = await getCourseProgress(courseId);
+                      const progressPercent = progressRes.data?.data?.progressPercentage || 0;
+                      setProgress(progressPercent);
+                    } catch (e) {
+                      console.error("Error auto-completing article:", e);
+                    }
                   }
                 }}
               />
