@@ -74,7 +74,7 @@ apiClient.interceptors.response.use(
 
       try {
         const { data } = await axios.post(
-          "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api/auth/refresh-token",
+          "http://localhost:5000/api/auth/refresh-token",
           {},
           { withCredentials: true }
         );
@@ -116,6 +116,8 @@ apiClient.interceptors.response.use(
 // Auth Routes
 export const registerUser = (userData) =>
   apiClient.post("/auth/register", userData);
+export const registerInstructor = (instructorData) =>
+  apiClient.post("/auth/instructor/register", instructorData);
 export const loginUser = (credentials) =>
   apiClient.post("/auth/login", credentials);
 export const googleLogin = (tokenId) =>
