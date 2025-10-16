@@ -13,6 +13,7 @@ import adminRoutesContent from "./adminRoutes";
 import instructorRoutesContent from "./instructorRoutes";
 
 import ErrorPage from "../pages/MainPage/ErrorPage";
+import InstructorRegisterPage from "../pages/AuthPage/InstructorRegisterPage";
 
 const AppRouter = () => {
   return (
@@ -36,6 +37,10 @@ const AppRouter = () => {
       >
         {/* Các route của admin sẽ được render bên trong <Outlet /> của AppLayout */}
         {adminRoutesContent}
+      </Route>
+      {/* Instructor registration route - No authentication required */}
+      <Route path="/instructor/register" element={<AppLayout />}>
+        <Route index element={<InstructorRegisterPage />} />
       </Route>
       <Route
         path="/instructor/*" // Dùng wildcard '*' để khớp với tất cả các đường dẫn con

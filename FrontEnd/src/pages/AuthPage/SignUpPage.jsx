@@ -155,6 +155,7 @@ function SignUpPage() {
                             </Button>,
                         ]}
                         width={600}
+                        zIndex={10001}
                     >
                         <div style={{ padding: '20px 0' }}>
                             <Title level={4}>Revenue Sharing Agreement</Title>
