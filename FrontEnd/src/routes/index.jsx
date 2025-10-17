@@ -4,7 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import AppLayout from "../layouts/AppLayout";
 
 import mainRoutesContent from "./mainRoutes";
-import authRoutesContent from "./authRoutes";
+import { authRoutesWithLayout, authRoutesWithoutLayout } from "./authRoutes";
 
 import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute";
 import RoleBasedRoute from "../components/ProtectedRoute/RoleBasedRoute";
@@ -18,12 +18,16 @@ import InstructorRegisterPage from "../pages/AuthPage/InstructorRegisterPage";
 const AppRouter = () => {
   return (
     <Routes>
-      {/* Auth routes without layout */}
-      {authRoutesContent}
+      {/* Auth routes without layout (verify email, check email, confirmation pages) */}
+      {authRoutesWithoutLayout}
       
       <Route path="/" element={<AppLayout />}>
-        {/* Nhúng trực tiếp JSX của mainRoutesContent */}
+        {/* Main routes */}
         {mainRoutesContent}
+
+        {/* Auth routes with layout (login, signup, forgot password) */}
+        {authRoutesWithLayout}
+        
         <Route path="*" element={<ErrorPage />} />
       </Route>
       <Route
