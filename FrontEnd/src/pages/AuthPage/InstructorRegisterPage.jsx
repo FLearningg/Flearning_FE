@@ -106,7 +106,7 @@ function InstructorRegisterPage() {
                 setCurrentStep(1);
             } else if (currentStep === 1) {
                 // Validate Step 2 fields and submit instructor registration
-                await form.validateFields(['phone', 'bio', 'expertise', 'experience', 'bankName', 'accountNumber', 'accountHolderName']);
+                await form.validateFields(['phone', 'expertise', 'experience', 'bankName', 'accountNumber', 'accountHolderName']);
                 await handleSubmitInstructor();
             }
         } catch (error) {
@@ -147,7 +147,6 @@ function InstructorRegisterPage() {
                 lastName,
                 email,
                 phone: values.phone,
-                bio: values.bio,
                 expertise: values.expertise,
                 experience: values.experience,
                 bankName: values.bankName,
@@ -398,25 +397,6 @@ function InstructorRegisterPage() {
                                     <Input
                                         prefix={<PhoneOutlined style={{ color: '#BFBFBF' }} />}
                                         placeholder="Phone number"
-                                    />
-                                </Form.Item>
-
-                                <Title level={5} style={{ marginTop: '24px', marginBottom: '16px', color: '#262626' }}>
-                                    Instructor Information
-                                </Title>
-
-                                <Form.Item
-                                    name="bio"
-                                    label={<Text style={{ fontWeight: 500, color: '#595959' }}>Bio</Text>}
-                                    rules={[
-                                        { required: true, message: 'Please enter your bio!' }
-                                    ]}
-                                >
-                                    <TextArea
-                                        rows={4}
-                                        placeholder="Tell us about yourself, your expertise, and teaching experience..."
-                                        showCount
-                                        maxLength={500}
                                     />
                                 </Form.Item>
 
