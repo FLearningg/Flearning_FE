@@ -18,12 +18,12 @@ import InstructorRegisterPage from "../pages/AuthPage/InstructorRegisterPage";
 const AppRouter = () => {
   return (
     <Routes>
+      {/* Auth routes without layout */}
+      {authRoutesContent}
+      
       <Route path="/" element={<AppLayout />}>
         {/* Nhúng trực tiếp JSX của mainRoutesContent */}
         {mainRoutesContent}
-
-        {/* Nhúng trực tiếp JSX của authRoutesContent */}
-        {authRoutesContent}
         <Route path="*" element={<ErrorPage />} />
       </Route>
       <Route

@@ -106,7 +106,7 @@ function InstructorRegisterPage() {
                 setCurrentStep(1);
             } else if (currentStep === 1) {
                 // Validate Step 2 fields and submit instructor registration
-                await form.validateFields(['phone', 'bio', 'expertise', 'experience', 'bankName', 'accountNumber', 'accountHolderName']);
+                await form.validateFields(['phone', 'expertise', 'experience']);
                 await handleSubmitInstructor();
             }
         } catch (error) {
@@ -147,12 +147,8 @@ function InstructorRegisterPage() {
                 lastName,
                 email,
                 phone: values.phone,
-                bio: values.bio,
                 expertise: values.expertise,
                 experience: values.experience,
-                bankName: values.bankName,
-                accountNumber: values.accountNumber,
-                accountHolderName: values.accountHolderName,
                 documents: uploadedDocuments, // Use uploaded document URLs
             };
 
@@ -401,25 +397,6 @@ function InstructorRegisterPage() {
                                     />
                                 </Form.Item>
 
-                                <Title level={5} style={{ marginTop: '24px', marginBottom: '16px', color: '#262626' }}>
-                                    Instructor Information
-                                </Title>
-
-                                <Form.Item
-                                    name="bio"
-                                    label={<Text style={{ fontWeight: 500, color: '#595959' }}>Bio</Text>}
-                                    rules={[
-                                        { required: true, message: 'Please enter your bio!' }
-                                    ]}
-                                >
-                                    <TextArea
-                                        rows={4}
-                                        placeholder="Tell us about yourself, your expertise, and teaching experience..."
-                                        showCount
-                                        maxLength={500}
-                                    />
-                                </Form.Item>
-
                                 <Title level={5} style={{ marginTop: '24px', marginBottom: '16px', color: '#262626' }}>Professional Information</Title>
 
                                 <Form.Item
@@ -452,32 +429,6 @@ function InstructorRegisterPage() {
                                         showCount
                                         maxLength={300}
                                     />
-                                </Form.Item>
-
-                                <Title level={5} style={{ marginTop: '24px', marginBottom: '16px', color: '#262626' }}>Payment Information</Title>
-
-                                <Form.Item
-                                    name="bankName"
-                                    label={<Text style={{ fontWeight: 500, color: '#595959' }}>Bank Name</Text>}
-                                    rules={[{ required: true, message: 'Please enter your bank name!' }]}
-                                >
-                                    <Input prefix={<BankOutlined style={{ color: '#BFBFBF' }} />} placeholder="Bank name" />
-                                </Form.Item>
-
-                                <Form.Item
-                                    name="accountNumber"
-                                    label={<Text style={{ fontWeight: 500, color: '#595959' }}>Account Number</Text>}
-                                    rules={[{ required: true, message: 'Please enter your account number!' }]}
-                                >
-                                    <Input prefix={<BankOutlined style={{ color: '#BFBFBF' }} />} placeholder="Account number" />
-                                </Form.Item>
-
-                                <Form.Item
-                                    name="accountHolderName"
-                                    label={<Text style={{ fontWeight: 500, color: '#595959' }}>Account Holder Name</Text>}
-                                    rules={[{ required: true, message: 'Please enter account holder name!' }]}
-                                >
-                                    <Input prefix={<UserOutlined style={{ color: '#BFBFBF' }} />} placeholder="Account holder name" />
                                 </Form.Item>
 
                                 <Title level={5} style={{ marginTop: '24px', marginBottom: '16px', color: '#262626' }}>Documents</Title>
