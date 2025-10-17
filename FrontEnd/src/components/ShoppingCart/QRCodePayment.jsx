@@ -26,7 +26,7 @@ const usePaymentPolling = ({ amount, content, isPolling }) => {
 
   const stopPolling = useCallback(() => {
     if (intervalIdRef.current) {
-      clearInterval(intervalIdRef.current);
+      clearTimeout(intervalIdRef.current);
       intervalIdRef.current = null;
     }
     setIsChecking(false);
@@ -38,30 +38,29 @@ const usePaymentPolling = ({ amount, content, isPolling }) => {
       return;
     }
 
-    const checkPayment = async () => {
-      try {
-        const recentTransactions = await getRecentBankTransactions();
-        const matched = recentTransactions.find((tx) => {
-          const amountInTx = Number(tx["Giá trị"]);
-          const descInTx = (tx["Mô tả"] || "").toLowerCase();
-          return (
-            amountInTx >= amount && descInTx.includes(content.toLowerCase())
-          );
-        });
+    const simulateSuccessfulPayment = () => {
+      console.log("Simulating a successful payment check...");
 
-        if (matched) {
-          hasFoundMatchRef.current = true;
-          setMatchedTransaction(matched);
-          stopPolling();
-        }
-      } catch (err) {
-        console.error("Error polling for transactions:", err);
-        stopPolling();
-      }
+      // 1. Create a fake transaction with the CORRECT property names
+      const fakeTransaction = {
+        "Giá trị": amount,
+        "Mô tả": `Thanh toan don hang ${content} thanh cong`,
+        // FIX #1: Added the correct property for the date
+        "Ngày diễn ra": new Date().toISOString(),
+        // FIX #2: Added the required transaction ID property
+        "Mã GD": `FAKE_${Date.now()}`,
+      };
+
+      console.log("Fake transaction created:", fakeTransaction);
+
+      // 2. Update the state to trigger the success logic
+      hasFoundMatchRef.current = true;
+      setMatchedTransaction(fakeTransaction);
+      stopPolling();
     };
 
-    checkPayment();
-    intervalIdRef.current = setInterval(checkPayment, 3000);
+    // 3. Simulate receiving the payment after 5 seconds
+    intervalIdRef.current = setTimeout(simulateSuccessfulPayment, 5000);
 
     return stopPolling;
   }, [isPolling, amount, content, stopPolling]);
