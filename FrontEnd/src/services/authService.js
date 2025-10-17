@@ -7,7 +7,7 @@ import { logout } from "../store/authSlice";
 const apiClient = axios.create({
   baseURL:
     // "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api",
-    "http://localhost:5000/api",
+    "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api",
   withCredentials: true,
 });
 
@@ -74,7 +74,7 @@ apiClient.interceptors.response.use(
 
       try {
         const { data } = await axios.post(
-          "http://localhost:5000/api/auth/refresh-token",
+          "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api/auth/refresh-token",
           {},
           { withCredentials: true }
         );
