@@ -12,6 +12,7 @@ const CourseHeader = ({
   reviewMode,
   onNextLecture,
   showReviewButton = true,
+  isLastLesson = false,
 }) => {
   return (
     <div className="f-course-header">
@@ -65,9 +66,11 @@ const CourseHeader = ({
             <span>Complete all lessons to write a review</span>
           </div>
         )}
-        <button className="f-next-lecture-button" onClick={onNextLecture}>
-          Next Lesson
-        </button>
+        {!isLastLesson && (
+          <button className="f-next-lecture-button" onClick={onNextLecture}>
+            Next Lesson
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,0 +1,16 @@
+.article-container { background:#fff; border-radius: 16px; margin: 2rem; padding: 2.5rem; box-shadow: 0 8px 20px rgba(0,0,0,.06);} 
+.article-hero-title { font-size: 2.25rem; color:#1a202c; margin: 0 0 1rem; }
+.article-subtext { color:#4a5568; margin: 0 0 1.25rem; line-height: 1.7; }
+
+.article-file-card { display:flex; align-items:center; gap:12px; background:#f7fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px 16px; text-decoration:none; color:inherit; }
+.article-file-card:hover { background:#f5f9ff; border-color:#cbd5e0; }
+.file-icon { font-size:20px; }
+.file-info .file-name { font-weight:600; color:#2d3748; }
+.file-info .file-name { max-width: 100%; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-info .file-type { font-size:.875rem; color:#718096; }
+
+.article-notes-block { margin-top: 1.25rem; background:#f7fafc; padding: 1rem; border-radius:10px; border-left:4px solid #3182ce; color:#4a5568; }
+
+/* Footer removed */
+
+

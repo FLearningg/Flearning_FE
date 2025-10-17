@@ -97,7 +97,10 @@ export const getQuizById = async (quizId) => {
       error.response?.data?.message ||
       error.message ||
       "Failed to fetch quiz";
-    throw new Error(message);
+    const richError = new Error(message);
+    richError.status = error.response?.status;
+    richError.data = error.response?.data;
+    throw richError;
   }
 };
 
@@ -185,5 +188,66 @@ export const linkQuizToCourse = async (quizId, courseId, userId = null) => {
       error.message ||
       "Failed to link quiz to course";
     throw new Error(message);
+  }
+};
+
+// Submit quiz answers
+export const submitQuiz = async (quizId, answers, options = {}) => {
+  try {
+    const payload = { answers };
+    if (options.retake) payload.retake = true;
+    const response = await apiClient.post(`quiz/${quizId}/submit`, payload);
+    return response.data;
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to submit quiz";
+    const richError = new Error(message);
+    richError.status = error.response?.status;
+    richError.data = error.response?.data;
+    throw richError;
+  }
+};
+
+// Get quiz result
+export const getQuizResult = async (quizId) => {
+  try {
+    const response = await apiClient.get(`quiz/${quizId}/result`);
+    return response.data;
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to fetch quiz result";
+    const richError = new Error(message);
+    richError.status = error.response?.status;
+    richError.data = error.response?.data;
+    throw richError;
+  }
+};
+
+// Get quiz history (all quizzes student has taken)
+export const getQuizHistory = async (params = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+    if (params.courseId) queryParams.append('courseId', params.courseId);
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    
+    const queryString = queryParams.toString();
+    const url = `quiz/my-results${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await apiClient.get(url);
+    return response.data;
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to fetch quiz history";
+    const richError = new Error(message);
+    richError.status = error.response?.status;
+    richError.data = error.response?.data;
+    throw richError;
   }
 };
