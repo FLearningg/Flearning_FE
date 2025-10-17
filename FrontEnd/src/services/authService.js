@@ -7,7 +7,7 @@ import { logout } from "../store/authSlice";
 const apiClient = axios.create({
   baseURL:
     // "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api",
-    "http://localhost:5000/api",
+    "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api",
   withCredentials: true,
 });
 
@@ -116,6 +116,8 @@ apiClient.interceptors.response.use(
 // Auth Routes
 export const registerUser = (userData) =>
   apiClient.post("/auth/register", userData);
+export const registerInstructor = (instructorData) =>
+  apiClient.post("/auth/instructor/register", instructorData);
 export const loginUser = (credentials) =>
   apiClient.post("/auth/login", credentials);
 export const googleLogin = (tokenId) =>

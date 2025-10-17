@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Checkbox, Typography, Row, Col, Spin } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Checkbox, Typography, Row, Col, Spin, Modal, Divider } from 'antd';
+import { UserOutlined, LockOutlined, MailOutlined, ArrowRightOutlined, TeamOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '../../store/authSlice';
@@ -15,6 +15,7 @@ function SignUpPage() {
     const dispatch = useDispatch();
     const { isLoading, isAuthenticated } = useSelector((state) => state.auth);
     const [apiError, setApiError] = useState('');
+    const [showInstructorTos, setShowInstructorTos] = useState(false);
 
     // Tự động chuyển hướng nếu người dùng đã đăng nhập
     useEffect(() => {
@@ -25,7 +26,7 @@ function SignUpPage() {
 
     const onFinish = (values) => {
         setApiError(''); // Xóa lỗi cũ khi submit lại
-        
+
         const userData = {
             firstName: values.firstName,
             lastName: values.lastName,
@@ -42,6 +43,15 @@ function SignUpPage() {
                 // Hiển thị lỗi bằng Bootstrap Alert
                 setApiError(error.message || 'Đăng ký thất bại, vui lòng thử lại.');
             });
+    };
+
+    const handleInstructorRegister = () => {
+        setShowInstructorTos(true);
+    };
+
+    const handleAcceptTos = () => {
+        setShowInstructorTos(false);
+        navigate('/instructor/register');
     };
 
     // Hiển thị loading trong khi chờ chuyển hướng
@@ -107,7 +117,73 @@ function SignUpPage() {
                             <Text type="secondary">Already have an account? </Text>
                             <Link to="/login" style={{color: F_LEARNING_ORANGE, fontWeight: 'bold'}}>Sign In</Link>
                         </div>
+
+                        <Divider style={{ margin: '32px 0' }}>Or</Divider>
+
+                        <Button
+                            type="default"
+                            block
+                            onClick={handleInstructorRegister}
+                            style={{
+                                height: '48px',
+                                fontSize: '16px',
+                                fontWeight: 'bold',
+                                borderColor: F_LEARNING_ORANGE,
+                                color: F_LEARNING_ORANGE
+                            }}
+                            icon={<TeamOutlined />}
+                        >
+                            Register to become an Instructor
+                        </Button>
                     </Form>
+
+                    <Modal
+                        title={<Title level={3} style={{ marginBottom: 0 }}>Instructor Terms of Service</Title>}
+                        open={showInstructorTos}
+                        onCancel={() => setShowInstructorTos(false)}
+                        footer={[
+                            <Button key="cancel" onClick={() => setShowInstructorTos(false)}>
+                                Cancel
+                            </Button>,
+                            <Button
+                                key="accept"
+                                type="primary"
+                                onClick={handleAcceptTos}
+                                style={{ backgroundColor: F_LEARNING_ORANGE, borderColor: F_LEARNING_ORANGE }}
+                            >
+                                Accept and Continue
+                            </Button>,
+                        ]}
+                        width={600}
+                        zIndex={10001}
+                    >
+                        <div style={{ padding: '20px 0' }}>
+                            <Title level={4}>Revenue Sharing Agreement</Title>
+                            <Text>
+                                <p style={{ fontSize: '15px', lineHeight: '1.6' }}>
+                                    By registering as an instructor on our platform, you agree to the following terms:
+                                </p>
+
+                                <ul style={{ fontSize: '15px', lineHeight: '1.8', paddingLeft: '20px' }}>
+                                    <li><strong>Revenue Share:</strong> The platform will retain <strong style={{ color: F_LEARNING_ORANGE }}>10% of all course revenue</strong> as a service fee. You will receive 90% of the earnings from your courses.</li>
+
+                                    <li><strong>Payment Processing:</strong> All payments will be processed through our secure payment system. Payouts will be made monthly.</li>
+
+                                    <li><strong>Content Ownership:</strong> You retain full ownership of your course content, but grant the platform a license to distribute it.</li>
+
+                                    <li><strong>Quality Standards:</strong> All courses must meet our quality standards and guidelines. We reserve the right to review and approve all course content.</li>
+
+                                    <li><strong>Instructor Responsibilities:</strong> You are responsible for maintaining course quality, responding to student questions, and keeping content up-to-date.</li>
+
+                                    <li><strong>Termination:</strong> Either party may terminate this agreement with 30 days written notice. Revenue share applies to all sales during the active period.</li>
+                                </ul>
+
+                                <p style={{ fontSize: '15px', lineHeight: '1.6', marginTop: '20px' }}>
+                                    By clicking "Accept and Continue", you acknowledge that you have read, understood, and agree to these terms.
+                                </p>
+                            </Text>
+                        </div>
+                    </Modal>
                 </div>
             </Col>
         </Row>

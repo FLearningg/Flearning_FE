@@ -2,6 +2,7 @@ import React from "react";
 import "../../assets/homepage/Adverisement.css";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { ArrowRightOutlined } from '@ant-design/icons';
 function Advertisement() {
   const { currentUser } = useSelector((state) => state.auth);
   return (
@@ -14,14 +15,19 @@ function Advertisement() {
                 Learn with expert <br /> anytime anywhere
               </p>
               <p className="text-secondary advertisement-text-2">
-                Our mision is to help people to find the best course online and
+                Our mission is to help people to find the best course online and
                 learn with expert anytime, anywhere.
               </p>
-              {!currentUser && (
-                <Link to="/signup" className="btn-create-account">
-                  <button className="">Create account</button>
+              <div className="mt-4">
+                <p className="h4 text-secondary mb-3">
+                  Want to be an instructor?
+                </p>
+                <Link to="/instructor/register" className="btn-register-instructor">
+                  <button className="">
+                    Register now <ArrowRightOutlined />
+                  </button>
                 </Link>
-              )}
+              </div>
             </div>
           </div>
           <div className="col-6 pe-0">
@@ -49,6 +55,16 @@ function Advertisement() {
               <button className="">Create account</button>
             </Link>
           )}
+          <div className="mt-4">
+            <p className="h4 text-secondary mb-3">
+              Want to be an instructor?
+            </p>
+            <Link to="/instructor/register" className="btn-register-instructor">
+              <button className="">
+                Register now <ArrowRightOutlined />
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     </>
