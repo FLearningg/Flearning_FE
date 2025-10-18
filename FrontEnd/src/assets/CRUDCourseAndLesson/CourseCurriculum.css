@@ -773,10 +773,75 @@
   display: flex;
   gap: 8px;
   margin-left: 16px;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* New curriculum-specific styles to avoid conflicts */
+.curriculum-quiz-actions {
+  display: flex !important;
+  gap: 8px;
+  margin-left: 16px;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.curriculum-quiz-edit-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px !important;
+  min-width: 40px;
+  background-color: #10b981 !important;
+  color: white !important;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.curriculum-quiz-edit-btn:hover {
+  background-color: #059669 !important;
+  transform: scale(1.05);
+}
+
+.curriculum-quiz-edit-btn:focus {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+.curriculum-quiz-edit-btn.newly-created {
+  animation: highlightEdit 2s ease-out;
+}
+
+.curriculum-quiz-remove-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background-color: transparent;
+  color: #dc2626;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.curriculum-quiz-remove-btn:hover {
+  background-color: #fef2f2 !important;
+  color: #b91c1c !important;
+  transform: translateY(-1px);
 }
 
 .quiz-edit-button {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
@@ -788,6 +853,8 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .quiz-edit-button:hover {

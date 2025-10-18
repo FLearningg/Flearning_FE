@@ -5,6 +5,7 @@ import ProgressTabs from "./ProgressTabs";
 import Input from "../common/Input";
 import CustomButton from "../common/CustomButton/CustomButton";
 import apiClient from "../../services/authService";
+import { uploadFile, moveFileToCourse } from "../../services/uploadService";
 import { toast } from "react-toastify";
 
 export default function CourseForm({
@@ -63,7 +64,7 @@ export default function CourseForm({
 
       // Move thumbnail if it's in temporary folder
       if (mediaUrls.thumbnail && mediaUrls.thumbnail.includes("temporary/")) {
-        const moveRequest = apiClient.post("/admin/move-file", {
+        const moveRequest = moveFileToCourse({
           fromUrl: mediaUrls.thumbnail,
           courseId: courseId,
           fileType: "thumbnail",
@@ -71,8 +72,8 @@ export default function CourseForm({
         movePromises.push(
           moveRequest
             .then((res) => {
-              if (res.data?.url) {
-                updatedUrls.thumbnail = res.data.url;
+              if (res?.url) {
+                updatedUrls.thumbnail = res.url;
               }
             })
             .catch((err) => {
@@ -83,7 +84,7 @@ export default function CourseForm({
 
       // Move trailer if it's in temporary folder
       if (mediaUrls.trailer && mediaUrls.trailer.includes("temporary/")) {
-        const moveRequest = apiClient.post("/admin/move-file", {
+        const moveRequest = moveFileToCourse({
           fromUrl: mediaUrls.trailer,
           courseId: courseId,
           fileType: "trailer",
@@ -91,8 +92,8 @@ export default function CourseForm({
         movePromises.push(
           moveRequest
             .then((res) => {
-              if (res.data?.url) {
-                updatedUrls.trailer = res.data.url;
+              if (res?.url) {
+                updatedUrls.trailer = res.url;
               }
             })
             .catch((err) => {
@@ -236,27 +237,18 @@ export default function CourseForm({
       // Auto upload immediately
       setUploadingThumbnail(true);
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        // Add courseId to help server determine the correct folder
-        if (courseId) {
-          formData.append("courseId", courseId);
-        }
-
-        // Specify this is a course thumbnail
-        formData.append("fileType", "thumbnail");
-
-        const res = await apiClient.post("/admin/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+        // Use uploadService which automatically detects role and uses correct endpoint
+        const response = await uploadFile(file, {
+          courseId: courseId,
+          fileType: "thumbnail",
         });
 
-        if (!res.data || !res.data.url) {
-          throw new Error(res.data?.message || "Failed to upload thumbnail");
+        if (!response || !response.url) {
+          throw new Error(response?.message || "Failed to upload thumbnail");
         }
 
         // Set new URL and clear file after successful upload
-        const newThumbnailUrl = res.data.url;
+        const newThumbnailUrl = response.url;
 
         // Update state immediately
         setThumbnailUrl(newThumbnailUrl);
@@ -295,27 +287,18 @@ export default function CourseForm({
       // Auto upload immediately
       setUploadingTrailer(true);
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        // Add courseId to help server determine the correct folder
-        if (courseId) {
-          formData.append("courseId", courseId);
-        }
-
-        // Specify this is a course trailer
-        formData.append("fileType", "trailer");
-
-        const res = await apiClient.post("/admin/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+        // Use uploadService which automatically detects role and uses correct endpoint
+        const response = await uploadFile(file, {
+          courseId: courseId,
+          fileType: "trailer",
         });
 
-        if (!res.data || !res.data.url) {
-          throw new Error(res.data?.message || "Failed to upload trailer");
+        if (!response || !response.url) {
+          throw new Error(response?.message || "Failed to upload trailer");
         }
 
         // Set new URL and clear file after successful upload
-        const newTrailerUrl = res.data.url;
+        const newTrailerUrl = response.url;
 
         // Update state immediately
         setTrailerUrl(newTrailerUrl);

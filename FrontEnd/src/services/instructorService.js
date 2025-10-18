@@ -72,3 +72,115 @@ export const uploadQuizDocument = async (file, courseId) => {
     throw error;
   }
 };
+
+// ========== COURSE MANAGEMENT APIs ==========
+
+// Create a new course
+export const createCourse = async (courseData) => {
+  try {
+    return await apiClient.post("/instructor/courses", courseData);
+  } catch (error) {
+    console.error("Error creating course:", error);
+    throw error;
+  }
+};
+
+// Update existing course
+export const updateCourse = async (courseId, courseData) => {
+  try {
+    return await apiClient.put(`/instructor/courses/${courseId}`, courseData);
+  } catch (error) {
+    console.error("Error updating course:", error);
+    throw error;
+  }
+};
+
+// Delete course by ID
+export const deleteCourse = async (courseId) => {
+  try {
+    return await apiClient.delete(`/instructor/courses/${courseId}`);
+  } catch (error) {
+    console.error("Error deleting course:", error);
+    throw error;
+  }
+};
+
+// ========== SECTION MANAGEMENT APIs ==========
+
+// Create a new section in a course
+export const createSection = async (courseId, sectionData) => {
+  try {
+    return await apiClient.post(
+      `/instructor/courses/${courseId}/sections`,
+      sectionData
+    );
+  } catch (error) {
+    console.error("Error creating section:", error);
+    throw error;
+  }
+};
+
+// Update existing section
+export const updateSection = async (courseId, sectionId, sectionData) => {
+  try {
+    return await apiClient.put(
+      `/instructor/courses/${courseId}/sections/${sectionId}`,
+      sectionData
+    );
+  } catch (error) {
+    console.error("Error updating section:", error);
+    throw error;
+  }
+};
+
+// Delete section by ID
+export const deleteSection = async (courseId, sectionId) => {
+  try {
+    return await apiClient.delete(
+      `/instructor/courses/${courseId}/sections/${sectionId}`
+    );
+  } catch (error) {
+    console.error("Error deleting section:", error);
+    throw error;
+  }
+};
+
+// ========== LESSON MANAGEMENT APIs ==========
+
+// Create a new lesson in a section
+export const createLesson = async (courseId, sectionId, lessonData) => {
+  try {
+    return await apiClient.post(
+      `/instructor/courses/${courseId}/sections/${sectionId}/lessons`,
+      lessonData
+    );
+  } catch (error) {
+    console.error("Error creating lesson:", error);
+    throw error;
+  }
+};
+
+// Update existing lesson
+export const updateLesson = async (courseId, lessonId, lessonData) => {
+  try {
+    return await apiClient.put(
+      `/instructor/courses/${courseId}/lessons/${lessonId}`,
+      lessonData
+    );
+  } catch (error) {
+    console.error("Error updating lesson:", error);
+    throw error;
+  }
+};
+
+// Delete lesson by ID
+export const deleteLesson = async (courseId, lessonId) => {
+  try {
+    return await apiClient.delete(
+      `/instructor/courses/${courseId}/lessons/${lessonId}`
+    );
+  } catch (error) {
+    console.error("Error deleting lesson:", error);
+    throw error;
+  }
+};
