@@ -133,6 +133,20 @@
   color: #fff;
 }
 
+.f-review-icon-button {
+  padding: 0.75rem;
+  min-width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffa726;
+}
+
+.f-review-icon-button:hover {
+  background: #ff9800;
+  transform: scale(1.05);
+}
+
 /* Tablet Styles */
 @media (max-width: 1024px) {
   .f-course-header {

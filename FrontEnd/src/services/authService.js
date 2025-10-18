@@ -4,10 +4,11 @@ import { store } from "../store";
 import { logout } from "../store/authSlice";
 
 // Tạo một instance của axios với cấu hình chung
+const API_BASE_URL = process.env.REACT_APP_API_URL ;
+console.log("REACT_APP_API_URL (build-time) =>", process.env.REACT_APP_API_URL);
+console.log("API_BASE_URL (runtime) =>", API_BASE_URL);
 const apiClient = axios.create({
-  baseURL:
-    // "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api",
-    "http://localhost:5000/api",
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
@@ -74,7 +75,7 @@ apiClient.interceptors.response.use(
 
       try {
         const { data } = await axios.post(
-          "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api/auth/refresh-token",
+          `${API_BASE_URL}/auth/refresh-token`,
           {},
           { withCredentials: true }
         );

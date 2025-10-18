@@ -16,6 +16,7 @@ import ProgressTabs from "./ProgressTabs";
 import CustomButton from "../common/CustomButton/CustomButton";
 import { toast } from "react-toastify";
 import apiClient from "../../services/authService";
+import { uploadFile } from "../../services/uploadService";
 import { uploadWordQuiz, updateQuiz, linkQuizToCourse } from "../../services/quizService";
 import { deleteLessonFile, updateLessonFile } from "../../services/lessonService";
 import QuizEditorModal from "./QuizEditorModal";
@@ -930,16 +931,13 @@ export default function CourseCurriculum({
                                                 handleLessonFieldChange(sIdx, lIdx, "uploadingQuiz", true);
 
                                                 try {
-                                                  // Upload file to get Firebase URL but don't create quiz in DB
-                                                  const formData = new FormData();
-                                                  formData.append("file", file);
-                                                  formData.append("fileType", "quiz");
-
-                                                  const uploadResponse = await apiClient.post("/admin/upload", formData, {
-                                                    headers: { "Content-Type": "multipart/form-data" },
+                                                  // Upload file using uploadService (auto-detects role)
+                                                  const uploadResponse = await uploadFile(file, {
+                                                    courseId: courseId,
+                                                    fileType: "quiz",
                                                   });
 
-                                                  if (!uploadResponse.data || !uploadResponse.data.url) {
+                                                  if (!uploadResponse || !uploadResponse.url) {
                                                     throw new Error("Failed to upload quiz file");
                                                   }
 
@@ -948,12 +946,8 @@ export default function CourseCurriculum({
                                                   const title = fileName || "Untitled Quiz";
                                                   const description = `Quiz created from ${file.name}`;
 
-                                                  // Try to parse quiz from uploaded Word document
-
                                                   try {
-                                                    // Test API call to parse Word document
-                                                    const currentSection = sections[sIdx];
-                                                    // Parse Word document WITHOUT saving to database
+                                                    // Parse Word document to extract quiz questions without saving to database
                                                     const parseResponse = await uploadWordQuiz(file, null, title, description);
                                                     
                                                     if (parseResponse.success && parseResponse.data) {
@@ -985,7 +979,7 @@ export default function CourseCurriculum({
                                                         title: title,
                                                         description: description,
                                                         fileName: file.name,
-                                                        firebaseUrl: uploadResponse.data.url,
+                                                        firebaseUrl: uploadResponse.url, // ✅ Fixed: uploadService already returns response.data
                                                         isTemporary: !hasRealQuizId, // Not temporary if has real ID
                                                         questions: transformedQuestions,
                                                         estimatedDuration: transformedQuestions.length * 60,
@@ -996,7 +990,7 @@ export default function CourseCurriculum({
                                                           name: file.name,
                                                           size: file.size,
                                                           type: file.type,
-                                                          url: uploadResponse.data.url
+                                                          url: uploadResponse.url // ✅ Fixed: uploadService already returns response.data
                                                         }
                                                       };
 
@@ -1030,7 +1024,7 @@ export default function CourseCurriculum({
                                                     title: title,
                                                     description: description,
                                                     fileName: file.name,
-                                                    firebaseUrl: uploadResponse.data.url,
+                                                    firebaseUrl: uploadResponse.url, // ✅ Fixed: uploadService already returns response.data
                                                     isTemporary: true, // Mark as temporary (not saved to DB)
                                                     questions: [], // Empty questions for manual editing
                                                     estimatedDuration: 0,
@@ -1039,7 +1033,7 @@ export default function CourseCurriculum({
                                                       name: file.name,
                                                       size: file.size,
                                                       type: file.type,
-                                                      url: uploadResponse.data.url
+                                                      url: uploadResponse.url // ✅ Fixed: uploadService already returns response.data
                                                     }
                                                   };
 
@@ -1084,28 +1078,25 @@ export default function CourseCurriculum({
                                                       throw new Error(response.message || "Failed to update file");
                                                     }
                                                   } else {
-                                                    // New lesson - upload to Firebase only
-                                                    const formData = new FormData();
-                                                    formData.append("file", file);
-                                                    formData.append("fileType", "lesson");
-
-                                                    const res = await apiClient.post("/admin/upload", formData, {
-                                                      headers: { "Content-Type": "multipart/form-data" },
+                                                    // New lesson - upload using uploadService (auto-detects role)
+                                                    const uploadResponse = await uploadFile(file, {
+                                                      courseId: courseId,
+                                                      fileType: "lesson",
                                                     });
 
-                                                    if (!res.data || !res.data.url) {
+                                                    if (!uploadResponse || !uploadResponse.url) {
                                                       throw new Error("Failed to upload file");
                                                     }
 
                                                     // Update lesson with new URL and file info
-                                                    handleLessonFieldChange(sIdx, lIdx, "materialUrl", res.data.url);
-                                                    handleLessonFieldChange(sIdx, lIdx, "videoUrl", res.data.url);
+                                                    handleLessonFieldChange(sIdx, lIdx, "materialUrl", uploadResponse.url);
+                                                    handleLessonFieldChange(sIdx, lIdx, "videoUrl", uploadResponse.url);
                                                     handleLessonFieldChange(sIdx, lIdx, "materialFile", file);
                                                     
                                                     // Create temporary file info for display
                                                     const fileInfo = {
                                                       fileName: file.name,
-                                                      url: res.data.url,
+                                                      url: uploadResponse.url,
                                                       uploadedAt: new Date().toISOString(),
                                                       canDelete: true
                                                     };
@@ -1175,7 +1166,7 @@ export default function CourseCurriculum({
                                                 </div>
                                           </div>
 
-                                              <div className="quiz-actions">
+                                              <div className="curriculum-quiz-actions">
                                           <button
                                                   type="button"
                                                   onClick={() => {
@@ -1186,10 +1177,10 @@ export default function CourseCurriculum({
                                                       quizData: lesson.quizData
                                                     });
                                                   }}
-                                                  className={`quiz-edit-button ${lesson.newlyCreatedQuiz ? 'newly-created' : ''}`}
+                                                  className={`curriculum-quiz-edit-btn ${lesson.newlyCreatedQuiz ? 'newly-created' : ''}`}
+                                                  title="Edit Quiz"
                                                 >
-                                                  <FileText size={16} />
-                                                  Edit Quiz
+                                                  <FileText size={18} />
                                           </button>
 
                                                       <button
@@ -1200,7 +1191,7 @@ export default function CourseCurriculum({
                                                       handleLessonFieldChange(sIdx, lIdx, "duration", 0);
                                                     }
                                                   }}
-                                                  className="quiz-remove-button"
+                                                  className="curriculum-quiz-remove-btn"
                                                 >
                                                   <Trash2 size={16} />
                                                       </button>
