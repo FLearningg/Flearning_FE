@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import CourseHeader from "./CourseHeader";
 import CourseDescription from "./CourseDescription";
+import InstructorInfoCard from "./InstructorInfoCard";
 import Curriculum from "./Curriculum";
 import CourseRating from "./CourseRating";
 import StudentFeedback from "./StudentFeedback";
@@ -401,6 +402,7 @@ export default function SingleCourse() {
               setActiveTab={handleTabClick}
               isScreenSmall={isScreenSmall}
               onBurgerClick={() => setIsModalOpen(true)}
+              instructorCard={<InstructorInfoCard instructor={course.createdBy} />}
             />
 
             <div ref={overviewRef}>
