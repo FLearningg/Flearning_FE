@@ -68,7 +68,7 @@ const InstructorAllCourses = () => {
           course.studentsCount ||
           course.enrolledStudents ||
           course.studentsEnrolled?.length ||
-          "0",
+          0,
         actions: ["View Details", "Edit Course", "Delete Course"],
         originalData: course,
       }));

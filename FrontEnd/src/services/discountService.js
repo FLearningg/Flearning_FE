@@ -1,6 +1,8 @@
 import apiClient from "./authService";
 
-// Get all discounts with filtering and pagination
+// ===== ADMIN ENDPOINTS =====
+
+// Get all discounts with filtering and pagination (Admin)
 export const getAllDiscounts = async (params = {}) => {
   try {
     const response = await apiClient.get("/admin/discounts", { params });
@@ -10,7 +12,7 @@ export const getAllDiscounts = async (params = {}) => {
   }
 };
 
-// Get discount by ID
+// Get discount by ID (Admin)
 export const getDiscountById = async (discountId) => {
   try {
     const response = await apiClient.get(`/admin/discounts/${discountId}`);
@@ -20,7 +22,7 @@ export const getDiscountById = async (discountId) => {
   }
 };
 
-// Create new discount
+// Create new discount (Admin)
 export const createDiscount = async (discountData) => {
   try {
     const response = await apiClient.post("/admin/discounts", discountData);
@@ -30,7 +32,7 @@ export const createDiscount = async (discountData) => {
   }
 };
 
-// Update discount
+// Update discount (Admin)
 export const updateDiscount = async (discountId, updateData) => {
   try {
     const response = await apiClient.put(
@@ -43,20 +45,55 @@ export const updateDiscount = async (discountId, updateData) => {
   }
 };
 
-// Delete discount
-export const deleteDiscount = async (discountId) => {
+// Get discount statistics (Admin)
+export const getDiscountStats = async () => {
   try {
-    const response = await apiClient.delete(`/admin/discounts/${discountId}`);
+    const response = await apiClient.get("/admin/discounts/stats");
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: error.message };
   }
 };
 
-// Get discount statistics
-export const getDiscountStats = async () => {
+// ===== INSTRUCTOR ENDPOINTS =====
+
+// Get instructor's own discounts with filtering and pagination
+export const getInstructorDiscounts = async (params = {}) => {
   try {
-    const response = await apiClient.get("/admin/discounts/stats");
+    const response = await apiClient.get("/instructor/discounts", { params });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+// Get discount by ID (Instructor)
+export const getInstructorDiscountById = async (discountId) => {
+  try {
+    const response = await apiClient.get(`/instructor/discounts/${discountId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+// Create new discount (Instructor)
+export const createInstructorDiscount = async (discountData) => {
+  try {
+    const response = await apiClient.post("/instructor/discounts", discountData);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+// Update discount (Instructor)
+export const updateInstructorDiscount = async (discountId, updateData) => {
+  try {
+    const response = await apiClient.put(
+      `/instructor/discounts/${discountId}`,
+      updateData
+    );
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: error.message };

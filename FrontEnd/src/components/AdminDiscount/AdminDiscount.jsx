@@ -6,7 +6,6 @@ import {
   getAllDiscounts,
   createDiscount,
   updateDiscount,
-  deleteDiscount,
   getDiscountStats,
 } from "../../services/discountService";
 import "../../assets/AdminDiscount/AdminDiscount.css";
@@ -191,19 +190,6 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
   const handleEdit = (discount) => {
     setEditingDiscount(discount);
     setShowCreateModal(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this discount?")) {
-      try {
-        await deleteDiscount(id);
-        toast.success("Discount deleted successfully!");
-        fetchData();
-      } catch (error) {
-        console.error("Delete failed:", error);
-        toast.error(error.message || "Failed to delete discount");
-      }
-    }
   };
 
   const handleCopyCode = (code) => {
@@ -489,14 +475,6 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                       >
                         <EditIcon />
                         <span className="admin-discount-fallback-text">✎</span>
-                      </button>
-                      <button
-                        className="admin-discount-action-btn admin-discount-delete-btn"
-                        onClick={() => handleDelete(discount._id)}
-                        title="Delete discount"
-                      >
-                        <DeleteIcon />
-                        <span className="admin-discount-fallback-text">✕</span>
                       </button>
                     </div>
                   </td>

@@ -54,7 +54,7 @@ function CartPage() {
 
   const Cart_DATA =
     cartItems?.map((course) => {
-      let finalPrice = course.price;
+      let finalPrice = course.price || 0;
       if (isDiscountValid(course.discountId)) {
         if (course.discountId.type === "fixedAmount") {
           finalPrice = Math.max(0, course.price - course.discountId.value);
@@ -69,8 +69,8 @@ function CartPage() {
         courseId: course._id,
         courseImage: course.thumbnail,
         courseName: course.title,
-        rating: course.rating,
-        enrolledCount: course.studentsEnrolled.length,
+        rating: course.rating || 0,
+        enrolledCount: course.studentsEnrolled?.length || 0,
         price: finalPrice,
         oldPrice: isDiscountValid(course.discountId) ? course.price : null,
         courseAuthor: course.author || "Admin",
