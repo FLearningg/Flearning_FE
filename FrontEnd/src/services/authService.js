@@ -7,7 +7,7 @@ import { logout } from "../store/authSlice";
 const apiClient = axios.create({
   baseURL:
     // "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api",
-    "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api",
+    "http://localhost:5000/api",
   withCredentials: true,
 });
 

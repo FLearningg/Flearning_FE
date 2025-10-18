@@ -291,6 +291,58 @@
   color: #666;
 }
 
+/* Sửa lại grid để cột 2 (actions) hẹp hơn cột 1 (list) */
+.flearning-purchase-details-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* 2/3 cho list, 1/3 cho actions */
+  gap: 24px;
+}
+
+/* Định dạng cho cột actions mới */
+.flearning-purchase-actions {
+  padding-top: 10px;
+}
+
+.flearning-actions-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+/* Nút hành động chung */
+.flearning-action-btn {
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+}
+
+/* Nút chính (Tải biên lai) */
+.flearning-action-btn--primary {
+  background-color: #ff6636; /* Màu cam chính của bạn */
+  color: white;
+  border-color: #ff6636;
+}
+.flearning-action-btn--primary:hover {
+  background-color: #e65c30;
+}
+
+/* Nút phụ (Hỗ trợ) */
+.flearning-action-btn--secondary {
+  background-color: #f8f9fa; /* Màu xám nhạt */
+  color: #333;
+  border-color: #ddd;
+}
+.flearning-action-btn--secondary:hover {
+  background-color: #e9ecef;
+}
+
 @media (max-width: 768px) {
   .flearning-purchase-details-grid {
     grid-template-columns: 1fr;
@@ -310,4 +362,4 @@
     width: 100%;
     height: 160px;
   }
-} 
+}
