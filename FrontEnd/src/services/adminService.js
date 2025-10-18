@@ -12,13 +12,13 @@ export const updateUserStatus = (userId, status) =>
 export const updateUserRole = (userId, role) =>
   apiClient.put(`/admin/users/${userId}/role`, { role });
 
-// Get pending instructor applications
+// Get instructor requests
 export const getInstructorApplications = (params) =>
-  apiClient.get(`/admin/instructor-applications`, { params });
+  apiClient.get(`/admin/instructor-requests`, { params });
 
 // Approve or reject an instructor application
 export const reviewInstructorApplication = (applicationId, action) =>
-  apiClient.put(`/admin/instructor-applications/${applicationId}`, { action });
+  apiClient.put(`/admin/instructor/${applicationId}`, { action });
 
 // Get all categories
 export const getAllCategories = () => apiClient.get("/admin/categories");
@@ -100,4 +100,22 @@ export const uploadQuizDocument = async (file, courseId) => {
   } catch (error) {
     throw error;
   }
+};
+
+export const approveInstructor = async ({ applicationId }) => {
+  return await apiClient.post(`/admin/instructors/approve`, {
+    applicationId,
+  });
+};
+
+export const denyInstructor = async ({
+  applicationId,
+  reasons,
+  customReason,
+}) => {
+  return await apiClient.post(`/admin/instructors/deny`, {
+    applicationId,
+    reasons,
+    customReason,
+  });
 };
