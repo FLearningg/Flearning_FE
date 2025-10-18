@@ -14,12 +14,19 @@ import instructorRoutesContent from "./instructorRoutes";
 
 import ErrorPage from "../pages/MainPage/ErrorPage";
 import InstructorRegisterPage from "../pages/AuthPage/InstructorRegisterPage";
+import InstructorProfilePublic from "../pages/InstructorProfile/InstructorProfilePublic";
 
 const AppRouter = () => {
   return (
     <Routes>
       {/* Auth routes without layout (verify email, check email, confirmation pages) */}
       {authRoutesWithoutLayout}
+      
+      {/* Public Instructor Profile - MUST be before /instructor/* to avoid conflict */}
+      <Route path="/public/instructor/:userId" element={<AppLayout><InstructorProfilePublic /></AppLayout>} />
+      
+      {/* Instructor registration route - No authentication required */}
+      <Route path="/instructor/register" element={<AppLayout><InstructorRegisterPage /></AppLayout>} />
       
       <Route path="/" element={<AppLayout />}>
         {/* Main routes */}
@@ -41,10 +48,6 @@ const AppRouter = () => {
       >
         {/* Các route của admin sẽ được render bên trong <Outlet /> của AppLayout */}
         {adminRoutesContent}
-      </Route>
-      {/* Instructor registration route - No authentication required */}
-      <Route path="/instructor/register" element={<AppLayout />}>
-        <Route index element={<InstructorRegisterPage />} />
       </Route>
       <Route
         path="/instructor/*" // Dùng wildcard '*' để khớp với tất cả các đường dẫn con

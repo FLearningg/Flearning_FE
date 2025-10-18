@@ -13,16 +13,18 @@ const FloatingChatButton = React.lazy(() =>
 
 const { Content } = Layout;
 
-function AppLayout() {
+function AppLayout({ children }) {
   const location = useLocation();
   const isAdminRoute = location.pathname.includes("admin");
-  const isInstructorRoute = location.pathname.includes("instructor") && !location.pathname.includes("instructor/register");
+  const isInstructorRoute = location.pathname.startsWith("/instructor/") && 
+                            !location.pathname.startsWith("/instructor/register") &&
+                            !location.pathname.startsWith("/public/instructor");
   const headerHeight = "130px"; // Giả sử chiều cao header của bạn
 
   if (isAdminRoute) {
     return (
       <FinalHeaderAndSidebar>
-        <Outlet />
+        {children || <Outlet />}
       </FinalHeaderAndSidebar>
     );
   }
@@ -30,7 +32,7 @@ function AppLayout() {
   if (isInstructorRoute) {
     return (
       <InstructorLayout>
-        <Outlet />
+        {children || <Outlet />}
       </InstructorLayout>
     );
   }
@@ -48,7 +50,7 @@ function AppLayout() {
             flex: "1 0 auto",
           }}
         >
-          <Outlet />
+          {children || <Outlet />}
         </Content>
         <Footer />
       </Layout>
