@@ -122,29 +122,34 @@ export function HeaderMsg({ onHamburgerClick, title = "Dashboard", isMobile }) {
               <div className="ahs-dropdown-divider"></div>
 
               <div className="ahs-dropdown-actions">
-                <button
-                  className="ahs-dropdown-action-item"
-                  onClick={() => {
-                    navigate("/profile/dashboard");
-                    setShowUserDropdown(false);
-                  }}
-                >
-                  <FaUser size={16} />
-                  <span>Profile</span>
-                </button>
+                {/* Only show Profile and Settings for non-instructor users */}
+                {currentUser?.role !== "instructor" && (
+                  <>
+                    <button
+                      className="ahs-dropdown-action-item"
+                      onClick={() => {
+                        navigate("/profile/dashboard");
+                        setShowUserDropdown(false);
+                      }}
+                    >
+                      <FaUser size={16} />
+                      <span>Profile</span>
+                    </button>
 
-                <button
-                  className="ahs-dropdown-action-item"
-                  onClick={() => {
-                    navigate("/profile/settings");
-                    setShowUserDropdown(false);
-                  }}
-                >
-                  <FaCog size={16} />
-                  <span>Settings</span>
-                </button>
+                    <button
+                      className="ahs-dropdown-action-item"
+                      onClick={() => {
+                        navigate("/profile/settings");
+                        setShowUserDropdown(false);
+                      }}
+                    >
+                      <FaCog size={16} />
+                      <span>Settings</span>
+                    </button>
 
-                <div className="ahs-dropdown-divider"></div>
+                    <div className="ahs-dropdown-divider"></div>
+                  </>
+                )}
 
                 <button
                   className="ahs-dropdown-action-item ahs-logout"

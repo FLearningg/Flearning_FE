@@ -93,7 +93,9 @@ const RejectionModal = ({
 };
 
 export default function CensorInstructor() {
+  const [activeTab, setActiveTab] = useState("applications"); // "applications" or "instructors"
   const [applications, setApplications] = useState([]);
+  const [instructors, setInstructors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
@@ -119,7 +121,23 @@ export default function CensorInstructor() {
     try {
       const response = await getInstructorApplications({ limit: 10000 });
       console.log("API Response:", response.data); // Log the API response
-      setApplications(response.data.data || []);
+      
+      // Transform the data to flatten userId object
+      const transformedData = (response.data.data || []).map((app) => ({
+        ...app,
+        firstName: app.userId?.firstName || "",
+        lastName: app.userId?.lastName || "",
+        email: app.userId?.email || "",
+        userImage: app.userId?.userImage || "",
+        status: app.applicationStatus || app.status, // Map applicationStatus to status
+      }));
+      
+      // Separate applications and approved instructors
+      const pendingApps = transformedData.filter(app => app.status === "pending" || app.status === "emailNotVerified");
+      const approvedInstructors = transformedData.filter(app => app.status === "approved");
+      
+      setApplications(pendingApps);
+      setInstructors(approvedInstructors);
     } catch (err) {
       console.error("API Error:", err); // Log any API errors
       setError("Failed to fetch applications. Please try again.");
@@ -132,8 +150,8 @@ export default function CensorInstructor() {
     fetchApplications();
   }, []);
 
-  const filteredApplications = useMemo(() => {
-    let filtered = applications;
+  const filteredData = useMemo(() => {
+    let filtered = activeTab === "applications" ? applications : instructors;
 
     if (searchTerm) {
       filtered = filtered.filter((app) =>
@@ -145,7 +163,7 @@ export default function CensorInstructor() {
       );
     }
 
-    if (statusFilter !== "all") {
+    if (statusFilter !== "all" && activeTab === "applications") {
       filtered = filtered.filter((app) => app.status === statusFilter);
     }
 
@@ -164,17 +182,18 @@ export default function CensorInstructor() {
     }
 
     return filtered;
-  }, [applications, searchTerm, statusFilter, dateFilter, fromDate, toDate]);
+  }, [activeTab, applications, instructors, searchTerm, statusFilter, dateFilter, fromDate, toDate]);
 
-  const paginatedApplications = useMemo(() => {
+  const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredApplications.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredApplications, currentPage, itemsPerPage]);
+    return filteredData.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredData, currentPage, itemsPerPage]);
 
-  const totalApplications = filteredApplications.length;
-  const totalPages = Math.ceil(totalApplications / itemsPerPage);
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   const openModal = (application) => {
+    console.log("Selected Application Data:", application); // Debug log
     setSelectedApplication(application);
   };
 
@@ -295,10 +314,40 @@ export default function CensorInstructor() {
       }}
     >
       <div className="amu-container">
+        {/* Page Title */}
+        <div className="amu-page-header">
+          <h1 className="amu-page-title">Moderate Instructor</h1>
+        </div>
+
+        {/* Tabs */}
+        <div className="amu-tabs">
+          <button
+            className={`amu-tab ${activeTab === "applications" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("applications");
+              setCurrentPage(1);
+              setSearchTerm("");
+              setStatusFilter("all");
+            }}
+          >
+            View Applications
+          </button>
+          <button
+            className={`amu-tab ${activeTab === "instructors" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("instructors");
+              setCurrentPage(1);
+              setSearchTerm("");
+            }}
+          >
+            View Instructors
+          </button>
+        </div>
+
         {loading && (
           <div className="loading-container">
             <div className="loading-spinner"></div>
-            <p>Loading applications...</p>
+            <p>Loading {activeTab === "applications" ? "applications" : "instructors"}...</p>
           </div>
         )}
         {!loading && error && (
@@ -322,16 +371,18 @@ export default function CensorInstructor() {
                   className="amu-search-input"
                 />
               </div>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="amu-filter-select"
-              >
-                <option value="all">All</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-                <option value="pending">Pending</option>
-              </select>
+              {activeTab === "applications" && (
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="amu-filter-select"
+                >
+                  <option value="all">All</option>
+                  <option value="pending">Pending</option>
+                  <option value="emailNotVerified">Email Not Verified</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              )}
               <div className="amu-date-filter-group">
                 <span className="amu-filter-label">Joined Date:</span>
                 <div className="amu-date-filter">
@@ -385,15 +436,15 @@ export default function CensorInstructor() {
                 <thead className="amu-table-header">
                   <tr>
                     <th>NO.</th>
-                    <th>Applicant</th>
+                    <th>{activeTab === "applications" ? "Applicant" : "Instructor"}</th>
                     <th>Email</th>
                     <th>Status</th>
-                    <th>Date Applied</th>
+                    <th>{activeTab === "applications" ? "Date Applied" : "Date Approved"}</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedApplications.map((app, index) => {
+                  {paginatedData.map((app, index) => {
                     const rowNumber =
                       (currentPage - 1) * itemsPerPage + index + 1;
                     return (
@@ -457,8 +508,8 @@ export default function CensorInstructor() {
             <div className="amu-pagination">
               <p className="amu-pagination-info">
                 Showing {currentPage * itemsPerPage - itemsPerPage + 1} to{" "}
-                {Math.min(currentPage * itemsPerPage, totalApplications)} of{" "}
-                {totalApplications} results
+                {Math.min(currentPage * itemsPerPage, totalItems)} of{" "}
+                {totalItems} results
               </p>
               <div className="amu-pagination-controls">
                 <button
@@ -512,26 +563,20 @@ export default function CensorInstructor() {
                     <div className="ci-info-item">
                       <span className="ci-info-label">Name:</span>
                       <span className="ci-info-value">
-                        {selectedApplication.firstName}{" "}
-                        {selectedApplication.lastName}
+                        {selectedApplication.firstName || "N/A"}{" "}
+                        {selectedApplication.lastName || ""}
                       </span>
                     </div>
                     <div className="ci-info-item">
                       <span className="ci-info-label">Email:</span>
                       <span className="ci-info-value">
-                        {selectedApplication.email}
+                        {selectedApplication.email || "N/A"}
                       </span>
                     </div>
                     <div className="ci-info-item">
                       <span className="ci-info-label">Phone:</span>
                       <span className="ci-info-value">
-                        {selectedApplication.phone}
-                      </span>
-                    </div>
-                    <div className="ci-info-item ci-info-item-full">
-                      <span className="ci-info-label">Bio:</span>
-                      <span className="ci-info-value">
-                        {selectedApplication.bio}
+                        {selectedApplication.phone || "N/A"}
                       </span>
                     </div>
                   </div>
@@ -562,50 +607,99 @@ export default function CensorInstructor() {
                   </div>
                 </div>
 
-                {/* Banking Information Section */}
-                <div className="ci-modal-section">
-                  <h3 className="ci-section-title">Banking Information</h3>
-                  <div className="ci-info-grid">
-                    <div className="ci-info-item">
-                      <span className="ci-info-label">Bank Name:</span>
-                      <span className="ci-info-value">
-                        {selectedApplication.bankName}
-                      </span>
-                    </div>
-                    <div className="ci-info-item">
-                      <span className="ci-info-label">Account Number:</span>
-                      <span className="ci-info-value">
-                        {selectedApplication.accountNumber}
-                      </span>
-                    </div>
-                    <div className="ci-info-item ci-info-item-full">
-                      <span className="ci-info-label">Account Holder:</span>
-                      <span className="ci-info-value">
-                        {selectedApplication.accountHolderName}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Documents Section */}
                 {selectedApplication.documents &&
                   selectedApplication.documents.length > 0 && (
                     <div className="ci-modal-section">
                       <h3 className="ci-section-title">Documents</h3>
                       <div className="ci-documents-grid">
-                        {selectedApplication.documents.map((doc, idx) => (
-                          <div key={idx} className="ci-document-item">
-                            <img
-                              src={doc}
-                              alt={`Document ${idx + 1}`}
-                              className="ci-document-image"
-                              onClick={() => openImageViewer(doc)}
-                            />
-                            <span className="ci-document-label">
-                              Document {idx + 1}
-                            </span>
-                          </div>
-                        ))}
+                        {selectedApplication.documents.map((doc, idx) => {
+                          // Determine file type from URL or extension
+                          const fileExtension = doc.split('.').pop().toLowerCase().split('?')[0];
+                          const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExtension);
+                          const isPdf = fileExtension === 'pdf';
+                          const isDoc = ['doc', 'docx'].includes(fileExtension);
+                          
+                          return (
+                            <div key={idx} className="ci-document-item">
+                              {isImage ? (
+                                <img
+                                  src={doc}
+                                  alt={`Document ${idx + 1}`}
+                                  className="ci-document-image"
+                                  onClick={() => openImageViewer(doc)}
+                                  style={{ cursor: 'pointer' }}
+                                />
+                              ) : (
+                                <div 
+                                  className="ci-document-file"
+                                  style={{
+                                    padding: '15px',
+                                    border: '2px solid #e0e0e0',
+                                    borderRadius: '12px',
+                                    textAlign: 'center',
+                                    cursor: 'pointer',
+                                    background: isPdf ? 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)' : 
+                                                isDoc ? 'linear-gradient(135deg, #2b579a 0%, #1e3a6b 100%)' : '#f9f9f9',
+                                    height: '150px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    transition: 'all 0.3s ease',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                  }}
+                                  onClick={() => window.open(doc, '_blank')}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-4px)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                                  }}
+                                >
+                                  {isPdf ? (
+                                    <>
+                                      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '8px' }}>
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" fill="#d32f2f" stroke="#b71c1c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M14 2v6h6" stroke="#b71c1c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M10 13h4M10 17h4M10 9h1" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
+                                      </svg>
+                                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#d32f2f' }}>
+                                        PDF Document
+                                      </div>
+                                    </>
+                                  ) : isDoc ? (
+                                    <>
+                                      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '8px' }}>
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" fill="#2b579a" stroke="#1e3a6b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M14 2v6h6" stroke="#1e3a6b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <text x="7" y="16" fill="#fff" fontSize="8" fontWeight="bold">W</text>
+                                      </svg>
+                                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#fff' }}>
+                                        Word Document
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '8px' }}>
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" fill="#757575" stroke="#424242" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M14 2v6h6" stroke="#424242" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                      </svg>
+                                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#666' }}>
+                                        {fileExtension.toUpperCase()} File
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                              <span className="ci-document-label">
+                                Document {idx + 1}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

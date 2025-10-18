@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import axios from "axios";
 import "./GeminiChatBox.css";
 
+const API_BASE_URL = process.env.REACT_APP_API_URL ;
 const GeminiChatBox = () => {
   const [inputValue, setInputValue] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
@@ -78,7 +79,7 @@ const GeminiChatBox = () => {
 
     try {
       const response = await axios.post(
-        "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api/chatbot/query",
+        `${API_BASE_URL}/api/chatbot/query`,
         {
           prompt: userMessageText,
         }
