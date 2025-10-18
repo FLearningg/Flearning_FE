@@ -70,7 +70,7 @@ function CartPage() {
         courseImage: course.thumbnail,
         courseName: course.title,
         rating: course.rating,
-        enrolledCount: course.studentsEnrolled.length,
+        enrolledCount: course.studentsEnrolled?.length || 0,
         price: finalPrice,
         oldPrice: isDiscountValid(course.discountId) ? course.price : null,
         courseAuthor: course.author || "Admin",

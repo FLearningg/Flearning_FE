@@ -5,6 +5,7 @@ import ProfileSection from "../CourseList/ProfileSection";
 import { getPurchaseHistory } from "../../services/profileService";
 import "../../assets/PurchaseHistory/PurchaseHistory.css";
 
+// CourseItem không cần thay đổi
 const CourseItem = ({ course }) => (
   <div className="flearning-course-item">
     <div className="flearning-course-image">
@@ -26,6 +27,7 @@ const CourseItem = ({ course }) => (
   </div>
 );
 
+// SỬA LẠI PURCHASE CARD
 const PurchaseCard = ({ purchase, isExpanded, onToggle }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -51,22 +53,28 @@ const PurchaseCard = ({ purchase, isExpanded, onToggle }) => {
             {formatDate(purchase.paymentDate)}
           </div>
           <div className="flearning-purchase-meta">
+            {/* SỬA 1: HIỂN THỊ TỔNG SỐ COURSE ĐỘNG */}
             <span className="flearning-meta-item">
               <img
                 src="/icons/PlayCircle.png"
                 alt="Course"
                 className="flearning-meta-icon"
               />
-              1 Course
+              {purchase.totalCourses} Course
+              {purchase.totalCourses > 1 ? "s" : ""}
             </span>
+
+            {/* SỬA 2: SỬA LỖI HIỂN THỊ TIỀN TỆ (NẾU CÓ) */}
             <span className="flearning-meta-item">
               <img
                 src="/icons/CurrencyDollarSimple.png"
                 alt="Amount"
                 className="flearning-meta-icon"
               />
+              {/* Giả sử backend trả về 'amount' là VND */}
               {purchase.amount?.toLocaleString("vi-VN")} VND
             </span>
+
             <span className="flearning-meta-item">
               <img
                 src="/icons/CreditCard.png"
@@ -74,6 +82,15 @@ const PurchaseCard = ({ purchase, isExpanded, onToggle }) => {
                 className="flearning-meta-icon"
               />
               {purchase.paymentMethod}
+            </span>
+
+            <span className="flearning-meta-item">
+              <img
+                src="/icons/status.png"
+                alt="Status"
+                className="flearning-meta-icon"
+              />
+              {purchase.transaction.status}
             </span>
           </div>
         </div>
@@ -86,62 +103,35 @@ const PurchaseCard = ({ purchase, isExpanded, onToggle }) => {
         </button>
       </div>
 
-      {isExpanded && purchase.course && (
+      {/* SỬA 3: KIỂM TRA MẢNG 'courses' */}
+      {isExpanded && purchase.courses && purchase.courses.length > 0 && (
         <div className="flearning-purchase-details">
           <div className="flearning-purchase-details-grid">
+            {/* CỘT 1: Danh sách khóa học (Giữ nguyên) */}
             <div className="flearning-courses-list">
-              <CourseItem course={purchase.course} />
+              {purchase.courses.map((course) => (
+                <CourseItem key={course.id} course={course} />
+              ))}
             </div>
 
-            <div className="flearning-purchase-summary">
-              <div className="flearning-summary-date">
-                {formatDate(purchase.paymentDate)}
-              </div>
-              <div className="flearning-summary-details">
-                <div className="flearning-summary-item">
-                  <img
-                    src="/icons/PlayCircle.png"
-                    alt="Course"
-                    className="flearning-summary-icon"
-                  />
-                  <span>1 Course</span>
-                </div>
-                <div className="flearning-summary-item">
-                  <img
-                    src="/icons/CurrencyDollarSimple.png"
-                    alt="Amount"
-                    className="flearning-meta-icon"
-                  />
-                  {purchase.amount?.toLocaleString("vi-VN")} VND
-                </div>
-                <div className="flearning-summary-item">
-                  <img
-                    src="/icons/CreditCard.png"
-                    alt="Payment"
-                    className="flearning-summary-icon"
-                  />
-                  <span>{purchase.paymentMethod}</span>
-                </div>
-              </div>
-              {purchase.transaction && (
-                <div className="flearning-transaction-info">
-                  <div className="flearning-transaction-id">
-                    <img
-                      src="/icons/CreditCard.png"
-                      alt="Transaction"
-                      className="flearning-transaction-icon"
-                    />
-                    <span>
-                      Transaction ID:{" "}
-                      {purchase.transaction.gatewayTransactionId}
-                    </span>
-                  </div>
-                  <span className="flearning-transaction-status">
-                    Status: {purchase.transaction.status}
-                  </span>
-                </div>
-              )}
+            {/* ======================================= */}
+            {/* BƯỚC 1: THÊM KHỐI HÀNH ĐỘNG NÀY VÀO */}
+            <div className="flearning-purchase-actions">
+              <h5 className="flearning-actions-title">Tuỳ chọn giao dịch</h5>
+              <button
+                className="flearning-action-btn flearning-action-btn--primary"
+                onClick={() => alert("Đang phát triển tính năng tải biên lai!")}
+              >
+                Tải biên lai
+              </button>
+              <button
+                className="flearning-action-btn flearning-action-btn--secondary"
+                onClick={() => alert("Đang phát triển tính năng hỗ trợ!")}
+              >
+                Liên hệ hỗ trợ
+              </button>
             </div>
+            {/* ======================================= */}
           </div>
         </div>
       )}
@@ -149,6 +139,7 @@ const PurchaseCard = ({ purchase, isExpanded, onToggle }) => {
   );
 };
 
+// Component PurchaseHistory không cần thay đổi logic
 const PurchaseHistory = () => {
   const location = useLocation();
   const [purchases, setPurchases] = useState([]);
@@ -166,9 +157,14 @@ const PurchaseHistory = () => {
     try {
       setLoading(true);
       setError(null);
+      // Gọi service (đã được sửa ở backend)
       const response = await getPurchaseHistory(page);
+      console.log("Purchase history response:", response.data.data);
+
+      // Dữ liệu mới đã có 'courses' (mảng) và 'totalCourses' (số)
       setPurchases(response.data.data);
       setPagination(response.data.pagination);
+
       if (response.data.data.length > 0) {
         setExpandedId(response.data.data[0].paymentId);
       }
@@ -182,11 +178,13 @@ const PurchaseHistory = () => {
   };
 
   useEffect(() => {
-    fetchPurchases();
+    fetchPurchases(1); // Fetch trang đầu tiên khi tải
   }, []);
 
   const handlePageChange = (newPage) => {
-    fetchPurchases(newPage);
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      fetchPurchases(newPage);
+    }
   };
 
   const handleToggle = (purchaseId) => {
@@ -225,7 +223,7 @@ const PurchaseHistory = () => {
               )}
             </div>
 
-            {purchases.length > 0 && (
+            {purchases.length > 0 && pagination.totalPages > 1 && (
               <div className="flearning-pagination">
                 <button
                   onClick={() => handlePageChange(pagination.currentPage - 1)}
@@ -250,8 +248,8 @@ const PurchaseHistory = () => {
             {purchases.length > 0 && (
               <div className="flearning-purchase-footer">
                 <p>
-                  Showing {purchases.length} of {pagination.totalPayments}{" "}
-                  purchases
+                  Showing {purchases.length} of {pagination.totalTransactions}{" "}
+                  transactions
                 </p>
               </div>
             )}

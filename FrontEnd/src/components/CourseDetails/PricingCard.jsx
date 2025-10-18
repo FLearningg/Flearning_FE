@@ -12,11 +12,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { addToWishlist, getWishlist } from "../../services/wishlistService";
 import { toast } from "react-toastify";
 import { addToCart } from "../../services/cartService";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 
 // THÊM: Import service thanh toán mới để sử dụng trong `ActionButtons`
 import { createPayOSLink } from "../../services/paymentService";
+import { isUserEnrolled } from "../../services/courseService";
+import { getCurrentUserProfile } from "../../services/userService";
 
 const ICON_MAP = {
   Level: BarChart3,
@@ -30,6 +32,11 @@ const formatDiscount = (str) => {
   if (!str) return "";
   const match = str.toLowerCase().match(/(.*?)(off)/);
   return match ? match[1].toUpperCase() + "OFF" : str.toUpperCase();
+};
+
+const formatVND = (price) => {
+  const number = Number(price) || 0;
+  return number.toLocaleString("vi-VN");
 };
 
 const capitalizeFirstLetter = (str) => {
@@ -51,11 +58,11 @@ const PriceSection = ({ currentPrice, originalPrice, discount, timeLeft }) => (
     <div className="d-flex justify-content-between align-items-center mb-3">
       <div className="d-flex align-items-center gap-3">
         <span className="h2 fw-bold text-dark mb-0">
-          ${currentPrice?.toFixed(2)}
+          {formatVND(currentPrice)} VND
         </span>
         {originalPrice > currentPrice && (
           <span className="h5 text-muted text-decoration-line-through mb-0">
-            ${originalPrice?.toFixed(2)}
+            {formatVND(originalPrice)} VND
           </span>
         )}
       </div>
@@ -148,7 +155,8 @@ const ActionButtons = ({ course }) => {
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.auth.currentUser);
 
-  // State loading riêng cho nút "Buy Now"
+  const [profile, setProfile] = useState(null);
+
   const [isBuying, setIsBuying] = useState(false);
   const { isLoading: isLoadingCart } = useSelector(
     (state) => state.cart.addItemToCart
@@ -157,7 +165,46 @@ const ActionButtons = ({ course }) => {
     (state) => state.wishlist.addItemToWishlist
   );
 
-  const isEnrolledCourse = (id) => currentUser?.enrolledCourses?.includes(id);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [isLoadingEnrollment, setIsLoadingEnrollment] = useState(true);
+
+  // useEffect (giữ nguyên, không đổi)
+  useEffect(() => {
+    setIsLoadingEnrollment(true);
+    setIsEnrolled(false);
+    setProfile(null);
+
+    const checkEnrollment = async () => {
+      try {
+        const enrolled = await isUserEnrolled(currentUser._id, courseId);
+        setIsEnrolled(enrolled);
+      } catch (error) {
+        console.error("Failed to check enrollment status", error);
+        setIsEnrolled(false);
+      }
+    };
+
+    const fetchProfile = async () => {
+      try {
+        const response = await getCurrentUserProfile();
+        setProfile(response.data);
+      } catch (error) {
+        console.error("Failed to fetch user profile", error);
+      }
+    };
+
+    if (currentUser?._id && courseId) {
+      const fetchAllData = async () => {
+        setIsLoadingEnrollment(true);
+        await Promise.all([checkEnrollment(), fetchProfile()]);
+        setIsLoadingEnrollment(false);
+      };
+
+      fetchAllData();
+    } else {
+      setIsLoadingEnrollment(false);
+    }
+  }, [currentUser, courseId]);
 
   const handleAddToWishList = async () => {
     if (!currentUser) return navigate("/login");
@@ -180,7 +227,6 @@ const ActionButtons = ({ course }) => {
     }
   };
 
-  // Logic "Buy Now" mới, gọi thẳng đến PayOS
   const handleBuyNow = async () => {
     if (!currentUser) return navigate("/login");
     if (!course) {
@@ -192,7 +238,8 @@ const ActionButtons = ({ course }) => {
     try {
       const paymentData = {
         description: `TT khoa hoc ${course._id.slice(-6)}`,
-        price: 2000,
+        // price: course.currentPrice,
+        price: 2000, // <-- Tạm thời đặt 2000 để test PayOS
         packageType: "COURSE_PURCHASE",
         courseIds: [course._id],
         cancelUrl: window.location.href,
@@ -207,46 +254,98 @@ const ActionButtons = ({ course }) => {
       }
     } catch (error) {
       console.error("Error creating payment link:", error);
-      // ... xử lý lỗi
       setIsBuying(false);
     }
   };
 
+  // ======================================================
+  // BẮT ĐẦU SỬA TRONG RETURN
+  // ======================================================
   return (
     <div className="mb-4">
-      {!isEnrolledCourse(courseId) ? (
+      {isLoadingEnrollment ? (
+        <div className="text-center my-5">
+          <span className="spinner-border spinner-border-sm" />
+        </div>
+      ) : !isEnrolled ? (
         <>
-          <button
-            className="btn w-100 fw-medium py-2 mb-3"
-            style={{
-              backgroundColor: "#ff6636",
-              borderColor: "#ff6636",
-              color: "white",
-            }}
-            onClick={handleAddToCart}
-            disabled={isLoadingCart}
-          >
-            {isLoadingCart ? (
-              <span className="spinner-border spinner-border-sm" />
-            ) : (
-              "Add To Cart"
-            )}
-          </button>
+          {/* === NÚT ADD TO CART === */}
+          {profile?.role !== "student" ? (
+            // 1. Wrapper (màn bọc) có tooltip khi không phải student
+            <span
+              className="d-inline-block w-100 mb-3"
+              title="You are not a student"
+            >
+              <button
+                className="btn w-100 fw-medium py-2"
+                style={{
+                  backgroundColor: "#ff6636",
+                  borderColor: "#ff6636",
+                  color: "white",
+                  pointerEvents: "none", // Chìa khóa để span nhận hover
+                }}
+                type="button"
+                disabled // Nút bên trong luôn disabled
+              >
+                Add To Cart
+              </button>
+            </span>
+          ) : (
+            // 2. Nút bình thường cho student
+            <button
+              className="btn w-100 fw-medium py-2 mb-3"
+              style={{
+                backgroundColor: "#ff6636",
+                borderColor: "#ff6636",
+                color: "white",
+              }}
+              onClick={handleAddToCart}
+              disabled={isLoadingCart}
+            >
+              {isLoadingCart ? (
+                <span className="spinner-border spinner-border-sm" />
+              ) : (
+                "Add To Cart"
+              )}
+            </button>
+          )}
 
-          <button
-            className="btn btn-outline w-100 fw-medium py-2 mb-3"
-            style={{ borderColor: "#ff6636", color: "#ff6636" }}
-            onClick={handleBuyNow}
-            disabled={isBuying || isLoadingCart}
-          >
-            {isBuying ? (
-              <span className="spinner-border spinner-border-sm" />
-            ) : (
-              "Buy Now"
-            )}
-          </button>
+          {/* === NÚT BUY NOW === */}
+          {profile?.role !== "student" ? (
+            <span
+              className="d-inline-block w-100 mb-3"
+              title="You are not a student"
+            >
+              <button
+                className="btn btn-outline w-100 fw-medium py-2"
+                style={{
+                  borderColor: "#ff6636",
+                  color: "#ff6636",
+                  pointerEvents: "none",
+                }}
+                type="button"
+                disabled
+              >
+                Buy Now
+              </button>
+            </span>
+          ) : (
+            <button
+              className="btn btn-outline w-100 fw-medium py-2 mb-3"
+              style={{ borderColor: "#ff6636", color: "#ff6636" }}
+              onClick={handleBuyNow}
+              disabled={isBuying || isLoadingCart}
+            >
+              {isBuying ? (
+                <span className="spinner-border spinner-border-sm" />
+              ) : (
+                "Buy Now"
+              )}
+            </button>
+          )}
         </>
       ) : (
+        // Nút "Go To Course" (giữ nguyên)
         <button
           className="btn w-100 fw-medium py-2 mb-3"
           style={{
@@ -262,22 +361,56 @@ const ActionButtons = ({ course }) => {
 
       <div className="row g-2">
         <div className="col-6 col-sm-7">
-          <button
-            className="btn btn-outline-secondary w-100 wishlist-btn"
-            onClick={handleAddToWishList}
-            disabled={isLoadingWishlist}
-          >
-            {isLoadingWishlist ? (
-              <span className="spinner-border spinner-border-sm" />
-            ) : (
-              "Add To Wishlist"
-            )}
-          </button>
+          {/* === NÚT WISHLIST === */}
+          {profile?.role !== "student" ? (
+            <span
+              className="d-inline-block w-100"
+              title="You are not a student"
+            >
+              <button
+                className="btn btn-outline-secondary w-100 wishlist-btn"
+                style={{ pointerEvents: "none" }}
+                type="button"
+                disabled
+              >
+                Add To Wishlist
+              </button>
+            </span>
+          ) : (
+            <button
+              className="btn btn-outline-secondary w-100 wishlist-btn"
+              onClick={handleAddToWishList}
+              disabled={isLoadingWishlist}
+            >
+              {isLoadingWishlist ? (
+                <span className="spinner-border spinner-border-sm" />
+              ) : (
+                "Add To Wishlist"
+              )}
+            </button>
+          )}
         </div>
         <div className="col-6 col-sm-5">
-          <button className="btn btn-outline-secondary w-100 gift-btn">
-            Gift Course
-          </button>
+          {/* === NÚT GIFT COURSE === */}
+          {profile?.role !== "student" ? (
+            <span
+              className="d-inline-block w-100"
+              title="You are not a student"
+            >
+              <button
+                className="btn btn-outline-secondary w-100 gift-btn"
+                style={{ pointerEvents: "none" }}
+                type="button"
+                disabled
+              >
+                Gift Course
+              </button>
+            </span>
+          ) : (
+            <button className="btn btn-outline-secondary w-100 gift-btn">
+              Gift Course
+            </button>
+          )}
         </div>
       </div>
     </div>
