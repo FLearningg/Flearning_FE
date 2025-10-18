@@ -363,6 +363,7 @@ const WatchCourse = ({ courseId: propCourseId }) => {
           reviewMode={!!courseFeedback}
           onNextLecture={handleNextLecture}
           showReviewButton={allLessonsCompleted}
+          allLessonsCompleted={allLessonsCompleted}
           isLastLesson={(() => {
             if (!sections?.length || !currentLesson?._id) return false;
             const flat = sections.flatMap(s => s.lessons || []);
