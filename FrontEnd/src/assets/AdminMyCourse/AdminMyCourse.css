@@ -839,3 +839,150 @@ body {
     width: 100%;
   }
 }
+
+/* --- Approve & Reject Buttons --- */
+.amc-approve-btn {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.amc-approve-btn:hover:not(:disabled) {
+  background-color: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+}
+
+.amc-approve-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.amc-deactivate-btn {
+  background-color: #f59e0b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.amc-deactivate-btn:hover:not(:disabled) {
+  background-color: #d97706;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);
+}
+
+.amc-deactivate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.amc-reject-btn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.amc-reject-btn:hover:not(:disabled) {
+  background-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+}
+
+.amc-reject-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* --- Reject Modal Styles --- */
+.amc-reject-modal {
+  max-width: 500px;
+}
+
+.amc-reject-modal .amc-modal-icon {
+  background-color: #fef2f2;
+  color: #ef4444;
+}
+
+.amc-modal-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid #e9eaf0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-top: 16px;
+}
+
+.amc-modal-textarea:focus {
+  outline: none;
+  border-color: #ff6636;
+  box-shadow: 0 0 0 3px rgba(255, 102, 54, 0.1);
+}
+
+.amc-modal-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.amc-modal-button-primary {
+  background-color: #ff6636;
+  color: white;
+}
+
+.amc-modal-button-primary:hover {
+  background-color: #fd8e1f;
+}
+
+.amc-modal-button-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #ff6636;
+}
+
+/* Responsive for approve/reject/deactivate buttons */
+@media (max-width: 768px) {
+  .amc-approve-btn,
+  .amc-reject-btn,
+  .amc-deactivate-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .amc-approve-btn svg,
+  .amc-reject-btn svg,
+  .amc-deactivate-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+}

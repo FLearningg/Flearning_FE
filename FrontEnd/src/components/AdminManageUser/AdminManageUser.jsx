@@ -1,13 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import {
-  Search,
-  ChevronDown,
-  Plus,
-  Users,
-  UserCheck,
-  UserX,
-  UserPlus,
-} from "lucide-react";
+import { Search, Users, UserPlus } from "lucide-react";
 import { DatePicker, ConfigProvider, message } from "antd";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
@@ -150,6 +142,8 @@ export default function AdminManageUser() {
       });
     }
   };
+
+  // Instructor approval moved to Censor Instructor page
 
   const handleDateButtonClick = (filter) => {
     setDateFilter(filter);
@@ -314,6 +308,7 @@ export default function AdminManageUser() {
                     <th>NO.</th>
                     <th>User</th>
                     <th>Email</th>
+                    <th>Role</th>
                     <th>Status</th>
                     <th>Date Joined</th>
                     <th>Actions</th>
@@ -331,6 +326,8 @@ export default function AdminManageUser() {
                           user.status === "Verified"
                         ? "Active"
                         : user.status;
+                    const isInstructor = user.role === "instructor";
+                    const isAdmin = user.role === "admin";
                     const rowNumber =
                       (currentPage - 1) * itemsPerPage + index + 1;
                     return (
@@ -363,6 +360,22 @@ export default function AdminManageUser() {
                         <td className="amu-table-cell">
                           <span
                             className={`amu-status-badge ${
+                              isAdmin
+                                ? "amu-role-admin"
+                                : isInstructor
+                                ? "amu-role-instructor"
+                                : "amu-role-student"
+                            }`}
+                          >
+                            {user.role
+                              ? user.role.charAt(0).toUpperCase() +
+                                user.role.slice(1)
+                              : "Student"}
+                          </span>
+                        </td>
+                        <td className="amu-table-cell">
+                          <span
+                            className={`amu-status-badge ${
                               isBanned
                                 ? "amu-status-banned"
                                 : "amu-status-active"
@@ -375,23 +388,32 @@ export default function AdminManageUser() {
                           {dayjs(user.createdAt).format("DD/MM/YYYY")}
                         </td>
                         <td className="amu-table-cell">
-                          <CustomButton
-                            size="small"
-                            color={isBanned ? "success" : "error"}
-                            type="underline"
-                            disabled={userActionLoading[user._id]}
-                            onClick={() =>
-                              handleToggleStatus(user._id, user.status)
-                            }
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "8px",
+                              flexDirection: "column",
+                            }}
                           >
-                            {userActionLoading[user._id]
-                              ? isBanned
-                                ? "Unbanning..."
-                                : "Banning..."
-                              : isBanned
-                              ? "Unban User"
-                              : "Ban User"}
-                          </CustomButton>
+                            <CustomButton
+                              size="small"
+                              color={isBanned ? "success" : "error"}
+                              type="underline"
+                              disabled={userActionLoading[user._id]}
+                              onClick={() =>
+                                handleToggleStatus(user._id, user.status)
+                              }
+                            >
+                              {userActionLoading[user._id]
+                                ? isBanned
+                                  ? "Unbanning..."
+                                  : "Banning..."
+                                : isBanned
+                                ? "Unban User"
+                                : "Ban User"}
+                            </CustomButton>
+                            {/* Instructor approval moved to Censor Instructor page */}
+                          </div>
                         </td>
                       </tr>
                     );

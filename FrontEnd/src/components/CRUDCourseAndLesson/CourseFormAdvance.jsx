@@ -5,6 +5,8 @@ import ProgressTabs from "./ProgressTabs";
 import Input from "../common/Input";
 import CustomButton from "../common/CustomButton/CustomButton";
 import apiClient from "../../services/authService";
+import { uploadFile, moveFileToCourse, getUserRole } from "../../services/uploadService";
+import { updateCourse as updateInstructorCourse } from "../../services/instructorService";
 import { toast } from "react-toastify";
 
 export default function CourseForm({
@@ -52,7 +54,6 @@ export default function CourseForm({
   const [loading, setLoading] = useState(false);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [uploadingTrailer, setUploadingTrailer] = useState(false);
-  const MAX_INPUTS = 8;
 
   // Helper function to move files from temporary to course folder
   const moveFilesToCourseFolder = async (courseId, mediaUrls) => {
@@ -64,7 +65,7 @@ export default function CourseForm({
 
       // Move thumbnail if it's in temporary folder
       if (mediaUrls.thumbnail && mediaUrls.thumbnail.includes("temporary/")) {
-        const moveRequest = apiClient.post("/admin/move-file", {
+        const moveRequest = moveFileToCourse({
           fromUrl: mediaUrls.thumbnail,
           courseId: courseId,
           fileType: "thumbnail",
@@ -72,8 +73,8 @@ export default function CourseForm({
         movePromises.push(
           moveRequest
             .then((res) => {
-              if (res.data?.url) {
-                updatedUrls.thumbnail = res.data.url;
+              if (res?.url) {
+                updatedUrls.thumbnail = res.url;
               }
             })
             .catch((err) => {
@@ -84,7 +85,7 @@ export default function CourseForm({
 
       // Move trailer if it's in temporary folder
       if (mediaUrls.trailer && mediaUrls.trailer.includes("temporary/")) {
-        const moveRequest = apiClient.post("/admin/move-file", {
+        const moveRequest = moveFileToCourse({
           fromUrl: mediaUrls.trailer,
           courseId: courseId,
           fileType: "trailer",
@@ -92,8 +93,8 @@ export default function CourseForm({
         movePromises.push(
           moveRequest
             .then((res) => {
-              if (res.data?.url) {
-                updatedUrls.trailer = res.data.url;
+              if (res?.url) {
+                updatedUrls.trailer = res.url;
               }
             })
             .catch((err) => {
@@ -147,8 +148,15 @@ export default function CourseForm({
         ...(initialData.duration && { duration: initialData.duration }),
       };
 
-      // Save to database
-      await apiClient.put(`/admin/courses/${courseId}`, mediaData);
+      // Save to database using role-aware endpoint
+      const role = getUserRole();
+      if (role === "instructor") {
+        // Use instructor service to update course
+        await updateInstructorCourse(courseId, mediaData);
+      } else {
+        // Default to admin endpoint
+        await apiClient.put(`/admin/courses/${courseId}`, mediaData);
+      }
 
       // Only trigger reload of course data to ensure UI consistency
       onMediaSaved();
@@ -218,14 +226,11 @@ export default function CourseForm({
   };
 
   const addInput = (type) => {
-    if (type === "course" && courseInputs.length < MAX_INPUTS) {
+    if (type === "course") {
       setCourseInputs([...courseInputs, ""]);
-    } else if (type === "audience" && audienceInputs.length < MAX_INPUTS) {
+    } else if (type === "audience") {
       setAudienceInputs([...audienceInputs, ""]);
-    } else if (
-      type === "requirement" &&
-      requirementInputs.length < MAX_INPUTS
-    ) {
+    } else if (type === "requirement") {
       setRequirementInputs([...requirementInputs, ""]);
     }
   };
@@ -240,27 +245,18 @@ export default function CourseForm({
       // Auto upload immediately
       setUploadingThumbnail(true);
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        // Add courseId to help server determine the correct folder
-        if (courseId) {
-          formData.append("courseId", courseId);
-        }
-
-        // Specify this is a course thumbnail
-        formData.append("fileType", "thumbnail");
-
-        const res = await apiClient.post("/admin/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+        // Use uploadService which automatically detects role and uses correct endpoint
+        const response = await uploadFile(file, {
+          courseId: courseId,
+          fileType: "thumbnail",
         });
 
-        if (!res.data || !res.data.url) {
-          throw new Error(res.data?.message || "Failed to upload thumbnail");
+        if (!response || !response.url) {
+          throw new Error(response?.message || "Failed to upload thumbnail");
         }
 
         // Set new URL and clear file after successful upload
-        const newThumbnailUrl = res.data.url;
+        const newThumbnailUrl = response.url;
 
         // Update state immediately
         setThumbnailUrl(newThumbnailUrl);
@@ -299,27 +295,18 @@ export default function CourseForm({
       // Auto upload immediately
       setUploadingTrailer(true);
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        // Add courseId to help server determine the correct folder
-        if (courseId) {
-          formData.append("courseId", courseId);
-        }
-
-        // Specify this is a course trailer
-        formData.append("fileType", "trailer");
-
-        const res = await apiClient.post("/admin/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+        // Use uploadService which automatically detects role and uses correct endpoint
+        const response = await uploadFile(file, {
+          courseId: courseId,
+          fileType: "trailer",
         });
 
-        if (!res.data || !res.data.url) {
-          throw new Error(res.data?.message || "Failed to upload trailer");
+        if (!response || !response.url) {
+          throw new Error(response?.message || "Failed to upload trailer");
         }
 
         // Set new URL and clear file after successful upload
-        const newTrailerUrl = res.data.url;
+        const newTrailerUrl = response.url;
 
         // Update state immediately
         setTrailerUrl(newTrailerUrl);
@@ -387,12 +374,14 @@ export default function CourseForm({
 
       const data = {
         detail: {
-          description,
+          description: description || "No description provided", // Required by backend
           willLearn: courseInputs.filter((item) => item.trim() !== ""),
           targetAudience: audienceInputs.filter((item) => item.trim() !== ""),
           requirement: requirementInputs.filter((item) => item.trim() !== ""),
         },
         uploadedFiles,
+        thumbnail: thumbnailUrl || "", // Required by backend
+        trailer: trailerUrl || "", // Required by backend
       };
 
       // If in edit mode and files are in temporary folder, try to move them
@@ -426,14 +415,13 @@ export default function CourseForm({
     <div className="section">
       <div className="section-header">
         <h3>
-          {label} ({items.length}/{MAX_INPUTS})
+          {label} ({items.length})
         </h3>
         <CustomButton
           color="grey"
           type="normal"
           size="small"
           onClick={() => addInput(type)}
-          disabled={items.length >= MAX_INPUTS}
         >
           <div className="acc-add-sections-container">
             <Plus className="icon-sm" />
@@ -560,20 +548,6 @@ export default function CourseForm({
           <div className="cf-form-content">
             <div className="cf-form-header">
               <h2 className="cf-form-title">Advance Information</h2>
-              <div className="cf-form-actions">
-                <CustomButton
-                  color="primary"
-                  type="normal"
-                  size="medium"
-                  onClick={handleSaveNext}
-                  disabled={loading || uploadingThumbnail || uploadingTrailer}
-                >
-                  {loading ? "Saving..." : "Save & Next"}
-                </CustomButton>
-                <CustomButton color="transparent" type="normal" size="medium">
-                  Save & Preview
-                </CustomButton>
-              </div>
             </div>
 
             {/* Media Uploads */}
@@ -628,7 +602,7 @@ export default function CourseForm({
                   // Save current data before going back
                   const data = {
                     detail: {
-                      description,
+                      description: description || "No description provided", // Required by backend
                       willLearn: courseInputs.filter(
                         (item) => item.trim() !== ""
                       ),
@@ -643,10 +617,9 @@ export default function CourseForm({
                       image: thumbnailUrl ? { url: thumbnailUrl } : null,
                       video: trailerUrl ? { url: trailerUrl } : null,
                     },
-                    // Preserve curriculum if exists
-                    ...(initialData.curriculum && {
-                      curriculum: initialData.curriculum,
-                    }),
+                    thumbnail: thumbnailUrl || "", // Required by backend
+                    trailer: trailerUrl || "", // Required by backend
+                    // Preserve sections if exists
                     ...(initialData.sections && {
                       sections: initialData.sections,
                     }),
@@ -672,4 +645,3 @@ export default function CourseForm({
     </div>
   );
 }
-

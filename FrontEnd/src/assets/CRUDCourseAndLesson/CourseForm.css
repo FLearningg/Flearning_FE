@@ -127,9 +127,25 @@ body {
   margin-bottom: 24px;
 }
 
+.cf-form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
 .cf-duration-container {
   display: flex;
   gap: 8px;
+}
+
+/* Custom field sizing */
+.cf-small-input {
+  max-width: 250px;
+}
+
+.cf-price-input {
+  max-width: 300px;
 }
 
 .cf-form-actions-bottom {
@@ -187,6 +203,14 @@ body {
   .cf-form-row-4 {
     grid-template-columns: 1fr 1fr;
   }
+
+  .cf-form-row-3 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cf-form-row-3 .cf-price-input {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 768px) {
@@ -194,7 +218,8 @@ body {
     padding: 16px;
   }
 
-  .cf-form-row {
+  .cf-form-row,
+  .cf-form-row-3 {
     grid-template-columns: 1fr;
   }
 

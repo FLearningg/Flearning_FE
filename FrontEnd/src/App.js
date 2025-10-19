@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import AppRouter from "./routes"; // Import AppRouter từ thư mục routes (routes/index.js)
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "./App.css";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCurrentUser } from "./store/authSlice"; // Import action để lấy thông tin người dùng hiện tại
 
@@ -21,7 +22,18 @@ function App() {
   return (
     <>
       <AppRouter />
-      <ToastContainer autoClose={8000} />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 }

@@ -15,3 +15,14 @@ export const getTopCategories = async (dispatch) => {
     dispatch(getCategoriesFailure(error.message));
   }
 };
+
+export const getAllCategories = async (config = {}) => {
+  try {
+    // Giả sử endpoint của bạn là /categories
+    const response = await apiClient.get("/categories", config);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all categories:", error);
+    throw error;
+  }
+};

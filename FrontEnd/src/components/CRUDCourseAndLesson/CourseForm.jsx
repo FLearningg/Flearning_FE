@@ -3,8 +3,9 @@ import "../../assets/CRUDCourseAndLesson/CourseForm.css";
 import Input from "../common/Input";
 import ProgressTabs from "./ProgressTabs";
 import CustomButton from "../common/CustomButton/CustomButton";
-import { useNavigate } from "react-router-dom";
-import { getAllCategories } from "../../services/adminService";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getAllCategories as getAdminCategories } from "../../services/adminService";
+import { getAllCategories as getInstructorCategories } from "../../services/instructorService";
 import { toast } from "react-toastify";
 
 const languageOptions = ["English", "Vietnamese"];
@@ -46,6 +47,11 @@ const CourseForm = ({
   const [categoryError, setCategoryError] = React.useState("");
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Detect if user is admin or instructor based on route
+  const isAdmin = location.pathname.includes("/admin/");
+  const isInstructor = location.pathname.includes("/instructor/");
 
   // Language conversion mapping
   const languageMapping = {
@@ -71,6 +77,8 @@ const CourseForm = ({
     setLoadingCategories(true);
     setCategoryError("");
     try {
+      // Use appropriate service based on user role
+      const getAllCategories = isInstructor ? getInstructorCategories : getAdminCategories;
       const response = await getAllCategories();
 
       if (response.data && response.data.success) {
@@ -88,8 +96,8 @@ const CourseForm = ({
       console.error("Error fetching categories:", error);
       setCategoryError("Failed to load categories from database");
       toast.error("Failed to load categories from database");
-      // Fallback to hardcoded options if API fails
-      setAllCategories(["Programming", "Design", "Business"]);
+      // Set empty array if API fails
+      setAllCategories([]);
     } finally {
       setLoadingCategories(false);
     }
@@ -237,34 +245,68 @@ const CourseForm = ({
 
   const handleSaveNext = (e) => {
     if (e && e.preventDefault) e.preventDefault();
+
+    // Validate categories
+    if (!categoryMap || Object.keys(categoryMap).length === 0) {
+      toast.error("Categories not loaded. Please try again.");
+      return;
+    }
+
+    // Collect all valid category IDs
+    const categoryIds = [];
+    if (category && category !== "Select..." && categoryMap[category]) {
+      categoryIds.push(categoryMap[category]);
+    }
+    if (subCategory && subCategory !== "Select..." && categoryMap[subCategory]) {
+      categoryIds.push(categoryMap[subCategory]);
+    }
+
+    // Validate that we have at least one valid category
+    if (categoryIds.length === 0) {
+      toast.error("Please select at least one valid category");
+      return;
+    }
+
     const data = {
       title: titleState,
-      subTitle: subtitle, // ← Fixed key name
+      subTitle: subtitle,
       detail: {
-        description: "No description provided", // ← Send non-empty description as required by backend
+        description: "No description provided", // Required by backend
+        willLearn: [], // Optional array
+        targetAudience: [], // Optional array
+        requirement: [], // Optional array
       },
+      materials: [], // Optional array
+      categoryIds, // Send array of category IDs
+      price: parseFloat(price) || 0,
+      level: level?.toLowerCase() || "beginner",
+      duration: duration ? `${duration} ${durationUnit}` : "",
+      language: convertLanguageToBackend(language) || "vietnam",
+      subtitleLanguage: convertLanguageToBackend(subtitleLanguage) || "vietnam",
+      sections: [], // Will be populated later
 
-      category: category, // ← Save category name for restoration
-      subCategory: subCategory, // ← Save subcategory name for restoration
-      categoryId: categoryMap[category] || "", // ← Send categoryId instead of category
-      subCategoryId: categoryMap[subCategory] || "", // ← Send subCategoryId instead of subCategory
-      // Save display format for restoration
-      language: language, // ← Save display format (English, Vietnamese)
-      subtitleLanguage: subtitleLanguage, // ← Save display format (English, Vietnamese)
-      level: level, // ← Save display format (Beginner, Intermediate, Advanced)
-      // Save backend format for API
-      languageBackend: convertLanguageToBackend(language) || "", // ← Convert to backend format
-      subtitleLanguageBackend: convertLanguageToBackend(subtitleLanguage) || "", // ← Convert to backend format
-      levelBackend: level?.toLowerCase() || "", // ← lowercase for backend
-      duration: duration ? `${duration} ${durationUnit}` : "", // ← format as "123 Hours"
-      price: parseFloat(price) || 0, // ← ensure number
+      // Save display values for form restoration
+      category,
+      subCategory,
+      languageDisplay: language,
+      subtitleLanguageDisplay: subtitleLanguage,
+      levelDisplay: level,
+
+      // Save individual category IDs for backward compatibility
+      categoryId: categoryIds[0] || null,
+      subCategoryId: categoryIds[1] || null,
     };
 
     onNext(data);
   };
 
   const handleCancel = () => {
-    navigate("/admin/courses/all");
+    // Navigate to appropriate courses page based on user role
+    if (isInstructor) {
+      navigate("/instructor/courses");
+    } else {
+      navigate("/admin/courses/all");
+    }
   };
 
   const allFieldsFilled =
@@ -293,14 +335,6 @@ const CourseForm = ({
           <div className="cf-form-content">
             <div className="cf-form-header">
               <h2 className="cf-form-title">{title}</h2>
-              <div className="cf-form-actions">
-                <CustomButton color="primary" type="normal" size="medium">
-                  Save
-                </CustomButton>
-                <CustomButton color="transparent" type="normal" size="medium">
-                  Save & Preview
-                </CustomButton>
-              </div>
             </div>
 
             {/* Show category error if any */}
@@ -379,7 +413,7 @@ const CourseForm = ({
                   />
                 </div>
               </div>
-              <div className="cf-form-row-4">
+              <div className="cf-form-row">
                 <div className="cf-form-group">
                   <label className="cf-form-label">Course Language</label>
                   <Input
@@ -402,6 +436,8 @@ const CourseForm = ({
                     onChange={(val) => setSubtitleLanguage(val)}
                   />
                 </div>
+              </div>
+              <div className="cf-form-row-3">
                 <div className="cf-form-group">
                   <label className="cf-form-label">Course Level</label>
                   <Input
@@ -412,7 +448,7 @@ const CourseForm = ({
                     onChange={(val) => setLevel(val)}
                   />
                 </div>
-                <div className="cf-form-group">
+                <div className="cf-form-group cf-small-input">
                   <label className="cf-form-label">Durations</label>
                   <div className="cf-duration-container">
                     <Input
@@ -426,21 +462,21 @@ const CourseForm = ({
                     </span>
                   </div>
                 </div>
-              </div>
-              <div className="cf-form-group">
-                <label htmlFor="price" className="cf-form-label">
-                  Course Price
-                </label>
-                <div className="cf-input-container">
-                  <Input
-                    id="price"
-                    placeholder="Enter course price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                  />
+                <div className="cf-form-group cf-price-input">
+                  <label htmlFor="price" className="cf-form-label">
+                    Course Price
+                  </label>
+                  <div className="cf-input-container">
+                    <Input
+                      id="price"
+                      placeholder="Enter course price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="acc-navigation-buttons">
@@ -459,7 +495,7 @@ const CourseForm = ({
                   onClick={handleSaveNext}
                   disabled={!allFieldsFilled}
                 >
-                  Save & Next
+                  Next
                 </CustomButton>
               </div>
             </form>

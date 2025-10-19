@@ -165,6 +165,15 @@
   overflow: hidden;
   background-color: #fff;
 }
+.watchcourse-lecture.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.watchcourse-lecture.locked:hover {
+  background-color: #fff; /* no hover effect */
+  padding-left: 3rem;
+}
 
 .watchcourse-lecture:hover {
   background-color: #fff5f5;
@@ -259,21 +268,15 @@
   background-color: #fff1f0 !important;
 }
 
-.quiz-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #666;
+/* Removed special quiz title styles to keep it identical to lesson */
+
+/* Ensure quiz rows have exactly the same vertical rhythm as normal lessons */
+.watchcourse-lecture.quiz-item {
+  padding: 0.75rem 1.5rem 0.75rem 3rem;
 }
 
-.quiz-icon {
-  font-size: 1rem;
-  color: #ff9800;
-}
-
-.quiz-duration {
-  color: #666;
-  font-weight: 500;
+.watchcourse-lecture.quiz-item:hover {
+  padding-left: 3.5rem; /* mirror hover padding shift */
 }
 
 .quiz-item .custom-checkbox {

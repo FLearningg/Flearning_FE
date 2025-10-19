@@ -45,7 +45,7 @@ function WishListPage() {
   }, [currentUser?._id]);
 
   const WishList_DATA = wishlistItems?.map((course) => {
-    let finalPrice = course.price;
+    let finalPrice = course.price || 0;
     // let discountText = "";
     if (course.discountId) {
       if (course.discountId.type === "fixedAmount") {
@@ -63,8 +63,8 @@ function WishListPage() {
       courseId: course._id,
       courseImage: course.thumbnail,
       courseName: course.title,
-      rating: course.rating,
-      enrolledCount: course.studentsEnrolled.length,
+      rating: course.rating || 0,
+      enrolledCount: course.studentsEnrolled?.length || 0,
       price: finalPrice, // it should be a number
       oldPrice: course.discountId ? course.price : null, // it should be a number or null
       courseAuthor: course.author || "Admin", // Add if needed

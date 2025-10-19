@@ -39,7 +39,7 @@ function WishList() {
     return true;
   };
   const courseData = wishlistData?.map((course) => {
-    let finalPrice = course.price;
+    let finalPrice = course.price || 0;
     if (isDiscountValid(course.discountId)) {
       if (course.discountId.type === "fixedAmount") {
         finalPrice = Math.max(0, course.price - course.discountId.value);
@@ -55,10 +55,10 @@ function WishList() {
       courseImage: course.thumbnail,
       courseName: course.title,
       rating: course.rating,
-      enrolledCount: course.studentsEnrolled.length,
+      enrolledCount: course.studentsEnrolled?.length || 0,
       price: `${finalPrice.toFixed(2)}`,
       oldPrice: isDiscountValid(course.discountId)
-        ? `${course.price.toFixed(2)}`
+        ? `${course.price?.toFixed(2) || "0.00"}`
         : "",
     };
   });

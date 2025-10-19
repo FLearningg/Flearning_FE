@@ -6,12 +6,10 @@ import {
   getAllDiscounts,
   createDiscount,
   updateDiscount,
-  deleteDiscount,
   getDiscountStats,
 } from "../../services/discountService";
 import "../../assets/AdminDiscount/AdminDiscount.css";
 import { toast } from "react-toastify";
-import { ToastContainer } from "react-toastify";
 
 const AdminDiscount = ({ title = "Discount Management" }) => {
   const [discounts, setDiscounts] = useState([]);
@@ -169,6 +167,8 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
       startDate: formData.get("startDate") || null,
       endDate: formData.get("endDate") || null,
       status: formData.get("status") || "active",
+      // Keep applyCourses when editing to preserve course assignments
+      ...(editingDiscount && editingDiscount.applyCourses ? { applyCourses: editingDiscount.applyCourses } : {}),
     };
 
     try {
@@ -191,19 +191,6 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
   const handleEdit = (discount) => {
     setEditingDiscount(discount);
     setShowCreateModal(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this discount?")) {
-      try {
-        await deleteDiscount(id);
-        toast.success("Discount deleted successfully!");
-        fetchData();
-      } catch (error) {
-        console.error("Delete failed:", error);
-        toast.error(error.message || "Failed to delete discount");
-      }
-    }
   };
 
   const handleCopyCode = (code) => {
@@ -422,9 +409,9 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                         {discount.description}
                       </span>
                       <div className="admin-discount-description-meta">
-                        Min order: ${discount.minimumOrder || 0}
+                        Min order: {(discount.minimumOrder || 0).toLocaleString('vi-VN')} VND
                         {discount.maximumDiscount > 0 &&
-                          ` • Max: $${discount.maximumDiscount}`}
+                          ` • Max: ${discount.maximumDiscount.toLocaleString('vi-VN')} VND`}
                       </div>
                     </div>
                   </td>
@@ -446,7 +433,7 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                     <span className="admin-discount-value-text">
                       {discount.type === "percent"
                         ? `${discount.value}%`
-                        : `$${discount.value}`}
+                        : `${discount.value.toLocaleString('vi-VN')} VND`}
                     </span>
                   </td>
                   <td>
@@ -489,14 +476,6 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
                       >
                         <EditIcon />
                         <span className="admin-discount-fallback-text">✎</span>
-                      </button>
-                      <button
-                        className="admin-discount-action-btn admin-discount-delete-btn"
-                        onClick={() => handleDelete(discount._id)}
-                        title="Delete discount"
-                      >
-                        <DeleteIcon />
-                        <span className="admin-discount-fallback-text">✕</span>
                       </button>
                     </div>
                   </td>
@@ -590,29 +569,29 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
 
                 <Input
                   variant="label"
-                  text="Value"
+                  text="Value (% or VND)"
                   name="value"
                   type="number"
-                  placeholder="Enter value"
+                  placeholder="Enter value (e.g., 10 for 10% or 50000 for 50,000 VND)"
                   defaultValue={editingDiscount?.value}
                   required
                 />
 
                 <Input
                   variant="label"
-                  text="Minimum Order ($)"
+                  text="Minimum Order (VND)"
                   name="minimumOrder"
                   type="number"
-                  placeholder="Enter minimum order amount"
+                  placeholder="Enter minimum order amount in VND"
                   defaultValue={editingDiscount?.minimumOrder}
                 />
 
                 <Input
                   variant="label"
-                  text="Maximum Discount ($)"
+                  text="Maximum Discount (VND)"
                   name="maximumDiscount"
                   type="number"
-                  placeholder="Enter maximum discount amount"
+                  placeholder="Enter maximum discount amount in VND"
                   defaultValue={editingDiscount?.maximumDiscount}
                 />
 
@@ -685,7 +664,6 @@ const AdminDiscount = ({ title = "Discount Management" }) => {
           </div>
         </div>
       )}
-      <ToastContainer autoClose={3000} />
     </div>
   );
 };

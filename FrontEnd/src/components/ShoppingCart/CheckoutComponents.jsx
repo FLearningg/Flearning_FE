@@ -10,6 +10,11 @@ const toNumber = (price) => {
   return parseFloat(numericString) || 0;
 };
 
+const formatVND = (price) => {
+  const number = Number(price) || 0;
+  return number.toLocaleString("vi-VN");
+};
+
 // --- Component 1: Breadcrumb ---
 export function Breadcrumb() {
   return (
@@ -165,10 +170,10 @@ function CourseItem({
         </small>
         <div className="course-item__title">{title}</div>
         <div className="course-item__price">
-          ${Number(currentPrice).toFixed(2)}
+          {formatVND(currentPrice)} VND
           {originalPrice && originalPrice > currentPrice && (
             <small className="course-item__original-price">
-              ${Number(originalPrice).toFixed(2)}
+              {formatVND(originalPrice)} VND
             </small>
           )}
         </div>
@@ -183,9 +188,11 @@ export function OrderSummary({
   subtotal,
   discountAmount,
   total,
+  selectedDiscount,
+  onRemoveDiscount,
   onCompletePayment,
+  isLoading,
 }) {
-  const couponDiscountPercent = 8;
   return (
     <div className="order-summary-card">
       <div className="card-body">
@@ -208,15 +215,40 @@ export function OrderSummary({
           <h4 className="order-summary__subtitle">Order Summary</h4>
           <div className="summary-row">
             <small>Subtotal</small>
-            <small>${subtotal.toFixed(2)} USD</small>
+            <small>{formatVND(subtotal)} VND</small>
           </div>
+
+          {/* Display selected discount */}
+          {selectedDiscount && (
+            <div className="summary-row discount-row">
+              <small>
+                Discount ({selectedDiscount.discountCode})
+                {onRemoveDiscount && (
+                  <button
+                    onClick={onRemoveDiscount}
+                    className="remove-discount-btn"
+                    title="Remove discount"
+                  >
+                    ×
+                  </button>
+                )}
+              </small>
+              <small className="discount-value">
+                -{formatVND(discountAmount)} VND
+              </small>
+            </div>
+          )}
         </div>
         <div className="order-summary__total">
           <span>Total:</span>
-          <span className="total-amount">${total.toFixed(2)} USD</span>
+          <span className="total-amount">{formatVND(total)} VND</span>
         </div>
-        <button className="btn-complete-payment" onClick={onCompletePayment}>
-          Complete Payment
+        <button
+          className="btn-complete-payment"
+          onClick={onCompletePayment}
+          disabled={isLoading}
+        >
+          {isLoading ? "Processing..." : "Complete Payment"}
         </button>
       </div>
     </div>

@@ -8,6 +8,18 @@ export const getAllUsers = (params) =>
 export const updateUserStatus = (userId, status) =>
   apiClient.put(`/admin/users/${userId}/status`, { status });
 
+// Update user role (approve instructor, change role)
+export const updateUserRole = (userId, role) =>
+  apiClient.put(`/admin/users/${userId}/role`, { role });
+
+// Get instructor requests
+export const getInstructorApplications = (params) =>
+  apiClient.get(`/admin/instructor-requests`, { params });
+
+// Approve or reject an instructor application
+export const reviewInstructorApplication = (applicationId, action) =>
+  apiClient.put(`/admin/instructor/${applicationId}`, { action });
+
 // Get all categories
 export const getAllCategories = () => apiClient.get("/admin/categories");
 
@@ -70,3 +82,95 @@ export const assignDiscountToCourse = (courseId, discountId) =>
 // Increase usage for discount (user)
 export const increaseDiscountUsage = (discountId) =>
   apiClient.post(`/discounts/${discountId}/increase-usage`);
+
+// Upload and process quiz document
+export const uploadQuizDocument = async (file, courseId) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (courseId) {
+      formData.append("courseId", courseId);
+    }
+
+    const response = await apiClient.post("/admin/upload-quiz", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const approveInstructor = async ({ applicationId }) => {
+  return await apiClient.post(`/admin/instructors/approve`, {
+    applicationId,
+  });
+};
+
+export const denyInstructor = async ({
+  applicationId,
+  reasons,
+  customReason,
+}) => {
+  return await apiClient.post(`/admin/instructors/deny`, {
+    applicationId,
+    reasons,
+    customReason,
+  });
+};
+
+// ===== Course Approval API =====
+
+// Get all pending courses for review
+export const getPendingCourses = (params) =>
+  apiClient.get("/admin/courses/pending", { params });
+
+// Get course approval statistics
+export const getCourseApprovalStats = () =>
+  apiClient.get("/admin/courses/approval-stats");
+
+// Approve a pending course
+export const approveCourse = (courseId) =>
+  apiClient.post(`/admin/courses/${courseId}/approve`);
+
+// Reject a pending course with reason
+export const rejectCourse = (courseId, rejectionReason) =>
+  apiClient.post(`/admin/courses/${courseId}/reject`, { rejectionReason });
+
+// Deactivate an approved/active course
+export const deactivateCourse = async (courseId, reason) => {
+  try {
+    const response = await apiClient.post(
+      `/admin/courses/${courseId}/deactivate`,
+      {
+        reason,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error deactivating course:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to deactivate course";
+    throw new Error(message);
+  }
+};
+
+// Reactivate a course
+export const reactivateCourse = async (courseId) => {
+  try {
+    const response = await apiClient.post(
+      `/admin/courses/${courseId}/reactivate`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error reactivating course:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to reactivate course";
+    throw new Error(message);
+  }
+};

@@ -30,6 +30,21 @@
     border: 2px solid #FF6F32;
 }
 
+.btn-register-instructor button {
+    background-color: #FF6F32;
+    color: white;
+    padding: 10px 20px;
+    border: 2px solid #FF6F32;
+    border-radius: 6px;
+    transition: 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-register-instructor button:hover {
+    background-color: #e55e28;
+    border: 2px solid #e55e28;
+}
+
 /* for tablet */
 .movie-card {
     position: relative;

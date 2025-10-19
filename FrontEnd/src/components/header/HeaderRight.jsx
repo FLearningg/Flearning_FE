@@ -2,7 +2,7 @@ import { faCog, faSignOutAlt, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTachometerAlt } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../../store/authSlice";
 import Notification from "./Notification";
@@ -11,6 +11,10 @@ import WishList from "./WishList";
 function HeaderRight({ user: currentUser }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check if user is in instructor dashboard area
+  const isInInstructorArea = location.pathname.startsWith("/instructor");
 
   const handleLogout = () => {
     dispatch(logout());
@@ -55,6 +59,7 @@ function HeaderRight({ user: currentUser }) {
               className="dropdown-menu dropdown-menu-end fade"
               aria-labelledby="userDropdown"
             >
+              {/* Admin always sees Dashboard */}
               {currentUser.role === "admin" && (
                 <li>
                   <Link
@@ -66,33 +71,59 @@ function HeaderRight({ user: currentUser }) {
                   </Link>
                 </li>
               )}
-              <li>
-                <Link
-                  to="/profile/dashboard"
-                  className="dropdown-item dropdown-item-hover"
-                >
-                  <FontAwesomeIcon icon={faUser} className="me-2" /> Profile
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/profile/settings"
-                  className="dropdown-item dropdown-item-hover"
-                >
-                  <FontAwesomeIcon icon={faCog} className="me-2" />
-                  Settings
-                </Link>
-              </li>
-              <li>
-                <hr className="dropdown-divider" />
-              </li>
+              
+              {/* Instructor sees Dashboard ONLY when NOT in instructor area */}
+              {currentUser.role === "instructor" && !isInInstructorArea && (
+                <li>
+                  <Link
+                    to="/instructor/dashboard"
+                    className="dropdown-item dropdown-item-hover"
+                  >
+                    <FontAwesomeIcon icon={faTachometerAlt} className="me-2" />{" "}
+                    Dashboard
+                  </Link>
+                </li>
+              )}
+              
+              {/* Student sees Profile and Settings */}
+              {currentUser.role === "student" && (
+                <>
+                  <li>
+                    <Link
+                      to="/profile/dashboard"
+                      className="dropdown-item dropdown-item-hover"
+                    >
+                      <FontAwesomeIcon icon={faUser} className="me-2" /> Profile
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/profile/settings"
+                      className="dropdown-item dropdown-item-hover"
+                    >
+                      <FontAwesomeIcon icon={faCog} className="me-2" />
+                      Settings
+                    </Link>
+                  </li>
+                </>
+              )}
+              
+              {/* Divider only if there are items above */}
+              {(currentUser.role === "admin" || 
+                currentUser.role === "student" || 
+                (currentUser.role === "instructor" && !isInInstructorArea)) && (
+                <li>
+                  <hr className="dropdown-divider" />
+                </li>
+              )}
+              
               <li>
                 <button
                   onClick={handleLogout}
                   className="dropdown-item dropdown-item-hover"
                 >
                   <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
-                  Logout
+                  Sign Out
                 </button>
               </li>
             </ul>

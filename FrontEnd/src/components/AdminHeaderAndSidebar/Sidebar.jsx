@@ -1,6 +1,5 @@
 import "../../assets/AdminHeaderAndSidebar/Sidebar.css";
 import { NavLink, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../store/authSlice";
@@ -110,16 +109,9 @@ export function Sidebar({ open, setOpen, isMobile }) {
               onClick={handleNavClick}
             />
             <NavItem
-              href="/admin/courses/new"
-              icon="plus-circle"
-              label="Create New Course"
-              active={location.pathname.startsWith("/admin/courses/new")}
-              onClick={handleNavClick}
-            />
-            <NavItem
               href="/admin/courses/all"
               icon="book"
-              label="My Courses"
+              label="All Courses"
               active={location.pathname.endsWith("/admin/courses/all")}
               onClick={handleNavClick}
             />
@@ -142,6 +134,13 @@ export function Sidebar({ open, setOpen, isMobile }) {
               icon="users"
               label="Manage Users"
               active={location.pathname.startsWith("/admin/users")}
+              onClick={handleNavClick}
+            />
+            <NavItem
+              href="/admin/censor-instructor"
+              icon="user-check"
+              label="Censor Instructor"
+              active={location.pathname.startsWith("/admin/censor-instructor")}
               onClick={handleNavClick}
             />
           </ul>
@@ -291,6 +290,39 @@ function NavItem({ href, icon, label, active, badge, onClick }) {
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          )}
+          {icon === "user-check" && (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <polyline points="17 11 19 13 23 9"></polyline>
+            </svg>
+          )}
+          {icon === "check-circle" && (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
             </svg>
           )}
         </span>

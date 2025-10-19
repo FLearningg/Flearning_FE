@@ -1,4 +1,3 @@
-// FilterSidebar.jsx
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Star } from "lucide-react";
 import "../../assets/Categories/FilterSidebar.css";
@@ -16,6 +15,23 @@ export default function FilterSidebar({
   setSelectedLevels,
   selectedDurations,
   setSelectedDurations,
+
+  // Props danh sách
+  categories,
+  toolsList,
+
+  // Props số lượng
+  categoryCounts,
+  toolCounts,
+  ratingCounts,
+  levelCounts,
+  durationCounts,
+
+  // --- NHẬN PROPS MỚI CHO PRICE ---
+  MAX_PRICE,
+  selectedPriceTypes,
+  setSelectedPriceTypes,
+  priceCounts,
 }) {
   const [expanded, setExpanded] = useState({
     category: true,
@@ -43,6 +59,7 @@ export default function FilterSidebar({
     section,
     selected,
     setSelected,
+    countObject, // object chứa số lượng
     level = 0
   ) =>
     items.map((item) => {
@@ -50,6 +67,15 @@ export default function FilterSidebar({
       const id = `${section}-${name.replace(/\s+/g, "-").toLowerCase()}`;
       const hasChildren = typeof item === "object" && item.subItems;
       const isExpanded = categoryExpanded[id] ?? true;
+
+      // Lấy số lượng từ object, mặc định là 0
+      const countToShow =
+        countObject && countObject[name] ? countObject[name] : 0;
+
+      if (!hasChildren && countToShow === 0) {
+        //Xóa mục không có số lượng
+        return null;
+      }
 
       return (
         <div key={id} className="filter-sidebar">
@@ -84,7 +110,9 @@ export default function FilterSidebar({
                   {name}
                 </label>
               </div>
-              <span className="text-muted small ms-2 flex-shrink-0">1345</span>
+              <span className="text-muted small ms-2 flex-shrink-0">
+                {countToShow}
+              </span>
             </div>
           )}
           {hasChildren &&
@@ -94,6 +122,7 @@ export default function FilterSidebar({
               section,
               selected,
               setSelected,
+              countObject, // Truyền countObject xuống đệ quy
               level + 1
             )}
         </div>
@@ -101,31 +130,36 @@ export default function FilterSidebar({
     });
 
   const renderRatingList = () =>
-    [5, 4, 3, 2, 1].map((r) => (
-      <div className="form-check d-flex justify-content-between mb-1" key={r}>
-        <div className="d-flex align-items-center">
-          <input
-            className="form-check-input me-2"
-            type="checkbox"
-            id={`rating-${r}`}
-            checked={selectedRatings.includes(r)}
-            onChange={() =>
-              handleCheckboxChange(r, selectedRatings, setSelectedRatings)
-            }
-          />
-          <label
-            className="form-check-label d-flex align-items-center gap-2"
-            htmlFor={`rating-${r}`}
-          >
-            <Star size={14} fill="#fd8e1f" color="#fd8e1f" />
-            <span className="small fw-semibold">
-              {r} {r !== 5 && <>& up</>}
-            </span>
-          </label>
+    [5, 4, 3, 2, 1].map((r) => {
+      // Lấy số lượng từ prop, nếu không có thì là 0
+      const count = ratingCounts && ratingCounts[r] ? ratingCounts[r] : 0;
+
+      return (
+        <div className="form-check d-flex justify-content-between mb-1" key={r}>
+          <div className="d-flex align-items-center">
+            <input
+              className="form-check-input me-2"
+              type="checkbox"
+              id={`rating-${r}`}
+              checked={selectedRatings.includes(r)}
+              onChange={() =>
+                handleCheckboxChange(r, selectedRatings, setSelectedRatings)
+              }
+            />
+            <label
+              className="form-check-label d-flex align-items-center gap-2"
+              htmlFor={`rating-${r}`}
+            >
+              <Star size={14} fill="#fd8e1f" color="#fd8e1f" />
+              <span className="small fw-semibold">
+                {r} {r !== 5 && <>& up</>}
+              </span>
+            </label>
+          </div>
+          <span className="text-muted small">{count}</span>
         </div>
-        <span className="text-muted small">1345</span>
-      </div>
-    ));
+      );
+    });
 
   const Section = ({ title, sectionKey, children }) => (
     <div className="card mb-3">
@@ -147,49 +181,26 @@ export default function FilterSidebar({
     </div>
   );
 
-  const categories = [
-    {
-      name: "Development",
-      subItems: [
-        "Web Development",
-        "Data Science",
-        "Mobile Development",
-        "Software Testing",
-        "Software Engineering",
-        "Software Development Tools",
-        "No-code Development",
-      ],
-    },
-    { name: "Business", subItems: [] },
-    { name: "Finance & Accounting", subItems: [] },
-  ];
-
   return (
     <div className="w-100 filter-sidebar">
       <Section title="Category" sectionKey="category">
         {renderCheckboxList(
-          categories,
+          categories || [],
           "category",
           selectedCategories,
-          setSelectedCategories
+          setSelectedCategories,
+          categoryCounts // Truyền object count cho category
         )}
       </Section>
 
+      {/* --- 2. SỬA PHẦN TOOLS --- */}
       <Section title="Tools" sectionKey="tools">
         {renderCheckboxList(
-          [
-            "HTML 5",
-            "CSS 3",
-            "React",
-            "Webflow",
-            "Node.js",
-            "Laravel",
-            "Saas",
-            "Wordpress",
-          ],
+          toolsList || [], // Dùng toolsList từ props
           "tools",
           selectedTools,
-          setSelectedTools
+          setSelectedTools,
+          toolCounts // Truyền object count cho tools
         )}
       </Section>
 
@@ -202,65 +213,20 @@ export default function FilterSidebar({
           ["All Level", "Beginner", "Intermediate", "Expert"],
           "level",
           selectedLevels,
-          setSelectedLevels
+          setSelectedLevels,
+          levelCounts // Truyền object count cho level
         )}
       </Section>
 
       <Section title="Duration" sectionKey="duration">
         {renderCheckboxList(
-          ["6-12 Months", "3-6 Months", "1-3 Months", "1-4 Weeks", "1-7 Days"],
+          ["1-7 Days", "1-4 Weeks", "1-3 Months", "3-6 Months", "6-12 Months"],
           "duration",
           selectedDurations,
-          setSelectedDurations
+          setSelectedDurations,
+          durationCounts // Truyền object count cho duration
         )}
       </Section>
     </div>
   );
-}
-
-{
-  /* <Section title="Price" sectionKey="price">
-        <>
-          <input
-            type="range"
-            className="form-range mb-2"
-            min="0"
-            max="100"
-            value={priceRange[1]}
-            onChange={(e) =>
-              setPriceRange([priceRange[0], Number(e.target.value)])
-            }
-          />
-          <div className="d-flex gap-2 align-items-center mb-2">
-            <span>$</span>
-            <input
-              type="number"
-              value={priceRange[0]}
-              onChange={(e) =>
-                setPriceRange([Number(e.target.value), priceRange[1]])
-              }
-              className="form-control form-control-sm"
-              placeholder="min"
-            />
-            <span>-</span>
-            <input
-              type="number"
-              value={priceRange[1]}
-              onChange={(e) =>
-                setPriceRange([priceRange[0], Number(e.target.value)])
-              }
-              className="form-control form-control-sm"
-              placeholder="max"
-            />
-          </div>
-          <div className="form-check mb-1">
-            <input className="form-check-input me-2" type="checkbox" id="paid" />
-            <label className="form-check-label" htmlFor="paid">Paid</label>
-          </div>
-          <div className="form-check">
-            <input className="form-check-input me-2" type="checkbox" id="free" />
-            <label className="form-check-label" htmlFor="free">Free</label>
-          </div>
-        </>
-      </Section> */
 }

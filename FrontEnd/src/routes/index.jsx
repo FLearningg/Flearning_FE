@@ -4,24 +4,37 @@ import { Routes, Route } from "react-router-dom";
 import AppLayout from "../layouts/AppLayout";
 
 import mainRoutesContent from "./mainRoutes";
-import authRoutesContent from "./authRoutes";
+import { authRoutesWithLayout, authRoutesWithoutLayout } from "./authRoutes";
 
 import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute";
 import RoleBasedRoute from "../components/ProtectedRoute/RoleBasedRoute";
 
 import adminRoutesContent from "./adminRoutes";
+import instructorRoutesContent from "./instructorRoutes";
 
 import ErrorPage from "../pages/MainPage/ErrorPage";
+import InstructorRegisterPage from "../pages/AuthPage/InstructorRegisterPage";
+import InstructorProfilePublic from "../pages/InstructorProfile/InstructorProfilePublic";
 
 const AppRouter = () => {
   return (
     <Routes>
+      {/* Auth routes without layout (verify email, check email, confirmation pages) */}
+      {authRoutesWithoutLayout}
+      
+      {/* Public Instructor Profile - MUST be before /instructor/* to avoid conflict */}
+      <Route path="/public/instructor/:userId" element={<AppLayout><InstructorProfilePublic /></AppLayout>} />
+      
+      {/* Instructor registration route - No authentication required */}
+      <Route path="/instructor/register" element={<AppLayout><InstructorRegisterPage /></AppLayout>} />
+      
       <Route path="/" element={<AppLayout />}>
-        {/* Nhúng trực tiếp JSX của mainRoutesContent */}
+        {/* Main routes */}
         {mainRoutesContent}
 
-        {/* Nhúng trực tiếp JSX của authRoutesContent */}
-        {authRoutesContent}
+        {/* Auth routes with layout (login, signup, forgot password) */}
+        {authRoutesWithLayout}
+        
         <Route path="*" element={<ErrorPage />} />
       </Route>
       <Route
@@ -35,6 +48,18 @@ const AppRouter = () => {
       >
         {/* Các route của admin sẽ được render bên trong <Outlet /> của AppLayout */}
         {adminRoutesContent}
+      </Route>
+      <Route
+        path="/instructor/*" // Dùng wildcard '*' để khớp với tất cả các đường dẫn con
+        element={
+          <RoleBasedRoute allowedRoles={["instructor"]}>
+            {/* Nếu user là instructor, AppLayout sẽ được render */}
+            <AppLayout />
+          </RoleBasedRoute>
+        }
+      >
+        {/* Các route của instructor sẽ được render bên trong <Outlet /> của AppLayout */}
+        {instructorRoutesContent}
       </Route>
       <Route
         path="*"

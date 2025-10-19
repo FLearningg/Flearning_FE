@@ -37,10 +37,14 @@ export const searchCourses = async (dispatch, keyword) => {
   }
 };
 // take best selling course data from api and dispatch to store
-export const getBestSellingCourses = async (dispatch) => {
+export const getBestSellingCourses = async (dispatch, categoryName) => {
   dispatch(bestSellingStart());
   try {
-    const response = await apiClient.get(`courses/top-selling?limit=5`);
+    let url = `courses/top-selling?limit=5`;
+    if (categoryName) {
+      url += `&category=${encodeURIComponent(categoryName)}`;
+    }
+    const response = await apiClient.get(url);
     dispatch(bestSellingSuccess(response.data));
   } catch (error) {
     console.error("Error fetching best selling courses:", error);
@@ -99,6 +103,91 @@ export const enrollInCourses = async (userId, courseIds) => {
       error.response?.data?.message ||
       error.message ||
       "Failed to enroll user in courses";
+    throw new Error(message);
+  }
+};
+
+// Create a new course
+export const createCourse = async (courseData) => {
+  try {
+    const response = await apiClient.post("/admin/courses", courseData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating course:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to create course";
+    throw new Error(message);
+  }
+};
+
+// Create a new section in a course
+export const createSection = async (courseId, sectionData) => {
+  try {
+    const response = await apiClient.post(
+      `/admin/courses/${courseId}/sections`,
+      sectionData
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error creating section:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to create section";
+    throw new Error(message);
+  }
+};
+
+// Create a new lesson in a section
+export const createLesson = async (courseId, sectionId, lessonData) => {
+  try {
+    const response = await apiClient.post(
+      `/admin/courses/${courseId}/sections/${sectionId}/lessons`,
+      lessonData
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error creating lesson:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to create lesson";
+    throw new Error(message);
+  }
+};
+
+// Move lesson video from temporary to course folder
+export const moveLessonVideo = async (courseId, lessonId, videoUrl) => {
+  try {
+    const response = await apiClient.post(
+      `/admin/courses/${courseId}/lessons/${lessonId}/move-video`,
+      { videoUrl }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error moving lesson video:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to move lesson video";
+    throw new Error(message);
+  }
+};
+
+export const isUserEnrolled = async (userId, courseId) => {
+  try {
+    const response = await apiClient.get(
+      `/courses/is-enrolled?userId=${userId}&courseId=${courseId}`
+    );
+    return response.data.isEnrolled;
+  } catch (error) {
+    console.error("Error checking enrollment status:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to check enrollment status";
     throw new Error(message);
   }
 };

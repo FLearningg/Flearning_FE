@@ -4,7 +4,8 @@ import CourseFormAdvance from "./CourseFormAdvance";
 import CourseCurriculum from "./CourseCurriculum";
 import CoursePublish from "./CoursePublish";
 import apiClient from "../../services/authService";
-import { getCourseById } from "../../services/adminService";
+import { getCourseById as getAdminCourseById } from "../../services/adminService";
+import { getCourseById as getInstructorCourseById } from "../../services/instructorService";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -23,6 +24,10 @@ const CourseWizard = () => {
   const toastShownRef = useRef(false);
   const submitToastShownRef = useRef(false);
   const currentCourseIdRef = useRef(null);
+
+  // Detect if user is admin or instructor based on route
+  const isAdmin = location.pathname.includes("/admin/");
+  const isInstructor = location.pathname.includes("/instructor/");
 
   // Reset dataLoaded when switching to a different course
   useEffect(() => {
@@ -47,6 +52,8 @@ const CourseWizard = () => {
   const fetchCourseData = async (courseId) => {
     setIsLoading(true);
     try {
+      // Use appropriate service based on user role
+      const getCourseById = isInstructor ? getInstructorCourseById : getAdminCourseById;
       const response = await getCourseById(courseId);
 
       // Handle different response structures
@@ -150,8 +157,7 @@ const CourseWizard = () => {
 
           category: "Development",
           subCategory: "Web Development",
-          categoryId: "dev-category-id",
-          subCategoryId: "web-dev-subcategory-id",
+          categoryIds: [], // Empty array for sample data to avoid validation issues
           language: "English",
           subtitleLanguage: "Vietnamese",
           level: "Beginner",
@@ -218,7 +224,12 @@ const CourseWizard = () => {
       }
 
       toast.error(errorMessage);
-      navigate("/admin/courses/all");
+      // Navigate to appropriate page based on role
+      if (isInstructor) {
+        navigate("/instructor/courses");
+      } else {
+        navigate("/admin/courses/all");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -258,16 +269,6 @@ const CourseWizard = () => {
 
   const handleSubmit = async (messages) => {
     try {
-      // Convert category name to ID if needed
-      let categoryId = courseData.categoryId;
-      if (!categoryId && courseData.category) {
-        // If we have category name but no ID, try to find it
-        // This would need to be implemented based on your categories API
-        console.log(
-          "Category name found but no ID, using name as fallback:",
-          courseData.category
-        );
-      }
 
       // Format data according to API requirements based on Course model
       const dataToSend = {
@@ -307,11 +308,21 @@ const CourseWizard = () => {
         }),
         // Also include the full uploadedFiles object for backwards compatibility
         uploadedFiles: courseData.uploadedFiles,
-        // Handle categoryIds array - convert to array of ObjectIds
-        categoryIds: [
-          ...(courseData.categoryId ? [courseData.categoryId] : []),
-          ...(courseData.subCategoryId ? [courseData.subCategoryId] : []),
-        ],
+        // Handle categoryIds array - extract IDs from different possible formats
+        categoryIds: (() => {
+          // If we have categoryIds array with objects, extract _id
+          if (Array.isArray(courseData.categoryIds) && courseData.categoryIds.length > 0) {
+            return courseData.categoryIds.map(cat => 
+              typeof cat === 'object' && cat._id ? cat._id : cat
+            ).filter(Boolean);
+          }
+          
+          // Fallback to individual categoryId and subCategoryId
+          const ids = [];
+          if (courseData.categoryId) ids.push(courseData.categoryId);
+          if (courseData.subCategoryId) ids.push(courseData.subCategoryId);
+          return ids;
+        })(),
         // Include other fields if they exist
 
         ...(courseData.subtitleLanguage && {
@@ -338,9 +349,13 @@ const CourseWizard = () => {
 
       let res;
       if (isEditMode) {
-        res = await apiClient.put(`/admin/courses/${id}`, dataToSend);
+        // Use appropriate endpoint based on role
+        const endpoint = isInstructor ? `/instructor/courses/${id}` : `/admin/courses/${id}`;
+        res = await apiClient.put(endpoint, dataToSend);
       } else {
-        res = await apiClient.post("/admin/courses", dataToSend);
+        // Use appropriate endpoint based on role
+        const endpoint = isInstructor ? "/instructor/courses" : "/admin/courses";
+        res = await apiClient.post(endpoint, dataToSend);
       }
       if (res.data && res.data.data) {
         const courseId = res.data.data._id;
@@ -360,7 +375,12 @@ const CourseWizard = () => {
           );
           submitToastShownRef.current = true;
         }
-        navigate("/admin/courses/all");
+        // Navigate to appropriate page based on role
+        if (isInstructor) {
+          navigate("/instructor/courses");
+        } else {
+          navigate("/admin/courses/all");
+        }
       } else if (res.data) {
         // Only show success toast once
         if (!submitToastShownRef.current) {
@@ -369,7 +389,12 @@ const CourseWizard = () => {
           );
           submitToastShownRef.current = true;
         }
-        navigate("/admin/courses/all");
+        // Navigate to appropriate page based on role
+        if (isInstructor) {
+          navigate("/instructor/courses");
+        } else {
+          navigate("/admin/courses/all");
+        }
       }
     } catch (err) {
       // For development/testing, simulate success if API fails
@@ -439,6 +464,7 @@ const CourseWizard = () => {
       onPrev={handlePrev}
       completedTabs={completedTabs}
       onTabClick={handleTabClick}
+      courseId={id || courseData._id || courseData.id}
     />,
     <CoursePublish
       key="step-3"

@@ -60,38 +60,16 @@ const CourseContents = ({
               }`}
             >
               {section.lectures?.map((lecture, lectureIndex) => {
-                // Thêm quiz sau mỗi bài học (trừ bài cuối cùng của section)
-                const isLastLecture =
-                  lectureIndex === section.lectures.length - 1;
-                const quizData = {
-                  id: `quiz_${lecture.id}`,
-                  title: `Quiz: ${lecture.title}`,
-                  type: "quiz",
-                  questions: [
-                    {
-                      id: 1,
-                      question: "Sample question 1?",
-                      options: ["Option A", "Option B", "Option C", "Option D"],
-                      correctAnswer: 0,
-                    },
-                    {
-                      id: 2,
-                      question: "Sample question 2?",
-                      options: ["Option A", "Option B", "Option C", "Option D"],
-                      correctAnswer: 1,
-                    },
-                  ],
-                };
-
+                const isLocked = !!lecture.locked && !lecture.completed;
                 return (
                   <React.Fragment
                     key={lecture.id || lecture._id || lectureIndex}
                   >
                     <div
                       className={`watchcourse-lecture ${
-                        currentLesson?.id === lecture.id ? "active" : ""
-                      } ${lecture.completed ? "completed" : ""}`}
-                      onClick={() => onSelectLesson(lecture)}
+                        ((currentLesson?._id || currentLesson?.id) === lecture.id) ? "active" : ""
+                      } ${lecture.completed ? "completed" : ""} ${isLocked ? "locked" : ""}`}
+                      onClick={() => !isLocked && onSelectLesson(lecture)}
                     >
                       <div className="watchcourse-lecture-info">
                         <div className="watchcourse-lecture-status-title">
@@ -104,50 +82,31 @@ const CourseContents = ({
                             />
                             <span className="custom-checkbox"></span>
                           </label>
-                          <span className="watchcourse-lecture-title">
-                            {lecture.title}
-                          </span>
+                          <span className="watchcourse-lecture-title">{lecture.title}</span>
                         </div>
-                        <div className="watchcourse-lecture-duration">
-                          {currentLesson?.id === lecture.id ? (
-                            <span className="watchcourse-now-playing">▐▐</span>
-                          ) : (
-                            <span className="watchcourse-play-icon">▶</span>
-                          )}
-                          <span>{lecture.duration || ""}</span>
+                        <div className={"watchcourse-lecture-duration"}>
+                          {lecture.type !== "quiz" ? (
+                            currentLesson?.id === lecture.id ? (
+                              <span className="watchcourse-now-playing">▐▐</span>
+                            ) : (
+                              <span className="watchcourse-play-icon">▶</span>
+                            )
+                          ) : null}
+                          {(() => {
+                            if (lecture.type === "quiz") {
+                              const count =
+                                lecture.questionsCount ||
+                                (Array.isArray(lecture.questions) ? lecture.questions.length : 0) ||
+                                (lecture.quizData?.questions?.length || 0) ||
+                                (lecture.quiz?.questionsCount || 0) ||
+                                (lecture.quizQuestionsCount || 0);
+                              return <span>{count > 0 ? `${count} questions` : ""}</span>;
+                            }
+                            return <span>{lecture.duration || ""}</span>;
+                          })()}
                         </div>
                       </div>
                     </div>
-
-                    {!isLastLecture && (
-                      <div
-                        className={`watchcourse-lecture quiz-item ${
-                          currentLesson?.id === quizData.id ? "active" : ""
-                        } ${lecture.quizCompleted ? "completed" : ""}`}
-                        onClick={() => onSelectLesson(quizData)}
-                      >
-                        <div className="watchcourse-lecture-info">
-                          <div className="watchcourse-lecture-status-title">
-                            <label className="custom-checkbox-label">
-                              <input
-                                type="checkbox"
-                                checked={!!lecture.quizCompleted}
-                                onChange={(e) => e.stopPropagation()}
-                                className="watchcourse-lecture-checkbox"
-                              />
-                              <span className="custom-checkbox"></span>
-                            </label>
-                            <span className="watchcourse-lecture-title quiz-title">
-                              <FaQuestionCircle className="quiz-icon" />
-                              {quizData.title}
-                            </span>
-                          </div>
-                          <div className="watchcourse-lecture-duration quiz-duration">
-                            <span>5 questions</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </React.Fragment>
                 );
               })}

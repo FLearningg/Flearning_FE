@@ -52,20 +52,6 @@ const CoursePublish = ({
             {/* Header */}
             <div className="cf-form-header">
               <h2 className="cf-form-title">Publish Course</h2>
-              <div className="cf-form-actions">
-                <CustomButton
-                  color="primary"
-                  size="medium"
-                  type="normal"
-                  onClick={handleSubmit}
-                  disabled={loading}
-                >
-                  {loading ? "Saving..." : "Save"}
-                </CustomButton>
-                <CustomButton color="transparent" size="medium" type="normal">
-                  Save & Preview
-                </CustomButton>
-              </div>
             </div>
 
             {/* Message Section */}

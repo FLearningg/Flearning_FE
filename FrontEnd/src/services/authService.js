@@ -4,9 +4,11 @@ import { store } from "../store";
 import { logout } from "../store/authSlice";
 
 // Tạo một instance của axios với cấu hình chung
+const API_BASE_URL = process.env.REACT_APP_API_URL ;
+console.log("REACT_APP_API_URL (build-time) =>", process.env.REACT_APP_API_URL);
+console.log("API_BASE_URL (runtime) =>", API_BASE_URL);
 const apiClient = axios.create({
-  baseURL:
-    "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api",
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
@@ -49,7 +51,10 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
 
     // Skip refresh token for change password API
-    if (error.response?.status === 401 && !originalRequest.url.includes('/user/change-password')) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest.url.includes("/user/change-password")
+    ) {
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
@@ -70,7 +75,7 @@ apiClient.interceptors.response.use(
 
       try {
         const { data } = await axios.post(
-          "https://flearning-api-a5h6hbcphdcbhndv.southeastasia-01.azurewebsites.net/api/auth/refresh-token",
+          `${API_BASE_URL}/auth/refresh-token`,
           {},
           { withCredentials: true }
         );
@@ -112,6 +117,8 @@ apiClient.interceptors.response.use(
 // Auth Routes
 export const registerUser = (userData) =>
   apiClient.post("/auth/register", userData);
+export const registerInstructor = (instructorData) =>
+  apiClient.post("/auth/instructor/register", instructorData);
 export const loginUser = (credentials) =>
   apiClient.post("/auth/login", credentials);
 export const googleLogin = (tokenId) =>

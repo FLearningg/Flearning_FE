@@ -48,6 +48,15 @@
   justify-content: center;
 }
 
+.course-screen .modern-category-badge {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 40%;
+  text-align: center;
+}
+
 @media (max-width: 768px) {
   .course-screen .custom-pagination .page-link {
     padding: 0.25rem 0.5rem;
