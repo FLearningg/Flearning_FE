@@ -86,6 +86,49 @@
     "Ubuntu", "Cantarell", sans-serif;
 }
 
+/* Page Header */
+.amu-page-header {
+  margin-bottom: 24px;
+}
+
+.amu-page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+/* Tabs */
+.amu-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.amu-tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 15px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  bottom: -2px;
+}
+
+.amu-tab:hover {
+  color: #ff6636;
+}
+
+.amu-tab.active {
+  color: #ff6636;
+  border-bottom-color: #ff6636;
+}
+
 /* Toolbar Styles */
 .amu-toolbar {
   display: flex;
