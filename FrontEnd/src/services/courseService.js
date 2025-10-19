@@ -37,10 +37,14 @@ export const searchCourses = async (dispatch, keyword) => {
   }
 };
 // take best selling course data from api and dispatch to store
-export const getBestSellingCourses = async (dispatch) => {
+export const getBestSellingCourses = async (dispatch, categoryName) => {
   dispatch(bestSellingStart());
   try {
-    const response = await apiClient.get(`courses/top-selling?limit=5`);
+    let url = `courses/top-selling?limit=5`;
+    if (categoryName) {
+      url += `&category=${encodeURIComponent(categoryName)}`;
+    }
+    const response = await apiClient.get(url);
     dispatch(bestSellingSuccess(response.data));
   } catch (error) {
     console.error("Error fetching best selling courses:", error);
