@@ -184,3 +184,23 @@ export const deleteLesson = async (courseId, lessonId) => {
     throw error;
   }
 };
+
+// Get instructor's own profile
+export const getMyProfile = async () => {
+  return await apiClient.get("/instructor/profile");
+};
+
+// Update instructor's own profile
+export const updateMyProfile = async (profileData) => {
+  return await apiClient.put("/instructor/profile", profileData);
+};
+
+// Get public instructor profile (no auth required)
+export const getPublicProfile = async (userId) => {
+  return await apiClient.get(`/instructor/public/${userId}`);
+};
+
+// Get instructor statistics
+export const getInstructorStats = async (userId) => {
+  return await apiClient.get(`/instructor/stats/${userId}`);
+};

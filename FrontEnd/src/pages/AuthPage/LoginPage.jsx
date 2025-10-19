@@ -88,6 +88,8 @@ function LoginPage() {
   const handleLoginRedirect = (user) => {
     if (user.role === "admin") {
       navigate("/admin/dashboard");
+    } else if (user.role === "instructor") {
+      navigate("/instructor/dashboard");
     } else {
       navigate("/");
     }

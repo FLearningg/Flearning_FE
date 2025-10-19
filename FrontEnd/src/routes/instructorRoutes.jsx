@@ -6,10 +6,12 @@ import InstructorDiscount from "../components/InstructorDiscount/InstructorDisco
 import CourseWizard from "../components/CRUDCourseAndLesson/CourseWizard";
 import InstructorMyCourse from "../components/InstructorMyCourse/InstructorMyCourse";
 import InstructorAllCourses from "../components/InstructorMyCourse/InstructorAllCourses";
+import InstructorProfileEdit from "../pages/InstructorProfile/InstructorProfileEdit";
 
 const instructorRoutesContent = (
   <>
     <Route path="dashboard" element={<InstructorDashboard />} />
+    <Route path="profile/edit" element={<InstructorProfileEdit />} />
     <Route path="discounts" element={<InstructorDiscount />} />
     <Route path="courses" element={<InstructorAllCourses />} />
     <Route path="courses/:id" element={<InstructorMyCourse />} />
