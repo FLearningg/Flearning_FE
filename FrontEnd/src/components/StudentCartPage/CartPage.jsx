@@ -52,6 +52,11 @@ function CartPage() {
     return true;
   };
 
+  const formatVND = (price) => {
+    const number = Number(price) || 0;
+    return number.toLocaleString("vi-VN");
+  };
+
   const Cart_DATA =
     cartItems?.map((course) => {
       let finalPrice = course.price;
@@ -73,7 +78,9 @@ function CartPage() {
         enrolledCount: course.studentsEnrolled?.length || 0,
         price: finalPrice,
         oldPrice: isDiscountValid(course.discountId) ? course.price : null,
-        courseAuthor: course.author || "Admin",
+        courseAuthor:
+          course.createdBy.firstName + " " + course.createdBy.lastName ||
+          "Admin",
       };
     }) || [];
 
@@ -208,11 +215,11 @@ function CartPage() {
                       </td>
                       <td className="text-start p-3">
                         <span className="cart-price-current">
-                          ${item.price.toFixed(2)}
+                          {formatVND(item.price)} VND
                         </span>
                         {item.oldPrice && (
                           <span className="cart-price-old ms-2">
-                            ${item.oldPrice.toFixed(2)}
+                            {formatVND(item.oldPrice)} VND
                           </span>
                         )}
                       </td>
@@ -259,11 +266,10 @@ function CartPage() {
                 <p className="cart-total-money m-0 p-0">
                   Total money:
                   <span style={{ color: "#ff5722", marginLeft: "5px" }}>
-                    $
-                    {Cart_DATA.reduce(
-                      (total, item) => total + item.price,
-                      0
-                    ).toFixed(2)}
+                    {formatVND(
+                      Cart_DATA.reduce((total, item) => total + item.price, 0)
+                    )}{" "}
+                    VND
                   </span>
                 </p>
               </div>
