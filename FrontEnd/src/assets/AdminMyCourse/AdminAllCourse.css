@@ -6,6 +6,121 @@
   color: #1f2937;
 }
 
+/* Tab Navigation */
+.aac-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 16px 32px 0;
+  background-color: #ffffff;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.aac-tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 15px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  bottom: -2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aac-tab:hover {
+  color: #ff6636;
+}
+
+.aac-tab.aac-tab-active {
+  color: #ff6636;
+  border-bottom-color: #ff6636;
+}
+
+.aac-tab-badge {
+  background-color: #ff6636;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Approval Stats Grid */
+.aac-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  padding: 24px 32px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.aac-stat-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.aac-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.1), 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+}
+
+.aac-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.aac-stat-orange .aac-stat-icon {
+  background-color: #fff1e9;
+  color: #ff6636;
+}
+
+.aac-stat-green .aac-stat-icon {
+  background-color: #e9f9ec;
+  color: #23bd33;
+}
+
+.aac-stat-red .aac-stat-icon {
+  background-color: #ffe9e9;
+  color: #e34444;
+}
+
+.aac-stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.aac-stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.aac-stat-label {
+  font-size: 14px;
+  color: #64748b;
+}
+
 /* Header Section */
 .admin-all-course-header {
   display: flex;
@@ -140,10 +255,56 @@
 .admin-course-card-wrapper {
   cursor: pointer;
   transition: transform 0.2s ease;
+  position: relative;
 }
 
 .admin-course-card-wrapper:hover {
   transform: translateY(-2px);
+}
+
+/* Course Status Badge */
+.admin-course-status-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.admin-course-status-badge.status-draft {
+  background-color: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.admin-course-status-badge.status-pending {
+  background-color: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.admin-course-status-badge.status-active {
+  background-color: #d1fae5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.admin-course-status-badge.status-inactive {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.admin-course-status-badge.status-rejected {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
 }
 
 /* Override Card styles for light theme */
@@ -576,6 +737,46 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* Reject Modal Specific Styles */
+.amc-reject-modal .amc-modal-icon {
+  background-color: #fee2e2;
+  padding: 12px;
+  border-radius: 50%;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 16px;
+}
+
+.amc-reject-modal .amc-modal-icon svg {
+  color: #dc2626;
+  width: 48px;
+  height: 48px;
+}
+
+.amc-modal-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #374151;
+  resize: vertical;
+  margin-top: 12px;
+  transition: border-color 0.2s ease;
+}
+
+.amc-modal-textarea:focus {
+  outline: none;
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.amc-modal-textarea::placeholder {
+  color: #9ca3af;
 }
 
 /* Mobile responsiveness for modal */

@@ -38,53 +38,72 @@ function RecentlyAddedCourse() {
     }
     return true;
   };
-  const coursesInfo = coursesInfo1?.map((course) => {
-    let finalPrice = course.price;
-    let discountText = "";
-    if (isDiscountValid(course.discountId)) {
-      if (course.discountId.type === "fixedAmount") {
-        finalPrice = Math.max(0, course.price - course.discountId.value);
-        discountText = `-${course.discountId.value}$`;
-      } else if (course.discountId.type === "percent") {
-        finalPrice = Math.max(
-          0,
-          course.price * (1 - course.discountId.value / 100)
-        );
-        discountText = `-${course.discountId.value}%`;
+
+  // Format price with dot separator (e.g., 250.000đ)
+  const formatPrice = (price) => {
+    return Math.round(price)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
+  // Log to check course data and status
+  console.log("Recently Added Courses Data:", coursesInfo1);
+  console.log(
+    "Course statuses:",
+    coursesInfo1?.map((c) => ({ title: c.title, status: c.status }))
+  );
+
+  const coursesInfo = coursesInfo1
+    ?.filter((course) => {
+      // Accept multiple active statuses: active, approved, published
+      const validStatuses = ["active", "approved", "published"];
+      return validStatuses.includes(course.status?.toLowerCase());
+    })
+    .map((course) => {
+      let finalPrice = course.price;
+      let discountText = "";
+      if (isDiscountValid(course.discountId)) {
+        if (course.discountId.type === "fixedAmount") {
+          finalPrice = Math.max(0, course.price - course.discountId.value);
+          discountText = `-${formatPrice(course.discountId.value)} VND`;
+        } else if (course.discountId.type === "percent") {
+          finalPrice = Math.max(
+            0,
+            course.price * (1 - course.discountId.value / 100)
+          );
+          discountText = `-${course.discountId.value}%`;
+        }
       }
-    }
-    return {
-      cardProps: {
-        image: course.thumbnail,
-        category: course?.categoryIds?.[0]?.name || "Uncategorized",
-        price: Number.isInteger(finalPrice)
-          ? `${finalPrice}$`
-          : `${parseFloat(finalPrice.toFixed(2))}$`,
-        title: course.title,
-        rating: course?.rating || 0, // If there is a rating field, take it, otherwise 0
-        students: course.studentsEnrolled?.length || 0,
-        variant: "large",
-        linkToCourseDetail: `/course/${course._id}`,
-      },
-      detailedProps: {
-        courseId: course._id,
-        title: course.title,
-        author: "Admin", // If there is an author field, take it
-        authorAvatar: "/images/admin-image.png", // If there is one, take it
-        rating: course.rating || 0, // If there is one, take it
-        ratingCount: 0, // If there is one, take it
-        students: course.studentsEnrolled?.length || 0,
-        level: course.level,
-        duration: course.duration,
-        price: `${finalPrice.toFixed(2)}$`,
-        oldPrice: isDiscountValid(course.discountId)
-          ? `${course.price.toFixed(2)}$`
-          : "",
-        discount: discountText,
-        learnList: course.detail?.willLearn || [],
-      },
-    };
-  });
+      return {
+        cardProps: {
+          image: course.thumbnail,
+          category: course?.categoryIds?.[0]?.name || "Uncategorized",
+          price: `${formatPrice(finalPrice)} VND`,
+          title: course.title,
+          rating: course?.rating || 0, // If there is a rating field, take it, otherwise 0
+          students: course.studentsEnrolled?.length || 0,
+          variant: "large",
+          linkToCourseDetail: `/course/${course._id}`,
+        },
+        detailedProps: {
+          courseId: course._id,
+          title: course.title,
+          author: "Admin", // If there is an author field, take it
+          authorAvatar: "/images/admin-image.png", // If there is one, take it
+          rating: course.rating || 0, // If there is one, take it
+          ratingCount: 0, // If there is one, take it
+          students: course.studentsEnrolled?.length || 0,
+          level: course.level,
+          duration: course.duration,
+          price: `${formatPrice(finalPrice)} VND`,
+          oldPrice: isDiscountValid(course.discountId)
+            ? `${formatPrice(course.price)} VND`
+            : "",
+          discount: discountText,
+          learnList: course.detail?.willLearn || [],
+        },
+      };
+    });
   return (
     <>
       <div className="container my-5">
