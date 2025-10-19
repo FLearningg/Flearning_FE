@@ -42,6 +42,10 @@
   font-size: 1.125rem;
 }
 
+.best-selling-section .modern-card-price {
+  font-size: 0.8rem;
+}
+
 .best-selling-section .course-rating {
   color: #1d2026;
   font-size: 0.875rem;
@@ -55,6 +59,15 @@
 .best-selling-section .section-title {
   font-size: 2.5rem;
   margin-bottom: 3rem;
+}
+
+.best-selling-section .modern-category-badge {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 45%;
+  text-align: center;
 }
 /* 5-column support for Bootstrap */
 @media (min-width: 992px) {
