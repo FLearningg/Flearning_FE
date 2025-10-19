@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Search, Users, UserPlus } from "lucide-react";
-import { DatePicker, ConfigProvider, message } from "antd";
+import { DatePicker, ConfigProvider, message, Modal } from "antd";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import CustomButton from "../common/CustomButton/CustomButton";
@@ -13,6 +13,7 @@ export default function AdminManageUser() {
   const [allUsers, setAllUsers] = useState([]); // Store all users
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [roleFilter, setRoleFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState("all");
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
@@ -21,6 +22,8 @@ export default function AdminManageUser() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [userActionLoading, setUserActionLoading] = useState({}); // Loading state for individual users
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalUser, setModalUser] = useState(null);
 
   // Client-side filtering and pagination
   const filteredUsers = useMemo(() => {
@@ -42,6 +45,11 @@ export default function AdminManageUser() {
       filtered = filtered.filter((user) => user.status === statusFilter);
     }
 
+    // Role filter
+    if (roleFilter !== "All") {
+      filtered = filtered.filter((user) => user.role === roleFilter);
+    }
+
     // Date filter
     if (dateFilter === "today") {
       filtered = filtered.filter((user) =>
@@ -58,7 +66,15 @@ export default function AdminManageUser() {
     }
 
     return filtered;
-  }, [allUsers, searchTerm, statusFilter, dateFilter, fromDate, toDate]);
+  }, [
+    allUsers,
+    searchTerm,
+    statusFilter,
+    roleFilter,
+    dateFilter,
+    fromDate,
+    toDate,
+  ]);
 
   // Paginated users
   const paginatedUsers = useMemo(() => {
@@ -95,7 +111,7 @@ export default function AdminManageUser() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, dateFilter, fromDate, toDate]);
+  }, [searchTerm, statusFilter, roleFilter, dateFilter, fromDate, toDate]);
 
   const handleToggleStatus = async (userId, currentStatus) => {
     // Map UI status to backend status
@@ -141,6 +157,24 @@ export default function AdminManageUser() {
         return newState;
       });
     }
+  };
+
+  const showConfirmModal = (user) => {
+    setModalUser(user);
+    setIsModalVisible(true);
+  };
+
+  const handleModalOk = () => {
+    if (modalUser) {
+      handleToggleStatus(modalUser._id, modalUser.status);
+    }
+    setIsModalVisible(false);
+    setModalUser(null);
+  };
+
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+    setModalUser(null);
   };
 
   // Instructor approval moved to Censor Instructor page
@@ -258,6 +292,16 @@ export default function AdminManageUser() {
                   <option value="verified">Active</option>
                   <option value="banned">Banned</option>
                   <option value="unverified">Unverified</option>
+                </select>
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="amu-filter-select"
+                >
+                  <option value="All">All Roles</option>
+                  <option value="admin">Admin</option>
+                  <option value="instructor">Instructor</option>
+                  <option value="student">Student</option>
                 </select>
               </div>
               <div className="amu-toolbar-right">
@@ -400,9 +444,7 @@ export default function AdminManageUser() {
                               color={isBanned ? "success" : "error"}
                               type="underline"
                               disabled={userActionLoading[user._id]}
-                              onClick={() =>
-                                handleToggleStatus(user._id, user.status)
-                              }
+                              onClick={() => showConfirmModal(user)}
                             >
                               {userActionLoading[user._id]
                                 ? isBanned
@@ -462,6 +504,26 @@ export default function AdminManageUser() {
             )}
           </>
         )}
+        <Modal
+          title="Confirm Action"
+          visible={isModalVisible}
+          onOk={handleModalOk}
+          onCancel={handleModalCancel}
+          okText={
+            modalUser?.status === "banned" || modalUser?.status === "Banned"
+              ? "Unban"
+              : "Ban"
+          }
+          cancelText="Cancel"
+        >
+          <p>
+            Are you sure you want to{" "}
+            {modalUser?.status === "banned" || modalUser?.status === "Banned"
+              ? "unban"
+              : "ban"}{" "}
+            this user?
+          </p>
+        </Modal>
       </div>
     </ConfigProvider>
   );

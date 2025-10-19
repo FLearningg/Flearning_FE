@@ -15,6 +15,7 @@ import {
 } from "chart.js";
 import "../../assets/AdminMyCourse/AdminMyCourse.css";
 import { getCourseById } from "../../services/adminService";
+import { getUserProfile } from "../../services/authService";
 
 // Đăng ký các module cần thiết của Chart.js
 ChartJS.register(
@@ -202,6 +203,20 @@ function AdminMyCourse() {
   const [error, setError] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const { data: user } = await getUserProfile();
+        setCurrentUser(user);
+      } catch (error) {
+        console.error("Failed to fetch current user:", error);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
 
   useEffect(() => {
     if (!courseData) {
@@ -215,7 +230,7 @@ function AdminMyCourse() {
         .catch(() => setError("Course not found or failed to fetch."))
         .finally(() => setLoading(false));
     }
-  }, [id]);
+  }, [id, courseData]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -434,6 +449,8 @@ function AdminMyCourse() {
     },
   ];
 
+  const isAdmin = currentUser?.role === "admin";
+
   return (
     <>
       <div className="amc-breadcrumb">
@@ -482,10 +499,13 @@ function AdminMyCourse() {
                             courseData.description}
                         </p>
                       </div>
+
                       <div style={{ display: "flex", gap: "8px" }}>
-                        <button className="amc-withdraw-btn">
-                          Withdraw Money
-                        </button>
+                        {!isAdmin && (
+                          <button className="amc-withdraw-btn">
+                            Withdraw Money
+                          </button>
+                        )}
                         <div className="amc-dropdown-container">
                           <button
                             className="amc-more-btn"
@@ -493,6 +513,7 @@ function AdminMyCourse() {
                           >
                             ...
                           </button>
+
                           {showDropdown && (
                             <div className="amc-dropdown-menu">
                               <button

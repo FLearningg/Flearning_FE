@@ -159,7 +159,11 @@ const AdminDashboard = () => {
         cornerRadius: 4,
         displayColors: false,
         callbacks: {
-          label: (context) => `$${context.parsed.y.toLocaleString()}`,
+          label: (context) =>
+            `${context.parsed.y.toLocaleString("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            })}`,
         },
       },
     },
@@ -170,9 +174,9 @@ const AdminDashboard = () => {
         ticks: {
           color: "#9ca3af",
           callback: (value) => {
-            if (value >= 1000000) return `${value / 1000000}m`;
-            if (value >= 1000) return `${value / 1000}k`;
-            return value;
+            if (value >= 1000000) return `${value / 1000000}m VND`;
+            if (value >= 1000) return `${value / 1000}k VND`;
+            return `${value} VND`;
           },
         },
       },
@@ -297,7 +301,10 @@ const AdminDashboard = () => {
                 </div>
                 <div>
                   <p className="stat-number">
-                    ${stats.totalRevenue.toLocaleString()}
+                    {stats.totalRevenue.toLocaleString("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    })}
                   </p>
                   <p className="stat-label">Total Earning</p>
                 </div>
