@@ -6,6 +6,8 @@ import "../../assets/AdminHeaderAndSidebar/FinalHeaderAndSidebar.css";
 
 const routeTitleMap = {
   "/instructor/dashboard": "Dashboard",
+  "/instructor/profile/edit": "Profile",
+  "/instructor/discounts": "Discounts",
   "/instructor/courses/new": "Create New Course",
   "/instructor/courses": "My Courses",
   // Add more mappings as needed

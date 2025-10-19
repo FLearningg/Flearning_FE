@@ -57,7 +57,8 @@ const InstructorProfilePublic = () => {
       // Set stats from response
       setStats(data.statistics);
       
-      // Set courses from response
+      // Set courses from response (backend already filters active courses)
+      console.log("📚 All courses from backend:", data.courses);
       setCourses(data.courses || []);
 
     } catch (error) {
@@ -263,7 +264,7 @@ const InstructorProfilePublic = () => {
                           </div>
                         </div>
                         <div className="ipp-course-price">
-                          ${course.price ? course.price.toFixed(0) : '0'}
+                          {course.price ? course.price.toLocaleString('vi-VN') : '0'} VND
                         </div>
                       </div>
                     </div>

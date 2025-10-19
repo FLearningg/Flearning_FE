@@ -5,6 +5,11 @@ import { useSelector } from "react-redux";
 import { ArrowRightOutlined } from '@ant-design/icons';
 function Advertisement() {
   const { currentUser } = useSelector((state) => state.auth);
+  
+  // Check if user is already instructor or admin
+  const shouldShowInstructorRegister = !currentUser || 
+    (currentUser.role !== 'instructor' && currentUser.role !== 'admin');
+  
   return (
     <>
       <div className="container-fluid desktop-homepage-view">
@@ -18,16 +23,18 @@ function Advertisement() {
                 Our mission is to help people to find the best course online and
                 learn with expert anytime, anywhere.
               </p>
-              <div className="mt-4">
-                <p className="h4 text-secondary mb-3">
-                  Want to be an instructor?
-                </p>
-                <Link to="/instructor/register" className="btn-register-instructor">
-                  <button className="">
-                    Register now <ArrowRightOutlined />
-                  </button>
-                </Link>
-              </div>
+              {shouldShowInstructorRegister && (
+                <div className="mt-4">
+                  <p className="h4 text-secondary mb-3">
+                    Want to be an instructor?
+                  </p>
+                  <Link to="/instructor/register" className="btn-register-instructor">
+                    <button className="">
+                      Register now <ArrowRightOutlined />
+                    </button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
           <div className="col-6 pe-0">
@@ -55,16 +62,18 @@ function Advertisement() {
               <button className="">Create account</button>
             </Link>
           )}
-          <div className="mt-4">
-            <p className="h4 text-secondary mb-3">
-              Want to be an instructor?
-            </p>
-            <Link to="/instructor/register" className="btn-register-instructor">
-              <button className="">
-                Register now <ArrowRightOutlined />
-              </button>
-            </Link>
-          </div>
+          {shouldShowInstructorRegister && (
+            <div className="mt-4">
+              <p className="h4 text-secondary mb-3">
+                Want to be an instructor?
+              </p>
+              <Link to="/instructor/register" className="btn-register-instructor">
+                <button className="">
+                  Register now <ArrowRightOutlined />
+                </button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </>
