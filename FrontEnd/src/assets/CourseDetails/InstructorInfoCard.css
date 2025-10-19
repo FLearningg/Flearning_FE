@@ -1,0 +1,175 @@
+.instructor-info-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 32px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e8e8e8;
+}
+
+.instructor-info-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.instructor-info-header svg {
+  color: #ff6636;
+}
+
+.instructor-info-header h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.instructor-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.instructor-profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.instructor-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ff6636;
+  box-shadow: 0 4px 8px rgba(255, 102, 54, 0.2);
+}
+
+.instructor-details {
+  flex: 1;
+}
+
+.instructor-name {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.instructor-headline {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+}
+
+.instructor-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+.stat-item svg {
+  color: #ff6636;
+  flex-shrink: 0;
+}
+
+.instructor-bio {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #555;
+}
+
+.view-profile-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #ff6636;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+}
+
+.view-profile-btn:hover {
+  background: #e55527;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 102, 54, 0.3);
+}
+
+.view-profile-btn svg {
+  flex-shrink: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .instructor-info-card {
+    padding: 20px;
+    margin: 24px 0;
+  }
+
+  .instructor-info-header h3 {
+    font-size: 20px;
+  }
+
+  .instructor-profile {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .instructor-avatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  .instructor-stats {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .stat-item {
+    justify-content: center;
+  }
+
+  .view-profile-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .instructor-info-card {
+    padding: 16px;
+  }
+
+  .instructor-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .instructor-name {
+    font-size: 18px;
+  }
+}

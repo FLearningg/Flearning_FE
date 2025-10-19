@@ -114,6 +114,7 @@ export default function CourseHeader({
   setActiveTab,
   isScreenSmall,
   onBurgerClick,
+  instructorCard, // Add instructor card prop
 }) {
   return (
     <div className="course-header">
@@ -139,6 +140,14 @@ export default function CourseHeader({
             <p className="fs-4 text-secondary mb-5 course-subtitle">
               {subtitle}
             </p>
+            
+            {/* Instructor Card */}
+            {instructorCard && (
+              <div className="mb-4">
+                {instructorCard}
+              </div>
+            )}
+            
             <div className="row mt-5">
               <div className="col-12">
                 <HeroImage heroImage={heroImage} trailer={trailer?.url} />
