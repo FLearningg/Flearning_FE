@@ -1,175 +1,143 @@
-.instructor-info-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 24px;
-  margin: 32px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e8e8e8;
-}
-
-.instructor-info-header {
+/* Compact Instructor Info - Figma Style */
+.instructor-compact-info {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #f0f0f0;
-}
-
-.instructor-info-header svg {
-  color: #ff6636;
-}
-
-.instructor-info-header h3 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-.instructor-info-content {
-  display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   gap: 20px;
+  margin: 20px 0;
+  flex-wrap: wrap;
 }
 
-.instructor-profile {
+.instructor-left {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.instructor-avatar {
-  width: 80px;
-  height: 80px;
+.instructor-avatar-link {
+  flex-shrink: 0;
+}
+
+.instructor-avatar-small {
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #ff6636;
-  box-shadow: 0 4px 8px rgba(255, 102, 54, 0.2);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
 }
 
-.instructor-details {
-  flex: 1;
+.instructor-avatar-link:hover .instructor-avatar-small {
+  transform: scale(1.05);
 }
 
-.instructor-name {
-  margin: 0 0 4px 0;
-  font-size: 20px;
+.instructor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.created-by-label {
+  font-size: 14px;
+  color: #8c8c8c;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.instructor-name-link {
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.instructor-name-link:hover {
+  opacity: 0.8;
+}
+
+.instructor-name-compact {
+  font-size: 18px;
   font-weight: 600;
   color: #1a1a1a;
+  line-height: 1.2;
+  transition: color 0.2s ease;
 }
 
-.instructor-headline {
-  margin: 0;
-  font-size: 14px;
-  color: #666;
-  font-style: italic;
-}
-
-.instructor-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  padding: 16px;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #333;
-}
-
-.stat-item svg {
+.instructor-name-link:hover .instructor-name-compact {
   color: #ff6636;
-  flex-shrink: 0;
 }
 
-.instructor-bio {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.6;
-  color: #555;
-}
-
-.view-profile-btn {
-  display: inline-flex;
-  align-items: center;
+.instructor-rating {
+  display: flex;
+  align-items: baseline;
   gap: 8px;
-  padding: 12px 24px;
-  background: #ff6636;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  align-self: flex-start;
 }
 
-.view-profile-btn:hover {
-  background: #e55527;
-  color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 102, 54, 0.3);
+.stars-container {
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
 
-.view-profile-btn svg {
+.stars-container svg {
   flex-shrink: 0;
+}
+
+.rating-number1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.5;
+}
+
+.rating-count {
+  font-size: 20px;
+  color: #8c8c8c;
+  font-weight: 400;
+  line-height: 1.5;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .instructor-info-card {
-    padding: 20px;
-    margin: 24px 0;
-  }
-
-  .instructor-info-header h3 {
-    font-size: 20px;
-  }
-
-  .instructor-profile {
+  .instructor-compact-info {
     flex-direction: column;
-    text-align: center;
-  }
-
-  .instructor-avatar {
-    width: 100px;
-    height: 100px;
-  }
-
-  .instructor-stats {
-    flex-direction: column;
+    align-items: flex-start;
     gap: 12px;
   }
 
-  .stat-item {
-    justify-content: center;
+  .instructor-left {
+    width: 100%;
   }
 
-  .view-profile-btn {
+  .instructor-rating {
     width: 100%;
-    justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
-  .instructor-info-card {
-    padding: 16px;
+  .instructor-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 
-  .instructor-avatar {
-    width: 80px;
-    height: 80px;
+  .created-by-label {
+    font-size: 13px;
   }
 
-  .instructor-name {
-    font-size: 18px;
+  .instructor-avatar-small {
+    width: 36px;
+    height: 36px;
+  }
+
+  .instructor-name-compact {
+    font-size: 14px;
+  }
+
+  .rating-number {
+    font-size: 15px;
+  }
+
+  .rating-count {
+    font-size: 13px;
   }
 }

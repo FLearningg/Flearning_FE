@@ -402,7 +402,11 @@ export default function SingleCourse() {
               setActiveTab={handleTabClick}
               isScreenSmall={isScreenSmall}
               onBurgerClick={() => setIsModalOpen(true)}
-              instructorCard={<InstructorInfoCard instructor={course.createdBy} />}
+              instructorCard={
+                <InstructorInfoCard 
+                  instructor={course.createdBy}
+                />
+              }
             />
 
             <div ref={overviewRef}>
