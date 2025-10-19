@@ -55,6 +55,18 @@ export const getDiscountStats = async () => {
   }
 };
 
+// Remove course from discount applyCourses (Admin)
+export const removeCourseFromDiscount = async (discountId, courseId) => {
+  try {
+    const response = await apiClient.delete(
+      `/admin/discounts/${discountId}/courses/${courseId}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: error.message };
+  }
+};
+
 // ===== INSTRUCTOR ENDPOINTS =====
 
 // Get instructor's own discounts with filtering and pagination
@@ -94,6 +106,32 @@ export const updateInstructorDiscount = async (discountId, updateData) => {
       `/instructor/discounts/${discountId}`,
       updateData
     );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+// Remove course from discount applyCourses (Instructor)
+export const removeInstructorCourseFromDiscount = async (discountId, courseId) => {
+  try {
+    const response = await apiClient.delete(
+      `/instructor/discounts/${discountId}/courses/${courseId}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+// ===== PUBLIC ENDPOINTS =====
+
+// Get available discounts for specific courses
+export const getAvailableDiscountsForCourses = async (courseIds) => {
+  try {
+    const response = await apiClient.post("/discounts/available-for-courses", {
+      courseIds,
+    });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: error.message };

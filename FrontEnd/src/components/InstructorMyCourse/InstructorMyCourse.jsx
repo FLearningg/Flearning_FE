@@ -342,7 +342,7 @@ function InstructorMyCourse() {
     courseData.videoUrl ||
     courseData.introVideo ||
     null;
-  const coursePrice = courseData.price ? `$${courseData.price}` : "N/A";
+  const coursePrice = courseData.price ? `${courseData.price.toLocaleString('vi-VN')} VND` : "N/A";
   const courseRating = courseData.rating || 0;
   const courseLevel = courseData.level || "Beginner";
   const uploaded = courseData.createdAt

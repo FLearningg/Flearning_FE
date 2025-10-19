@@ -10,6 +10,17 @@ const toNumber = (price) => {
   return parseFloat(numericString) || 0;
 };
 
+// Format number to Vietnamese Dong representation (no decimals)
+const formatVND = (value) => {
+  const n = toNumber(value);
+  try {
+    return new Intl.NumberFormat("vi-VN").format(Math.round(n));
+  } catch (e) {
+    // fallback simple formatter
+    return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+};
+
 // --- Component 1: Breadcrumb ---
 export function Breadcrumb() {
   return (
@@ -183,9 +194,11 @@ export function OrderSummary({
   subtotal,
   discountAmount,
   total,
+  selectedDiscount,
+  onRemoveDiscount,
   onCompletePayment,
+  isLoading,
 }) {
-  const couponDiscountPercent = 8;
   return (
     <div className="order-summary-card">
       <div className="card-body">
@@ -210,13 +223,38 @@ export function OrderSummary({
             <small>Subtotal</small>
             <small>${subtotal.toFixed(2)} USD</small>
           </div>
+
+          {/* Display selected discount */}
+          {selectedDiscount && (
+            <div className="summary-row discount-row">
+              <small>
+                Discount ({selectedDiscount.discountCode})
+                {onRemoveDiscount && (
+                  <button
+                    onClick={onRemoveDiscount}
+                    className="remove-discount-btn"
+                    title="Remove discount"
+                  >
+                    ×
+                  </button>
+                )}
+              </small>
+              <small className="discount-value">
+                -{formatVND(discountAmount)} VND
+              </small>
+            </div>
+          )}
         </div>
         <div className="order-summary__total">
           <span>Total:</span>
           <span className="total-amount">${total.toFixed(2)} USD</span>
         </div>
-        <button className="btn-complete-payment" onClick={onCompletePayment}>
-          Complete Payment
+        <button
+          className="btn-complete-payment"
+          onClick={onCompletePayment}
+          disabled={isLoading}
+        >
+          {isLoading ? "Processing..." : "Complete Payment"}
         </button>
       </div>
     </div>
