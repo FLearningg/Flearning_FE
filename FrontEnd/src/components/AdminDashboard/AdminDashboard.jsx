@@ -159,7 +159,12 @@ const AdminDashboard = () => {
         cornerRadius: 4,
         displayColors: false,
         callbacks: {
-          label: (context) => `$${context.parsed.y.toLocaleString()}`,
+          label: (context) => {
+            const value = context.parsed.y
+              .toString()
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            return `${value} VND`;
+          },
         },
       },
     },
@@ -297,7 +302,10 @@ const AdminDashboard = () => {
                 </div>
                 <div>
                   <p className="stat-number">
-                    ${stats.totalRevenue.toLocaleString()}
+                    {stats.totalRevenue
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}{" "}
+                    VND
                   </p>
                   <p className="stat-label">Total Earning</p>
                 </div>
