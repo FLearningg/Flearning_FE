@@ -899,6 +899,16 @@ export default function CourseCurriculum({
                                             <div className="upload-instructions">
                                               <p>Upload a Word document (.docx) containing your quiz questions</p>
                                               <small>The system will automatically process and extract questions from your document</small>
+                                              <div style={{ marginTop: "10px" }}>
+                                                <a
+                                                  href="https://firebasestorage.googleapis.com/v0/b/flearning-7f88f.firebasestorage.app/o/TempleteQuiz.docx?alt=media&token=ee0e4ca8-9e17-4981-a684-6854086eccfe"
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="template-download-btn"
+                                                >
+                                                  Download Template
+                                                </a>
+                                              </div>
                                             </div>
                                           )}
                                           

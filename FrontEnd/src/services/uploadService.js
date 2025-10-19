@@ -253,4 +253,6 @@ const uploadServiceDefault = {
   getUserRole,
 };
 
+export { getUserRole };
+
 export default uploadServiceDefault;
