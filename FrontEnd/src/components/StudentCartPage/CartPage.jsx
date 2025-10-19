@@ -59,7 +59,7 @@ function CartPage() {
 
   const Cart_DATA =
     cartItems?.map((course) => {
-      let finalPrice = course.price;
+      let finalPrice = course.price || 0;
       if (isDiscountValid(course.discountId)) {
         if (course.discountId.type === "fixedAmount") {
           finalPrice = Math.max(0, course.price - course.discountId.value);

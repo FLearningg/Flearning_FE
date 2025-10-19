@@ -188,9 +188,11 @@ export function OrderSummary({
   subtotal,
   discountAmount,
   total,
+  selectedDiscount,
+  onRemoveDiscount,
   onCompletePayment,
+  isLoading,
 }) {
-  const couponDiscountPercent = 8;
   return (
     <div className="order-summary-card">
       <div className="card-body">
@@ -215,13 +217,38 @@ export function OrderSummary({
             <small>Subtotal</small>
             <small>{formatVND(subtotal)} VND</small>
           </div>
+
+          {/* Display selected discount */}
+          {selectedDiscount && (
+            <div className="summary-row discount-row">
+              <small>
+                Discount ({selectedDiscount.discountCode})
+                {onRemoveDiscount && (
+                  <button
+                    onClick={onRemoveDiscount}
+                    className="remove-discount-btn"
+                    title="Remove discount"
+                  >
+                    ×
+                  </button>
+                )}
+              </small>
+              <small className="discount-value">
+                -{formatVND(discountAmount)} VND
+              </small>
+            </div>
+          )}
         </div>
         <div className="order-summary__total">
           <span>Total:</span>
           <span className="total-amount">{formatVND(total)} VND</span>
         </div>
-        <button className="btn-complete-payment" onClick={onCompletePayment}>
-          Complete Payment
+        <button
+          className="btn-complete-payment"
+          onClick={onCompletePayment}
+          disabled={isLoading}
+        >
+          {isLoading ? "Processing..." : "Complete Payment"}
         </button>
       </div>
     </div>

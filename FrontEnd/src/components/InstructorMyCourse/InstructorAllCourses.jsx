@@ -60,15 +60,15 @@ const InstructorAllCourses = () => {
           course.category || course.categoryIds?.[0]?.name || "DEVELOPMENTS",
         categoryBgColor: "#e8f4fd",
         categoryTextColor: "#1e40af",
-        price: course.price ? `$${course.price}` : "$0.00",
-        originalPrice: course.originalPrice ? `$${course.originalPrice}` : null,
+        price: course.price ? `${course.price.toLocaleString('vi-VN')} VND` : "0 VND",
+        originalPrice: course.originalPrice ? `${course.originalPrice.toLocaleString('vi-VN')} VND` : null,
         title: course.title || "Untitled Course",
         rating: course.rating || 0,
         students:
           course.studentsCount ||
           course.enrolledStudents ||
           course.studentsEnrolled?.length ||
-          "0",
+          0,
         actions: ["View Details", "Edit Course", "Delete Course"],
         originalData: course,
       }));

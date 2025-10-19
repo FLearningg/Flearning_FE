@@ -9,6 +9,7 @@ import { getCart } from "../../services/cartService";
 import { getCourseById } from "../../services/courseService";
 import { createPayOSLink } from "../../services/paymentService"; // <-- THÊM IMPORT
 import QRCodePayment from "./QRCodePayment";
+import AvailableDiscounts from "./AvailableDiscounts";
 
 import {
   Breadcrumb,
@@ -96,6 +97,7 @@ export default function CheckoutPage() {
   const [selectedPayment, setSelectedPayment] = useState("PayOS"); // <-- Đặt PayOS làm mặc định
   const [fullCourses, setFullCourses] = useState([]);
   const [isBuying, setIsBuying] = useState(false); // <-- THÊM STATE LOADING
+  const [selectedDiscount, setSelectedDiscount] = useState(null); // <-- STATE cho discount được chọn
 
   useEffect(() => {
     if (currentUser === null) navigate("/");
@@ -152,16 +154,46 @@ export default function CheckoutPage() {
   }, [fullCourses]);
 
   const orderTotals = useMemo(() => {
-    // ... (logic orderTotals của bạn giữ nguyên)
-    const subtotal = processedCourses.reduce(
-      (sum, course) => sum + course.currentPrice,
-      0
-    );
-    // Tạm thời discountAmount = 0, bạn có thể thay đổi logic này nếu có mã giảm giá chung
-    const discountAmount = 0;
-    const total = subtotal - discountAmount;
+    let subtotal = 0;
+    let discountAmount = 0;
+
+    // Calculate subtotal and discount for each course
+    processedCourses.forEach((course) => {
+      const coursePrice = course.currentPrice;
+      subtotal += coursePrice;
+
+      // Apply selected discount to each course if applicable
+      if (selectedDiscount) {
+        if (selectedDiscount.type === "percent") {
+          // Percent discount applies to ORIGINAL price of each individual course
+          let courseDiscount = course.originalPrice * (selectedDiscount.value / 100);
+
+          // Check if discount applies to this specific course
+          const appliesToThisCourse =
+            !selectedDiscount.applyCourses ||
+            selectedDiscount.applyCourses.length === 0 ||
+            selectedDiscount.applyCourses.some((dc) => dc._id === course._id || dc === course._id);
+
+          if (appliesToThisCourse) {
+            discountAmount += courseDiscount;
+          }
+        }
+      }
+    });
+
+    // For fixed amount discount, apply to total order
+    if (selectedDiscount && selectedDiscount.type === "fixedAmount") {
+      discountAmount = selectedDiscount.value;
+    }
+
+    // Apply maximum discount limit if set
+    if (selectedDiscount && selectedDiscount.maximumDiscount > 0) {
+      discountAmount = Math.min(discountAmount, selectedDiscount.maximumDiscount);
+    }
+
+    const total = Math.max(0, subtotal - discountAmount);
     return { subtotal, discountAmount, total };
-  }, [processedCourses]);
+  }, [processedCourses, selectedDiscount]);
 
   // SỬA LẠI HOÀN TOÀN HÀM NÀY
   const handleCompletePayment = async () => {
@@ -213,6 +245,9 @@ export default function CheckoutPage() {
 
   if (!currentUser) return null;
 
+  // Get course IDs for fetching available discounts
+  const courseIds = processedCourses.map((course) => course._id);
+
   return (
     <div className="checkout-page">
       <Breadcrumb />
@@ -234,6 +269,15 @@ export default function CheckoutPage() {
               qrContent={`COURSE${generateContent(currentUser?._id)}`}
               cartCourses={processedCourses}
             />
+
+            {/* Available Discounts Section - Moved below Payment Method */}
+            <AvailableDiscounts
+              courseIds={courseIds}
+              courses={processedCourses}
+              onSelectDiscount={(discount) => {
+                setSelectedDiscount(discount);
+              }}
+            />
           </div>
           <div className="col-lg-4">
             <OrderSummary
@@ -241,6 +285,8 @@ export default function CheckoutPage() {
               subtotal={orderTotals.subtotal}
               discountAmount={orderTotals.discountAmount} // Sửa ở đây
               total={orderTotals.total}
+              selectedDiscount={selectedDiscount} // Pass selected discount
+              onRemoveDiscount={() => setSelectedDiscount(null)} // Function to remove discount
               onCompletePayment={handleCompletePayment} // <-- SỬA TÊN HÀM
               isLoading={isBuying} // <-- THÊM PROP LOADING
             />

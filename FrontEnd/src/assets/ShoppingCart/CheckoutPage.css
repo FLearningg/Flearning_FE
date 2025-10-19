@@ -191,6 +191,41 @@
 .checkout-page .summary-row small:last-child {
   color: #1d2026;
 }
+
+/* Discount row styling */
+.checkout-page .summary-row.discount-row {
+  color: #4caf50;
+}
+.checkout-page .summary-row.discount-row small {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.checkout-page .discount-value {
+  color: #4caf50 !important;
+  font-weight: 600;
+}
+.checkout-page .remove-discount-btn {
+  background: #ff6636;
+  color: white;
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.checkout-page .remove-discount-btn:hover {
+  background: #e65c2b;
+  transform: scale(1.1);
+}
+
 .checkout-page .order-summary__total {
   display: flex;
   justify-content: space-between;
@@ -211,8 +246,12 @@
   border-radius: 0.5rem;
   transition: background-color 0.2s;
 }
-.checkout-page .btn-complete-payment:hover {
+.checkout-page .btn-complete-payment:hover:not(:disabled) {
   background-color: #e65c2b;
+}
+.checkout-page .btn-complete-payment:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* --- Course Item --- */

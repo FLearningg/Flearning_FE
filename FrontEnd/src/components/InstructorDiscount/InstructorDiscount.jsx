@@ -3,15 +3,13 @@ import CustomButton from "../common/CustomButton/CustomButton";
 import Input from "../common/Input";
 import SearchBox from "../common/search/SearchBox/SearchBox";
 import {
-  getAllDiscounts,
-  createDiscount,
-  updateDiscount,
-  deleteDiscount,
-  getDiscountStats,
+  getInstructorDiscounts,
+  createInstructorDiscount,
+  updateInstructorDiscount,
 } from "../../services/discountService";
+import { getInstructorCourses } from "../../services/instructorService";
 import "../../assets/AdminDiscount/AdminDiscount.css";
 import { toast } from "react-toastify";
-import { ToastContainer } from "react-toastify";
 
 const InstructorDiscount = ({ title = "Discount Management" }) => {
   const [discounts, setDiscounts] = useState([]);
@@ -23,6 +21,26 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [instructorCourses, setInstructorCourses] = useState([]);
+  const [selectedCourses, setSelectedCourses] = useState([]);
+  const [courseSearchQuery, setCourseSearchQuery] = useState("");
+  const [currentCoursePage, setCurrentCoursePage] = useState(1);
+  const [showCourseModal, setShowCourseModal] = useState(false);
+  const COURSES_PER_PAGE = 5;
+
+  // Fetch instructor's courses
+  const fetchInstructorCourses = async () => {
+    try {
+      const response = await getInstructorCourses();
+      // Handle different response structures
+      const coursesData = response.data?.data || response.data || [];
+      console.log("Instructor courses:", coursesData);
+      setInstructorCourses(Array.isArray(coursesData) ? coursesData : []);
+    } catch (error) {
+      console.error("Failed to fetch instructor courses:", error);
+      setInstructorCourses([]);
+    }
+  };
 
   // Fetch discounts and stats
   const fetchData = async () => {
@@ -36,13 +54,21 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
       if (selectedType !== "all") params.type = selectedType;
       if (selectedCategory !== "all") params.category = selectedCategory;
 
-      const [discountsResponse, statsResponse] = await Promise.all([
-        getAllDiscounts(params),
-        getDiscountStats(),
-      ]);
+      const discountsResponse = await getInstructorDiscounts(params);
 
       setDiscounts(discountsResponse.data?.discounts || []);
-      setStats(statsResponse.data);
+
+      // Calculate stats from instructor's discounts
+      const instructorDiscounts = discountsResponse.data?.discounts || [];
+      const calculatedStats = {
+        overview: {
+          total: instructorDiscounts.length,
+          active: instructorDiscounts.filter(d => d.status === "active").length,
+          expired: instructorDiscounts.filter(d => d.status === "expired").length,
+          inactive: instructorDiscounts.filter(d => d.status === "inActive").length,
+        }
+      };
+      setStats(calculatedStats);
     } catch (error) {
       console.error("Failed to fetch data:", error);
       // Set empty data if API fails to show UI without breaking
@@ -54,6 +80,7 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
   };
 
   useEffect(() => {
+    fetchInstructorCourses();
     fetchData();
   }, [searchQuery, selectedStatus, selectedType, selectedCategory]);
 
@@ -169,18 +196,20 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
       startDate: formData.get("startDate") || null,
       endDate: formData.get("endDate") || null,
       status: formData.get("status") || "active",
+      applyCourses: selectedCourses, // Add selected courses
     };
 
     try {
       if (editingDiscount) {
-        await updateDiscount(editingDiscount._id, discountData);
+        await updateInstructorDiscount(editingDiscount._id, discountData);
         toast.success("Discount updated successfully!");
       } else {
-        await createDiscount(discountData);
+        await createInstructorDiscount(discountData);
         toast.success("Discount created successfully!");
       }
       setShowCreateModal(false);
       setEditingDiscount(null);
+      setSelectedCourses([]);
       fetchData();
     } catch (error) {
       console.error("Operation failed:", error);
@@ -190,21 +219,48 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
 
   const handleEdit = (discount) => {
     setEditingDiscount(discount);
+    // Extract course IDs from applyCourses (handle both object and string formats)
+    const courseIds = (discount.applyCourses || []).map(course =>
+      typeof course === 'string' ? course : course._id
+    );
+    setSelectedCourses(courseIds);
+    setCourseSearchQuery("");
+    setCurrentCoursePage(1);
     setShowCreateModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this discount?")) {
-      try {
-        await deleteDiscount(id);
-        toast.success("Discount deleted successfully!");
-        fetchData();
-      } catch (error) {
-        console.error("Delete failed:", error);
-        toast.error(error.message || "Failed to delete discount");
+  const handleCourseToggle = (courseId) => {
+    setSelectedCourses((prev) => {
+      if (prev.includes(courseId)) {
+        return prev.filter((id) => id !== courseId);
+      } else {
+        return [...prev, courseId];
       }
-    }
+    });
   };
+
+  // Filter and paginate courses
+  const getFilteredCourses = () => {
+    let filtered = instructorCourses;
+
+    // Filter by search query
+    if (courseSearchQuery.trim()) {
+      filtered = filtered.filter((course) =>
+        course.title?.toLowerCase().includes(courseSearchQuery.toLowerCase())
+      );
+    }
+
+    return filtered;
+  };
+
+  const getPaginatedCourses = () => {
+    const filtered = getFilteredCourses();
+    const startIndex = (currentCoursePage - 1) * COURSES_PER_PAGE;
+    const endIndex = startIndex + COURSES_PER_PAGE;
+    return filtered.slice(startIndex, endIndex);
+  };
+
+  const totalCoursePages = Math.ceil(getFilteredCourses().length / COURSES_PER_PAGE);
 
   const handleCopyCode = (code) => {
     navigator.clipboard.writeText(code);
@@ -260,6 +316,9 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
             color="primary"
             onClick={() => {
               setEditingDiscount(null);
+              setSelectedCourses([]);
+              setCourseSearchQuery("");
+              setCurrentCoursePage(1);
               setShowCreateModal(true);
             }}
           >
@@ -422,9 +481,9 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
                         {discount.description}
                       </span>
                       <div className="admin-discount-description-meta">
-                        Min order: ${discount.minimumOrder || 0}
+                        Min order: {(discount.minimumOrder || 0).toLocaleString('vi-VN')} VND
                         {discount.maximumDiscount > 0 &&
-                          ` • Max: $${discount.maximumDiscount}`}
+                          ` • Max: ${discount.maximumDiscount.toLocaleString('vi-VN')} VND`}
                       </div>
                     </div>
                   </td>
@@ -446,7 +505,7 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
                     <span className="admin-discount-value-text">
                       {discount.type === "percent"
                         ? `${discount.value}%`
-                        : `$${discount.value}`}
+                        : `${discount.value.toLocaleString('vi-VN')} VND`}
                     </span>
                   </td>
                   <td>
@@ -490,14 +549,6 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
                         <EditIcon />
                         <span className="admin-discount-fallback-text">✎</span>
                       </button>
-                      <button
-                        className="admin-discount-action-btn admin-discount-delete-btn"
-                        onClick={() => handleDelete(discount._id)}
-                        title="Delete discount"
-                      >
-                        <DeleteIcon />
-                        <span className="admin-discount-fallback-text">✕</span>
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -534,6 +585,9 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
                 onClick={() => {
                   setShowCreateModal(false);
                   setEditingDiscount(null);
+                  setSelectedCourses([]);
+                  setCourseSearchQuery("");
+                  setCurrentCoursePage(1);
                 }}
               >
                 ×
@@ -590,29 +644,29 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
 
                 <Input
                   variant="label"
-                  text="Value"
+                  text="Value (% or VND)"
                   name="value"
                   type="number"
-                  placeholder="Enter value"
+                  placeholder="Enter value (e.g., 10 for 10% or 50000 for 50,000 VND)"
                   defaultValue={editingDiscount?.value}
                   required
                 />
 
                 <Input
                   variant="label"
-                  text="Minimum Order ($)"
+                  text="Minimum Order (VND)"
                   name="minimumOrder"
                   type="number"
-                  placeholder="Enter minimum order amount"
+                  placeholder="Enter minimum order amount in VND"
                   defaultValue={editingDiscount?.minimumOrder}
                 />
 
                 <Input
                   variant="label"
-                  text="Maximum Discount ($)"
+                  text="Maximum Discount (VND)"
                   name="maximumDiscount"
                   type="number"
-                  placeholder="Enter maximum discount amount"
+                  placeholder="Enter maximum discount amount in VND"
                   defaultValue={editingDiscount?.maximumDiscount}
                 />
 
@@ -664,6 +718,208 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
                     <option value="inActive">Inactive</option>
                   </select>
                 </div>
+
+                {/* Course Selection Section */}
+                <div className="admin-discount-form-group" style={{ gridColumn: '1 / -1' }}>
+                  <label style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    marginBottom: '10px',
+                    display: 'block',
+                    color: '#1f2937'
+                  }}>
+                    Apply to Courses
+                    <span style={{
+                      fontSize: '12px',
+                      fontWeight: '400',
+                      color: '#6b7280',
+                      marginLeft: '8px'
+                    }}>
+                      ({selectedCourses.length === 0 ? 'No courses selected - discount will not be visible' : `${selectedCourses.length} selected`})
+                    </span>
+                  </label>
+
+                  {/* Warning message when no courses selected */}
+                  {selectedCourses.length === 0 && (
+                    <div style={{
+                      padding: '12px',
+                      backgroundColor: '#fef3c7',
+                      border: '1px solid #fbbf24',
+                      borderRadius: '6px',
+                      marginBottom: '12px',
+                      fontSize: '13px',
+                      color: '#92400e'
+                    }}>
+                      ⚠️ <strong>Important:</strong> You must select at least one course for this discount to be available to students. If no courses are selected, this discount will not appear at checkout.
+                    </div>
+                  )}
+
+                  {/* Search Box */}
+                  <div style={{ marginBottom: '12px' }}>
+                    <input
+                      type="text"
+                      placeholder="Search courses..."
+                      value={courseSearchQuery}
+                      onChange={(e) => {
+                        setCourseSearchQuery(e.target.value);
+                        setCurrentCoursePage(1);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                    />
+                  </div>
+
+                  {/* Course List - Max 5 courses visible */}
+                  <div style={{
+                    maxHeight: '240px',
+                    overflowY: 'auto',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    padding: '8px',
+                    backgroundColor: '#fafafa'
+                  }}>
+                    {getPaginatedCourses().length === 0 ? (
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '20px',
+                        color: '#6b7280',
+                        fontSize: '14px'
+                      }}>
+                        No courses found
+                      </div>
+                    ) : (
+                      getPaginatedCourses().map((course) => (
+                        <div
+                          key={course._id}
+                          onClick={() => handleCourseToggle(course._id)}
+                          style={{
+                            padding: '10px',
+                            marginBottom: '6px',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            backgroundColor: selectedCourses.includes(course._id) ? '#eff6ff' : '#fff',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!selectedCourses.includes(course._id)) {
+                              e.currentTarget.style.backgroundColor = '#f9fafb';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!selectedCourses.includes(course._id)) {
+                              e.currentTarget.style.backgroundColor = '#fff';
+                            }
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedCourses.includes(course._id)}
+                            onChange={() => handleCourseToggle(course._id)}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                              width: '16px',
+                              height: '16px',
+                              cursor: 'pointer'
+                            }}
+                          />
+                          <div style={{ flex: 1 }}>
+                            <div style={{
+                              fontWeight: '500',
+                              fontSize: '13px',
+                              color: '#1f2937',
+                              marginBottom: '2px'
+                            }}>
+                              {course.title}
+                            </div>
+                            {course.price && (
+                              <div style={{
+                                fontSize: '11px',
+                                color: '#6b7280'
+                              }}>
+                                Price: ${course.price}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Pagination */}
+                  {totalCoursePages > 1 && (
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginTop: '10px',
+                      fontSize: '13px'
+                    }}>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentCoursePage(prev => Math.max(1, prev - 1))}
+                        disabled={currentCoursePage === 1}
+                        style={{
+                          padding: '5px 12px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '4px',
+                          backgroundColor: currentCoursePage === 1 ? '#f3f4f6' : '#fff',
+                          cursor: currentCoursePage === 1 ? 'not-allowed' : 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        Previous
+                      </button>
+                      <span style={{ color: '#6b7280' }}>
+                        Page {currentCoursePage} of {totalCoursePages}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentCoursePage(prev => Math.min(totalCoursePages, prev + 1))}
+                        disabled={currentCoursePage === totalCoursePages}
+                        style={{
+                          padding: '5px 12px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '4px',
+                          backgroundColor: currentCoursePage === totalCoursePages ? '#f3f4f6' : '#fff',
+                          cursor: currentCoursePage === totalCoursePages ? 'not-allowed' : 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Clear All Button */}
+                  {selectedCourses.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCourses([])}
+                      style={{
+                        marginTop: '10px',
+                        padding: '8px 12px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        backgroundColor: '#fff',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        color: '#dc2626',
+                        width: '100%'
+                      }}
+                    >
+                      Clear All Selections
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="admin-discount-modal-footer">
@@ -673,6 +929,9 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
                   onClick={() => {
                     setShowCreateModal(false);
                     setEditingDiscount(null);
+                    setSelectedCourses([]);
+                    setCourseSearchQuery("");
+                    setCurrentCoursePage(1);
                   }}
                 >
                   Cancel
@@ -685,7 +944,6 @@ const InstructorDiscount = ({ title = "Discount Management" }) => {
           </div>
         </div>
       )}
-      <ToastContainer autoClose={3000} />
     </div>
   );
 };
