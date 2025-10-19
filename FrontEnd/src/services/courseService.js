@@ -121,7 +121,10 @@ export const createCourse = async (courseData) => {
 // Create a new section in a course
 export const createSection = async (courseId, sectionData) => {
   try {
-    const response = await apiClient.post(`/admin/courses/${courseId}/sections`, sectionData);
+    const response = await apiClient.post(
+      `/admin/courses/${courseId}/sections`,
+      sectionData
+    );
     return response.data;
   } catch (error) {
     console.error("Error creating section:", error);
@@ -165,6 +168,22 @@ export const moveLessonVideo = async (courseId, lessonId, videoUrl) => {
       error.response?.data?.message ||
       error.message ||
       "Failed to move lesson video";
+    throw new Error(message);
+  }
+};
+
+export const isUserEnrolled = async (userId, courseId) => {
+  try {
+    const response = await apiClient.get(
+      `/courses/is-enrolled?userId=${userId}&courseId=${courseId}`
+    );
+    return response.data.isEnrolled;
+  } catch (error) {
+    console.error("Error checking enrollment status:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to check enrollment status";
     throw new Error(message);
   }
 };

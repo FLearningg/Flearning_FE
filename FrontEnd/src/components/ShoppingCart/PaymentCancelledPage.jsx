@@ -69,7 +69,7 @@ const PaymentCancelledPage = () => {
             timer: 3000,
             timerProgressBar: true,
           }).then(() => {
-            navigate("/");
+            navigate("/profile/cart");
           });
         } catch (error) {
           console.error("Lỗi khi hủy đơn hàng:", error);
@@ -78,16 +78,16 @@ const PaymentCancelledPage = () => {
             title: "Có lỗi xảy ra",
             text: "Không thể gửi yêu cầu hủy đơn hàng. Vui lòng thử lại sau.",
             icon: "error",
-            confirmButtonText: "Về trang chủ",
+            confirmButtonText: "Về giỏ hàng",
           }).then(() => {
-            navigate("/");
+            navigate("/profile/cart");
           });
         }
       };
 
       cancelOrderAndShowAlert();
     } else {
-      navigate("/");
+      navigate("/profile/cart");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderCode, navigate]);

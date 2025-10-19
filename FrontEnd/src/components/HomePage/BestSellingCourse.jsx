@@ -6,10 +6,8 @@ import PopupCard from "../common/Card/PopupCard";
 import { useDispatch, useSelector } from "react-redux";
 import { getBestSellingCourses } from "../../services/courseService";
 import LoaddingComponent from "../common/Loadding/LoaddingComponent";
-import { useNavigate } from "react-router-dom";
 
 function BestSellingCourse() {
-  const navigate = useNavigate();
   const courseInfo1 = useSelector(
     (state) => state.courses.bestSelling.bestSellingCourses
   );
@@ -36,53 +34,60 @@ function BestSellingCourse() {
     }
     return true;
   };
-  const coursesInfo = courseInfo1?.map((course) => {
-    let finalPrice = course.price;
-    let discountText = "";
-    if (isDiscountValid(course.discountId)) {
-      if (course.discountId.type === "fixedAmount") {
-        finalPrice = Math.max(0, course.price - course.discountId.value);
-        discountText = `-${course.discountId.value}$`;
-      } else if (course.discountId.type === "percent") {
-        finalPrice = Math.max(
-          0,
-          course.price * (1 - course.discountId.value / 100)
-        );
-        discountText = `-${course.discountId.value}%`;
+
+  // Format price with dot separator (e.g., 250.000đ)
+  const formatPrice = (price) => {
+    return Math.round(price)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
+  const coursesInfo = courseInfo1
+    ?.filter((course) => course.status === "active")
+    .map((course) => {
+      let finalPrice = course.price;
+      let discountText = "";
+      if (isDiscountValid(course.discountId)) {
+        if (course.discountId.type === "fixedAmount") {
+          finalPrice = Math.max(0, course.price - course.discountId.value);
+          discountText = `-${formatPrice(course.discountId.value)} VND`;
+        } else if (course.discountId.type === "percent") {
+          finalPrice = Math.max(
+            0,
+            course.price * (1 - course.discountId.value / 100)
+          );
+          discountText = `-${course.discountId.value}%`;
+        }
       }
-    }
-    return {
-      cardProps: {
-        image: course.thumbnail,
-        category: course?.categoryIds?.[0]?.name || "Uncategorized",
-        // price: `${course.price}$`,
-        price: Number.isInteger(finalPrice)
-          ? `${finalPrice}$`
-          : `${parseFloat(finalPrice.toFixed(2))}$`,
-        title: course.title,
-        rating: course?.rating || 0, // If there is a rating field, take it, otherwise 0
-        students: course.studentsEnrolled?.length || 0,
-        linkToCourseDetail: `/course/${course._id}`,
-      },
-      detailedProps: {
-        courseId: course._id,
-        title: course.title,
-        author: "Admin", // If there is an author field, take it
-        authorAvatar: "/images/admin-image.png", // If there is one, take it
-        rating: course.rating || 0, // If there is one, take it
-        ratingCount: 0, // If there is one, take it
-        students: course.studentsEnrolled?.length || 0,
-        level: course.level,
-        duration: course.duration,
-        price: `${finalPrice.toFixed(2)}$`,
-        oldPrice: isDiscountValid(course.discountId)
-          ? `${course.price.toFixed(2)}$`
-          : "",
-        discount: discountText,
-        learnList: course.detail?.willLearn || [],
-      },
-    };
-  });
+      return {
+        cardProps: {
+          image: course.thumbnail,
+          category: course?.categoryIds?.[0]?.name || "Uncategorized",
+          price: `${formatPrice(finalPrice)} VND`,
+          title: course.title,
+          rating: course?.rating || 0, // If there is a rating field, take it, otherwise 0
+          students: course.studentsEnrolled?.length || 0,
+          linkToCourseDetail: `/course/${course._id}`,
+        },
+        detailedProps: {
+          courseId: course._id,
+          title: course.title,
+          author: "Admin", // If there is an author field, take it
+          authorAvatar: "/images/admin-image.png", // If there is one, take it
+          rating: course.rating || 0, // If there is one, take it
+          ratingCount: 0, // If there is one, take it
+          students: course.studentsEnrolled?.length || 0,
+          level: course.level,
+          duration: course.duration,
+          price: `${formatPrice(finalPrice)} VND`,
+          oldPrice: isDiscountValid(course.discountId)
+            ? `${formatPrice(course.price)} VND`
+            : "",
+          discount: discountText,
+          learnList: course.detail?.willLearn || [],
+        },
+      };
+    });
   return (
     <>
       <div style={{ backgroundColor: "#ecebeb7c" }}>

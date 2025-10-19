@@ -110,6 +110,13 @@ export function InstructorSidebar({ open, setOpen, isMobile }) {
               onClick={handleNavClick}
             />
             <NavItem
+              href="/instructor/profile/edit"
+              icon="user"
+              label="Profile"
+              active={location.pathname.startsWith("/instructor/profile")}
+              onClick={handleNavClick}
+            />
+            <NavItem
               href="/instructor/courses/new"
               icon="plus-circle"
               label="Create New Course"
@@ -228,6 +235,22 @@ function NavItem({ href, icon, label, active, badge, onClick }) {
             >
               <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
               <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+          )}
+          {icon === "user" && (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
             </svg>
           )}
         </span>

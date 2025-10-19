@@ -54,7 +54,7 @@ function WishList() {
       courseId: course._id,
       courseImage: course.thumbnail,
       courseName: course.title,
-      rating: course.rating || 0,
+      rating: course.rating,
       enrolledCount: course.studentsEnrolled?.length || 0,
       price: `${finalPrice.toFixed(2)}`,
       oldPrice: isDiscountValid(course.discountId)

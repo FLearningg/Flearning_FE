@@ -4,27 +4,43 @@ import Card from "../common/Card/Card";
 import SearchBox from "../common/search/SearchBox/SearchBox";
 import { IoClose, IoWarning } from "react-icons/io5";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
-import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
+import {
+  FaEye,
+  FaEdit,
+  FaTrash,
+  FaCheckCircle,
+  FaTimesCircle,
+} from "react-icons/fa";
 import {
   getAdminCourses,
   deleteCourse,
   getAllCategories,
   getAvailableDiscounts,
   assignDiscountToCourse,
+  getPendingCourses,
+  getCourseApprovalStats,
 } from "../../services/adminService";
 import { toast } from "react-toastify";
 import "../../assets/AdminMyCourse/AdminAllCourse.css";
 
 const AdminAllCourse = ({ title = "My Courses" }) => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("all"); // "all" or "pending"
   const [sortBy, setSortBy] = useState("latest");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [ratingFilter, setRatingFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all"); // NEW: status filter
   const [coursesData, setCoursesData] = useState([]);
+  const [pendingCourses, setPendingCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [approvalStats, setApprovalStats] = useState({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+  });
 
   // Delete modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -44,9 +60,14 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
 
   // Fetch courses and categories on component mount
   useEffect(() => {
-    fetchCourses();
+    if (activeTab === "all") {
+      fetchCourses();
+    } else {
+      fetchPendingCoursesData();
+      fetchApprovalStats();
+    }
     fetchCategories();
-  }, []);
+  }, [activeTab]);
 
   const fetchCourses = async () => {
     try {
@@ -74,8 +95,16 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
           course.category || course.categoryIds?.[0]?.name || "DEVELOPMENTS",
         categoryBgColor: "#e8f4fd",
         categoryTextColor: "#1e40af",
-        price: course.price ? `$${course.price}` : "$0.00",
-        originalPrice: course.originalPrice ? `$${course.originalPrice}` : null,
+        price: course.price
+          ? `${course.price
+              .toString()
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ".")} VND`
+          : "0 VND",
+        originalPrice: course.originalPrice
+          ? `${course.originalPrice
+              .toString()
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ".")} VND`
+          : null,
         title: course.title || "Untitled Course",
         rating: course.rating || 0,
         students:
@@ -83,6 +112,7 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
           course.enrolledStudents ||
           course.studentsEnrolled?.length ||
           "0",
+        status: course.status || "draft", // NEW: include status
         actions: ["View Details", "Edit Course", "Delete Course"],
         // Store original course data for editing
         originalData: course,
@@ -90,7 +120,11 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
 
       console.log("Transformed courses:", transformedCourses);
       setCoursesData(transformedCourses);
-      console.log('Tổng số course nhận được từ API:', transformedCourses.length, transformedCourses);
+      console.log(
+        "Tổng số course nhận được từ API:",
+        transformedCourses.length,
+        transformedCourses
+      );
     } catch (error) {
       console.error("Error fetching courses:", error);
       setError(error.response?.data?.message || "Failed to fetch courses");
@@ -144,8 +178,83 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
     }
   };
 
+  // Fetch pending courses
+  const fetchPendingCoursesData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await getPendingCourses({ limit: 10000 });
+      const courses = res.data.data || [];
+
+      // Transform to match card format
+      const transformedCourses = courses.map((course) => ({
+        id: course._id || course.id,
+        image:
+          course.thumbnail ||
+          "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=200&fit=crop",
+        category:
+          course.category || course.categoryIds?.[0]?.name || "DEVELOPMENTS",
+        categoryBgColor: "#e8f4fd",
+        categoryTextColor: "#1e40af",
+        price: course.price
+          ? `${course.price
+              .toString()
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ".")} VND`
+          : "0 VND",
+        originalPrice: course.originalPrice
+          ? `${course.originalPrice
+              .toString()
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ".")} VND`
+          : null,
+        title: course.title || "Untitled Course",
+        rating: course.rating || 0,
+        students: course.enrollmentCount || "0",
+        status: course.status || "pending", // NEW: include status
+        instructor: `${course.createdBy?.firstName || ""} ${
+          course.createdBy?.lastName || ""
+        }`.trim(),
+        submittedDate: course.createdAt,
+        actions: ["View Details"],
+        originalData: course,
+      }));
+
+      setPendingCourses(transformedCourses);
+    } catch (err) {
+      setError("Failed to fetch pending courses");
+      toast.error("Failed to load pending courses");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch approval statistics
+  const fetchApprovalStats = async () => {
+    try {
+      const res = await getCourseApprovalStats();
+      setApprovalStats(res.data.data || {});
+    } catch (err) {
+      console.error("Failed to fetch stats:", err);
+    }
+  };
+
+  // Handle view course details (for pending approval)
+  const handleViewPendingCourseDetails = async (courseId) => {
+    // Navigate to course detail page instead of opening modal
+    const course = pendingCourses.find((c) => c.id === courseId);
+    if (course) {
+      navigate(`/admin/courses/${courseId}`, {
+        state: {
+          courseData: course.originalData,
+          isPendingApproval: true, // Flag to show approve/reject buttons
+        },
+      });
+    }
+  };
+
   // Filter courses based on search and filters
-  const filteredCourses = coursesData.filter((course) => {
+  const filteredCourses = (
+    activeTab === "all" ? coursesData : pendingCourses
+  ).filter((course) => {
     const matchesCategory =
       categoryFilter === "all" ||
       course.category.toLowerCase() === categoryFilter.toLowerCase() ||
@@ -155,7 +264,13 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
       (ratingFilter === "4+" && course.rating >= 4) ||
       (ratingFilter === "3+" && course.rating >= 3);
 
-    return matchesCategory && matchesRating;
+    // NEW: Filter by status
+    const matchesStatus =
+      statusFilter === "all" ||
+      (course.status &&
+        course.status.toLowerCase() === statusFilter.toLowerCase());
+
+    return matchesCategory && matchesRating && matchesStatus;
   });
 
   // Sort courses based on selected criteria
@@ -203,7 +318,7 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [categoryFilter, ratingFilter, sortBy]);
+  }, [categoryFilter, ratingFilter, sortBy, statusFilter]);
 
   // Pagination handlers
   const goToPage = (pageNumber) => {
@@ -256,43 +371,45 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
   };
 
   // Menu actions for each course
-  const getMenuActions = (course) => [
-    {
-      label: "View Details",
-      type: "primary",
-      icon: <FaEye />,
-    },
-    {
-      label: "Edit Course",
-      type: "secondary",
-      icon: <FaEdit />,
-    },
-    {
-      label: "Apply Discount",
-      type: "info",
-      icon: <span style={{fontWeight:600}}>%</span>,
-    },
-    {
-      label: "Delete Course",
-      type: "danger",
-      icon: <FaTrash />,
-    },
-  ];
+  const getMenuActions = (course) => {
+    if (activeTab === "pending") {
+      return [
+        {
+          label: "View Details",
+          type: "primary",
+          icon: <FaEye />,
+        },
+      ];
+    }
+
+    return [
+      {
+        label: "View Details",
+        type: "primary",
+        icon: <FaEye />,
+      },
+      {
+        label: "Apply Discount",
+        type: "info",
+        icon: <span style={{ fontWeight: 600 }}>%</span>,
+      },
+      {
+        label: "Delete Course",
+        type: "danger",
+        icon: <FaTrash />,
+      },
+    ];
+  };
 
   // Handle menu action
   const handleMenuAction = (course, action) => {
     switch (action.label) {
       case "View Details":
-        handleCourseClick(course);
-        break;
-      case "Edit Course":
-        // Navigate to CourseWizard with course data for editing
-        navigate(`/admin/courses/edit/${course.id}`, {
-          state: {
-            courseData: course.originalData,
-            isEditMode: true,
-          },
-        });
+        if (activeTab === "pending") {
+          handleViewPendingCourseDetails(course.id);
+        } else {
+          handleCourseClick(course);
+        }
         break;
       case "Apply Discount":
         setCourseToDiscount(course);
@@ -390,11 +507,27 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
 
   // Enhanced Card component with admin actions
   const AdminCourseCard = ({ course }) => {
+    // Get status class for badge styling
+    const getStatusClass = (status) => {
+      const statusLower = status?.toLowerCase() || "draft";
+      return `status-${statusLower}`;
+    };
+
     return (
       <div
         className="admin-course-card-wrapper"
         onClick={() => handleCourseClick(course)}
       >
+        {/* Status Badge */}
+        {course.status && (
+          <div
+            className={`admin-course-status-badge ${getStatusClass(
+              course.status
+            )}`}
+          >
+            {course.status}
+          </div>
+        )}
         <Card
           image={course.image}
           category={course.category}
@@ -459,6 +592,60 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
 
   return (
     <div className="admin-all-courses">
+      {/* Tab Navigation */}
+      <div className="aac-tabs">
+        <button
+          className={`aac-tab ${activeTab === "all" ? "aac-tab-active" : ""}`}
+          onClick={() => setActiveTab("all")}
+        >
+          All Courses
+        </button>
+        <button
+          className={`aac-tab ${
+            activeTab === "pending" ? "aac-tab-active" : ""
+          }`}
+          onClick={() => setActiveTab("pending")}
+        >
+          Pending Approval
+          {approvalStats.pending > 0 && (
+            <span className="aac-tab-badge">{approvalStats.pending}</span>
+          )}
+        </button>
+      </div>
+
+      {/* Approval Stats (only show in pending tab) */}
+      {activeTab === "pending" && (
+        <div className="aac-stats-grid">
+          <div className="aac-stat-card aac-stat-orange">
+            <div className="aac-stat-icon">
+              <IoWarning size={24} />
+            </div>
+            <div className="aac-stat-content">
+              <div className="aac-stat-number">{approvalStats.pending}</div>
+              <div className="aac-stat-label">Pending Courses</div>
+            </div>
+          </div>
+          <div className="aac-stat-card aac-stat-green">
+            <div className="aac-stat-icon">
+              <FaCheckCircle size={24} />
+            </div>
+            <div className="aac-stat-content">
+              <div className="aac-stat-number">{approvalStats.approved}</div>
+              <div className="aac-stat-label">Approved</div>
+            </div>
+          </div>
+          <div className="aac-stat-card aac-stat-red">
+            <div className="aac-stat-icon">
+              <FaTimesCircle size={24} />
+            </div>
+            <div className="aac-stat-content">
+              <div className="aac-stat-number">{approvalStats.rejected}</div>
+              <div className="aac-stat-label">Rejected</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="aac-filters">
         <SearchBox
@@ -507,6 +694,22 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
           <option value="3+">3+ Stars</option>
         </select>
 
+        {/* NEW: Status Filter - only show in "All Courses" tab */}
+        {activeTab === "all" && (
+          <select
+            className="aac-filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="draft">Draft</option>
+            <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        )}
+
         {/* Show filter info */}
         <div className="aac-filter-info">
           <span className="aac-filter-count">
@@ -516,12 +719,15 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
             {totalCourses !== coursesData.length &&
               ` (filtered from ${coursesData.length})`}
           </span>
-          {(categoryFilter !== "all" || ratingFilter !== "all") && (
+          {(categoryFilter !== "all" ||
+            ratingFilter !== "all" ||
+            statusFilter !== "all") && (
             <button
               className="aac-clear-filters-btn"
               onClick={() => {
                 setCategoryFilter("all");
                 setRatingFilter("all");
+                setStatusFilter("all");
               }}
             >
               Clear Filters
@@ -677,7 +883,10 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
           <div className="amc-modal">
             <div className="amc-modal-header">
               <h3 className="amc-modal-title">Apply Discount</h3>
-              <button className="amc-modal-close" onClick={() => setShowDiscountModal(false)}>
+              <button
+                className="amc-modal-close"
+                onClick={() => setShowDiscountModal(false)}
+              >
                 <IoClose size={20} />
               </button>
             </div>
@@ -685,7 +894,7 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
               <p>
                 Apply discount for <strong>"{courseToDiscount.title}"</strong>
               </p>
-              <div style={{margin: '16px 0'}}>
+              <div style={{ margin: "16px 0" }}>
                 {loadingDiscounts ? (
                   <span>Loading discounts...</span>
                 ) : discounts.length === 0 ? (
@@ -693,18 +902,30 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
                 ) : (
                   <select
                     value={selectedDiscountId}
-                    onChange={e => setSelectedDiscountId(e.target.value)}
-                    style={{width: '100%', padding: 6, border: '2px solid #ff6636', borderRadius: 4, color: '#1e1e1e'}}
+                    onChange={(e) => setSelectedDiscountId(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: 6,
+                      border: "2px solid #ff6636",
+                      borderRadius: 4,
+                      color: "#1e1e1e",
+                    }}
                   >
                     <option value="">-- Select discount --</option>
-                    {discounts.map(discount => (
-                      <option key={discount._id || discount.id} value={discount._id || discount.id}>
-                        {discount.code ? `${discount.code} - ` : ''}
-                        {discount.type === 'fixedAmount'
+                    {discounts.map((discount) => (
+                      <option
+                        key={discount._id || discount.id}
+                        value={discount._id || discount.id}
+                      >
+                        {discount.code ? `${discount.code} - ` : ""}
+                        {discount.type === "fixedAmount"
                           ? `${discount.value}$`
-                          : `${discount.value}%`
-                        }
-                        (exp: {discount.endDate ? new Date(discount.endDate).toLocaleDateString() : 'No expiry'})
+                          : `${discount.value}%`}
+                        (exp:{" "}
+                        {discount.endDate
+                          ? new Date(discount.endDate).toLocaleDateString()
+                          : "No expiry"}
+                        )
                       </option>
                     ))}
                   </select>
@@ -722,7 +943,11 @@ const AdminAllCourse = ({ title = "My Courses" }) => {
                 className="amc-modal-button amc-modal-button-primary"
                 onClick={handleApplyDiscount}
                 disabled={!selectedDiscountId || loadingDiscounts}
-                style={{background: '#ff6636', borderColor: '#ff6636', color: 'white'}}
+                style={{
+                  background: "#ff6636",
+                  borderColor: "#ff6636",
+                  color: "white",
+                }}
               >
                 Apply
               </button>

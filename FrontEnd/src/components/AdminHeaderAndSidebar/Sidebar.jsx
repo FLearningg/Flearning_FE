@@ -111,7 +111,7 @@ export function Sidebar({ open, setOpen, isMobile }) {
             <NavItem
               href="/admin/courses/all"
               icon="book"
-              label="My Courses"
+              label="All Courses"
               active={location.pathname.endsWith("/admin/courses/all")}
               onClick={handleNavClick}
             />
@@ -307,6 +307,22 @@ function NavItem({ href, icon, label, active, badge, onClick }) {
               <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
               <polyline points="17 11 19 13 23 9"></polyline>
+            </svg>
+          )}
+          {icon === "check-circle" && (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
             </svg>
           )}
         </span>

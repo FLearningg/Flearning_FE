@@ -119,3 +119,58 @@ export const denyInstructor = async ({
     customReason,
   });
 };
+
+// ===== Course Approval API =====
+
+// Get all pending courses for review
+export const getPendingCourses = (params) =>
+  apiClient.get("/admin/courses/pending", { params });
+
+// Get course approval statistics
+export const getCourseApprovalStats = () =>
+  apiClient.get("/admin/courses/approval-stats");
+
+// Approve a pending course
+export const approveCourse = (courseId) =>
+  apiClient.post(`/admin/courses/${courseId}/approve`);
+
+// Reject a pending course with reason
+export const rejectCourse = (courseId, rejectionReason) =>
+  apiClient.post(`/admin/courses/${courseId}/reject`, { rejectionReason });
+
+// Deactivate an approved/active course
+export const deactivateCourse = async (courseId, reason) => {
+  try {
+    const response = await apiClient.post(
+      `/admin/courses/${courseId}/deactivate`,
+      {
+        reason,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error deactivating course:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to deactivate course";
+    throw new Error(message);
+  }
+};
+
+// Reactivate a course
+export const reactivateCourse = async (courseId) => {
+  try {
+    const response = await apiClient.post(
+      `/admin/courses/${courseId}/reactivate`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error reactivating course:", error);
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to reactivate course";
+    throw new Error(message);
+  }
+};

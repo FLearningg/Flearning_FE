@@ -10,15 +10,9 @@ const toNumber = (price) => {
   return parseFloat(numericString) || 0;
 };
 
-// Format number to Vietnamese Dong representation (no decimals)
-const formatVND = (value) => {
-  const n = toNumber(value);
-  try {
-    return new Intl.NumberFormat("vi-VN").format(Math.round(n));
-  } catch (e) {
-    // fallback simple formatter
-    return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  }
+const formatVND = (price) => {
+  const number = Number(price) || 0;
+  return number.toLocaleString("vi-VN");
 };
 
 // --- Component 1: Breadcrumb ---
@@ -176,10 +170,10 @@ function CourseItem({
         </small>
         <div className="course-item__title">{title}</div>
         <div className="course-item__price">
-          ${Number(currentPrice).toFixed(2)}
+          {formatVND(currentPrice)} VND
           {originalPrice && originalPrice > currentPrice && (
             <small className="course-item__original-price">
-              ${Number(originalPrice).toFixed(2)}
+              {formatVND(originalPrice)} VND
             </small>
           )}
         </div>
@@ -221,7 +215,7 @@ export function OrderSummary({
           <h4 className="order-summary__subtitle">Order Summary</h4>
           <div className="summary-row">
             <small>Subtotal</small>
-            <small>${subtotal.toFixed(2)} USD</small>
+            <small>{formatVND(subtotal)} VND</small>
           </div>
 
           {/* Display selected discount */}
@@ -247,7 +241,7 @@ export function OrderSummary({
         </div>
         <div className="order-summary__total">
           <span>Total:</span>
-          <span className="total-amount">${total.toFixed(2)} USD</span>
+          <span className="total-amount">{formatVND(total)} VND</span>
         </div>
         <button
           className="btn-complete-payment"
