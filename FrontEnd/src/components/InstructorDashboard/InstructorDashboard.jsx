@@ -265,7 +265,7 @@ const InstructorDashboard = () => {
                 </div>
                 <div>
                   <p className="stat-number">
-                    ${stats.totalRevenue.toLocaleString()}
+                    {stats.totalRevenue.toLocaleString('vi-VN')} VND
                   </p>
                   <p className="stat-label">Total Earning</p>
                 </div>
