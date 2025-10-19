@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { User, Award, BookOpen, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import "../../assets/CourseDetails/InstructorInfoCard.css";
 
 const InstructorInfoCard = ({ instructor }) => {
@@ -17,63 +17,62 @@ const InstructorInfoCard = ({ instructor }) => {
   } = instructor;
 
   const fullName = `${firstName || ""} ${lastName || ""}`.trim() || "Instructor";
-  const headline = instructorProfile?.headline || "Course Instructor";
-  const bio = instructorProfile?.bio || "No bio available";
-  const totalStudents = instructorProfile?.totalStudents || 0;
-  const totalCourses = instructorProfile?.totalCourses || 0;
-  const averageRating = instructorProfile?.averageRating || 0;
-  const totalReviews = instructorProfile?.totalReviews || 0;
+  
+  // Get instructor rating from instructor profile
+  const rating = instructorProfile?.averageRating || 0;
+  const totalRatings = instructorProfile?.totalReviews || 0;
+
+  // Render 5 stars based on rating
+  const renderStars = () => {
+    const stars = [];
+    const ratingValue = rating || 0;
+    
+    for (let i = 1; i <= 5; i++) {
+      const isFilled = i <= Math.floor(ratingValue);
+      
+      stars.push(
+        <Star
+          key={i}
+          size={20}
+          fill={isFilled ? "#FF8A00" : "none"}
+          color="#FF8A00"
+          strokeWidth={2}
+        />
+      );
+    }
+    return stars;
+  };
 
   return (
-    <div className="instructor-info-card">
-      <div className="instructor-info-header">
-        <User size={20} />
-        <h3>About the Instructor</h3>
-      </div>
-
-      <div className="instructor-info-content">
-        <div className="instructor-profile">
+    <div className="instructor-compact-info">
+      <div className="instructor-left">
+        <Link to={`/public/instructor/${_id}`} className="instructor-avatar-link">
           <img
             src={userImage || "/images/defaultImageUser.png"}
             alt={fullName}
-            className="instructor-avatar"
+            className="instructor-avatar-small"
             onError={(e) => {
               e.target.src = "/images/defaultImageUser.png";
             }}
           />
-          <div className="instructor-details">
-            <h4 className="instructor-name">{fullName}</h4>
-            <p className="instructor-headline">{headline}</p>
-          </div>
-        </div>
-
-        <div className="instructor-stats">
-          <div className="stat-item">
-            <BookOpen size={18} />
-            <span>{totalCourses} {totalCourses === 1 ? 'Course' : 'Courses'}</span>
-          </div>
-          <div className="stat-item">
-            <User size={18} />
-            <span>{totalStudents.toLocaleString()} Students</span>
-          </div>
-          <div className="stat-item">
-            <Star size={18} fill="#ffc107" color="#ffc107" />
-            <span>{averageRating.toFixed(1)} ({totalReviews} {totalReviews === 1 ? 'Review' : 'Reviews'})</span>
-          </div>
-        </div>
-
-        <p className="instructor-bio">
-          {bio.length > 150 ? `${bio.substring(0, 150)}...` : bio}
-        </p>
-
-        <Link 
-          to={`/public/instructor/${_id}`}
-          className="view-profile-btn"
-        >
-          <Award size={18} />
-          View Instructor Profile
         </Link>
+        <div className="instructor-info">
+          <span className="created-by-label">Created by:</span>
+          <Link to={`/public/instructor/${_id}`} className="instructor-name-link">
+            <span className="instructor-name-compact">{fullName}</span>
+          </Link>
+        </div>
       </div>
+      
+      {(rating !== undefined || totalRatings !== undefined) && (
+        <div className="instructor-rating">
+          <div className="stars-container">
+            {renderStars()}
+          </div>
+          <span className="rating-number1">{rating?.toFixed(1) || "0.0"}</span>
+          <span className="rating-count">({(totalRatings || 0).toLocaleString()} Rating)</span>
+        </div>
+      )}
     </div>
   );
 };
