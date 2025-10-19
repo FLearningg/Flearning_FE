@@ -72,8 +72,10 @@ function BestSellingCourse() {
         detailedProps: {
           courseId: course._id,
           title: course.title,
-          author: "Admin", // If there is an author field, take it
-          authorAvatar: "/images/admin-image.png", // If there is one, take it
+          author: course.createdBy 
+            ? `${course.createdBy.firstName || ''} ${course.createdBy.lastName || ''}`.trim() || "Instructor"
+            : "Instructor",
+          authorAvatar: course.createdBy?.userImage || "/images/defaultImageUser.png",
           rating: course.rating || 0, // If there is one, take it
           ratingCount: 0, // If there is one, take it
           students: course.studentsEnrolled?.length || 0,
