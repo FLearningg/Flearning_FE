@@ -5,7 +5,8 @@ import ProgressTabs from "./ProgressTabs";
 import Input from "../common/Input";
 import CustomButton from "../common/CustomButton/CustomButton";
 import apiClient from "../../services/authService";
-import { uploadFile, moveFileToCourse } from "../../services/uploadService";
+import { uploadFile, moveFileToCourse, getUserRole } from "../../services/uploadService";
+import { updateCourse as updateInstructorCourse } from "../../services/instructorService";
 import { toast } from "react-toastify";
 
 export default function CourseForm({
@@ -147,8 +148,15 @@ export default function CourseForm({
         ...(initialData.duration && { duration: initialData.duration }),
       };
 
-      // Save to database
-      await apiClient.put(`/admin/courses/${courseId}`, mediaData);
+      // Save to database using role-aware endpoint
+      const role = getUserRole();
+      if (role === "instructor") {
+        // Use instructor service to update course
+        await updateInstructorCourse(courseId, mediaData);
+      } else {
+        // Default to admin endpoint
+        await apiClient.put(`/admin/courses/${courseId}`, mediaData);
+      }
 
       // Only trigger reload of course data to ensure UI consistency
       onMediaSaved();
