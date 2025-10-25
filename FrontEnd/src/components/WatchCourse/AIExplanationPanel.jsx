@@ -18,7 +18,8 @@ const AIExplanationPanel = ({
     setExpanded((prev) => ({ ...prev, [idx]: !prev[idx] }));
   };
 
-  if (loading) {
+  // Only show early return for loading/error if NOT in modal mode
+  if (loading && !showModal) {
     return (
       <div className="ai-panel-loading">
         <div className="ai-loading-spinner"></div>
@@ -27,7 +28,7 @@ const AIExplanationPanel = ({
     );
   }
 
-  if (error) {
+  if (error && !showModal) {
     return (
       <div className="ai-panel-error">
         <div>{error}</div>
@@ -61,7 +62,10 @@ const AIExplanationPanel = ({
               {quizResult && quizResult.passed && (
                 <button
                   className="ai-refresh-btn"
-                  onClick={onRetry}
+                  onClick={() => {
+                    console.log("Refreshing AI explanations from modal...");
+                    onRetry(true); // Pass skipCache = true
+                  }}
                   title="Refresh AI explanations"
                 >
                   🔄

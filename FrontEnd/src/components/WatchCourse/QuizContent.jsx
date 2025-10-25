@@ -57,6 +57,12 @@ const QuizContent = ({
     setHasStarted(false);
     setShowExplanation(false);
 
+    // Clear AI data when switching to different quiz
+    setAiExplanations(null);
+    setAiLoading(false);
+    setAiError(null);
+    setShowDetailModal(false);
+
     const fetchQuizData = async () => {
       try {
         let quiz = null;
@@ -403,10 +409,18 @@ const QuizContent = ({
     window.scrollTo(0, 0);
   }, [currentQuestionIndex]);
 
+  // Clear AI data when quizId changes
+  useEffect(() => {
+    setAiExplanations(null);
+    setAiLoading(false);
+    setAiError(null);
+    setShowDetailModal(false);
+  }, [quizId]);
+
   // Load cached AI explanations when quiz result is available
   useEffect(() => {
     if (quizResult && quizId && !aiExplanations) {
-      const cacheKey = `ai_explanations_${quizId}_${quizResult.score}_${quizResult.correctAnswers}`;
+      const cacheKey = `ai_explanations_${quizId}`;
       try {
         const cachedData = sessionStorage.getItem(cacheKey);
         if (cachedData) {
@@ -544,15 +558,25 @@ const QuizContent = ({
         // Priority order to get userAnswer:
         // 1. From selectedAnswers (during quiz, before submission)
         // 2. From questionResults (after submission - most accurate)
-        
+
         let userAnswerIndex = selectedAnswers[question.id];
 
         // If not in selectedAnswers, try to get from questionResults
-        if (userAnswerIndex === undefined && questionResults && questionResults.length > 0) {
+        if (
+          userAnswerIndex === undefined &&
+          questionResults &&
+          questionResults.length > 0
+        ) {
           // Find the result by questionIndex (most reliable)
-          const qResult = questionResults.find((qr) => qr.questionIndex === index);
+          const qResult = questionResults.find(
+            (qr) => qr.questionIndex === index
+          );
 
-          if (qResult && qResult.userAnswers && qResult.userAnswers.length > 0) {
+          if (
+            qResult &&
+            qResult.userAnswers &&
+            qResult.userAnswers.length > 0
+          ) {
             // userAnswers is an array, get the first answer index
             userAnswerIndex = qResult.userAnswers[0].index;
             console.log(
@@ -603,13 +627,16 @@ const QuizContent = ({
       });
 
       // Log the actual answers being sent
-      console.log("Questions with userAnswers:", questionsForAI.map(q => ({
-        index: q.questionIndex,
-        question: q.questionText.substring(0, 50),
-        correctAnswer: q.correctAnswer,
-        userAnswer: q.userAnswer,
-        isMatch: q.correctAnswer === q.userAnswer
-      })));
+      console.log(
+        "Questions with userAnswers:",
+        questionsForAI.map((q) => ({
+          index: q.questionIndex,
+          question: q.questionText.substring(0, 50),
+          correctAnswer: q.correctAnswer,
+          userAnswer: q.userAnswer,
+          isMatch: q.correctAnswer === q.userAnswer,
+        }))
+      );
 
       const response = await apiClient.post("/ai/explain-quiz", {
         quizId,
@@ -661,7 +688,7 @@ const QuizContent = ({
               timestamp: Date.now(),
             })
           );
-          console.log("Explanations cached successfully");
+          console.log("Explanations cached successfully for quizId:", quizId);
         } catch (error) {
           console.error("Error saving to sessionStorage:", error);
           if (error.name === "QuotaExceededError") {
@@ -861,37 +888,21 @@ const QuizContent = ({
               </button>
               {/* Only show AI explanation button if passed */}
               {quizResult.passed && (
-                <div style={{ display: "flex", gap: "10px" }}>
-                  <button
-                    className="view-detail-btn"
-                    onClick={() => {
-                      setShowDetailModal(true);
-                      if (!aiExplanations) fetchAIExplanations();
-                    }}
-                    title={
-                      aiExplanations
-                        ? "View cached AI explanations"
-                        : "Fetch AI explanations"
-                    }
-                  >
-                    AI Explanations
-                    {aiExplanations && <span className="cached-badge">📦</span>}
-                  </button>
-                  {aiExplanations && (
-                    <button
-                      className="view-detail-btn"
-                      onClick={() => {
-                        console.log("Refreshing AI explanations...");
-                        fetchAIExplanations(true); // skipCache = true
-                        setShowDetailModal(true);
-                      }}
-                      title="Refresh AI explanations from API"
-                      style={{ fontSize: "16px" }}
-                    >
-                      🔄
-                    </button>
-                  )}
-                </div>
+                <button
+                  className="view-detail-btn"
+                  onClick={() => {
+                    setShowDetailModal(true);
+                    if (!aiExplanations) fetchAIExplanations();
+                  }}
+                  title={
+                    aiExplanations
+                      ? "View cached AI explanations"
+                      : "Fetch AI explanations"
+                  }
+                >
+                  AI Explanations
+                  {aiExplanations && <span className="cached-badge">📦</span>}
+                </button>
               )}
               {/* Show answers only button if failed */}
               {!quizResult.passed && (
@@ -1141,7 +1152,7 @@ const QuizContent = ({
           items={aiExplanations}
           loading={aiLoading}
           error={aiError}
-          onRetry={fetchAIExplanations}
+          onRetry={(skipCache = false) => fetchAIExplanations(skipCache)}
           quizResult={quizResult}
           showModal={true}
           onClose={() => {
