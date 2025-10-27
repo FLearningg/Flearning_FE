@@ -100,14 +100,6 @@ const WatchCourse = ({ courseId: propCourseId }) => {
           );
         setAllLessonsCompleted(allCompleted);
 
-        // Debug logging
-        console.log("Course completion status:", {
-          totalLessons,
-          completedLessons: completedLessonsArr.length,
-          allLessonIds: allLessonIds.length,
-          allCompleted,
-        });
-
         // Set progress percentage
         const progressPercent = progressRes.data?.data?.progressPercentage || 0;
         setProgress(progressPercent);
@@ -136,7 +128,9 @@ const WatchCourse = ({ courseId: propCourseId }) => {
             ...firstUncompleted,
             id: firstUncompleted._id,
             videoUrl: null,
-            description: firstUncompleted.description || "Complete this quiz to proceed to the next lesson.",
+            description:
+              firstUncompleted.description ||
+              "Complete this quiz to proceed to the next lesson.",
             title: firstUncompleted.title,
             quizId:
               firstUncompleted?.quizId?._id ||
@@ -281,7 +275,10 @@ const WatchCourse = ({ courseId: propCourseId }) => {
         description: "Complete this quiz to proceed to the next lesson.",
         title: lesson.title,
         // ensure quizId is available for QuizContent
-        quizId: lesson.quizId?._id || lesson.quizId || (Array.isArray(lesson.quizIds) ? lesson.quizIds[0] : undefined),
+        quizId:
+          lesson.quizId?._id ||
+          lesson.quizId ||
+          (Array.isArray(lesson.quizIds) ? lesson.quizIds[0] : undefined),
       });
     } else {
       setCurrentLesson(lesson);
@@ -366,7 +363,7 @@ const WatchCourse = ({ courseId: propCourseId }) => {
           allLessonsCompleted={allLessonsCompleted}
           isLastLesson={(() => {
             if (!sections?.length || !currentLesson?._id) return false;
-            const flat = sections.flatMap(s => s.lessons || []);
+            const flat = sections.flatMap((s) => s.lessons || []);
             if (!flat.length) return false;
             const last = flat[flat.length - 1];
             return last?._id === currentLesson._id;
@@ -375,11 +372,18 @@ const WatchCourse = ({ courseId: propCourseId }) => {
       </div>
       <div className="f-watch-course-main">
         <div className="f-watch-course-left">
-          {(currentLesson?.type === "quiz" || Boolean(currentLesson?.quizData?.questions?.length)) ? (
+          {currentLesson?.type === "quiz" ||
+          Boolean(currentLesson?.quizData?.questions?.length) ? (
             <div className="f-quiz-section">
               <QuizContent
                 lessonId={currentLesson?._id || currentLesson?.id}
-                quizId={currentLesson?.quizId?._id || currentLesson?.quizId || (Array.isArray(currentLesson?.quizIds) ? currentLesson.quizIds[0] : undefined)}
+                quizId={
+                  currentLesson?.quizId?._id ||
+                  currentLesson?.quizId ||
+                  (Array.isArray(currentLesson?.quizIds)
+                    ? currentLesson.quizIds[0]
+                    : undefined)
+                }
                 quizData={currentLesson?.quizData}
                 duration={currentLesson?.duration}
                 onQuizComplete={async (quizResult) => {
@@ -388,12 +392,15 @@ const WatchCourse = ({ courseId: propCourseId }) => {
                       // Mark quiz lesson as completed like video lessons
                       await markLessonCompleted(courseId, currentLesson._id);
                       setCompletedLessons((prev) =>
-                        prev.includes(currentLesson._id) ? prev : [...prev, currentLesson._id]
+                        prev.includes(currentLesson._id)
+                          ? prev
+                          : [...prev, currentLesson._id]
                       );
 
                       // Update progress
                       const progressRes = await getCourseProgress(courseId);
-                      const progressPercent = progressRes.data?.data?.progressPercentage || 0;
+                      const progressPercent =
+                        progressRes.data?.data?.progressPercentage || 0;
                       setProgress(progressPercent);
 
                       // Auto move to next lesson
@@ -419,21 +426,27 @@ const WatchCourse = ({ courseId: propCourseId }) => {
                       await markLessonCompleted(courseId, currentLesson._id);
                       // refresh completed lessons from server to ensure persistence across reloads
                       try {
-                        const completedLessonsRes = await getCompletedLessonsDetails(courseId);
+                        const completedLessonsRes =
+                          await getCompletedLessonsDetails(courseId);
                         const completedLessonsArr = Array.isArray(
                           completedLessonsRes.data?.data
                         )
-                          ? completedLessonsRes.data.data.map((lesson) => lesson._id)
+                          ? completedLessonsRes.data.data.map(
+                              (lesson) => lesson._id
+                            )
                           : [];
                         setCompletedLessons(completedLessonsArr);
                       } catch (e) {
                         // fallback to optimistic update
                         setCompletedLessons((prev) =>
-                          prev.includes(currentLesson._id) ? prev : [...prev, currentLesson._id]
+                          prev.includes(currentLesson._id)
+                            ? prev
+                            : [...prev, currentLesson._id]
                         );
                       }
                       const progressRes = await getCourseProgress(courseId);
-                      const progressPercent = progressRes.data?.data?.progressPercentage || 0;
+                      const progressPercent =
+                        progressRes.data?.data?.progressPercentage || 0;
                       setProgress(progressPercent);
                     } catch (e) {
                       console.error("Error auto-completing article:", e);

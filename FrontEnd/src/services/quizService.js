@@ -1,34 +1,46 @@
 import apiClient from "./authService";
 
 // Upload Word document to create quiz or save quiz data
-export const uploadWordQuiz = async (file, courseId, title, description, options = {}) => {
+export const uploadWordQuiz = async (
+  file,
+  courseId,
+  title,
+  description,
+  options = {}
+) => {
   try {
     // Validate courseId - allow null for temporary quizzes
-    const validCourseId = (courseId && courseId !== "undefined" && courseId !== "null" && courseId.toString().trim() !== "") 
-      ? courseId.toString().trim() 
-      : null;
+    const validCourseId =
+      courseId &&
+      courseId !== "undefined" &&
+      courseId !== "null" &&
+      courseId.toString().trim() !== ""
+        ? courseId.toString().trim()
+        : null;
 
     // If options contains quiz data, save directly to database
     if (options.questions && options.fileUrl) {
       // Get current user for userId
-      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      const currentUser = JSON.parse(
+        localStorage.getItem("currentUser") || "{}"
+      );
       const userId = currentUser._id || currentUser.id;
 
       const requestData = {
         title,
         description,
         courseId: validCourseId,
-        questions: options.questions.map(q => ({
+        questions: options.questions.map((q) => ({
           content: q.question,
           type: "multiple-choice",
           score: q.score || 1,
           answers: q.options.map((option, idx) => ({
             content: option,
-            isCorrect: idx === q.correctAnswer
-          }))
+            isCorrect: idx === q.correctAnswer,
+          })),
         })),
         firebaseUrl: options.fileUrl,
-        userId: userId
+        userId: userId,
       };
 
       // Add section and lesson creation parameters if provided
@@ -39,9 +51,11 @@ export const uploadWordQuiz = async (file, courseId, title, description, options
         requestData.autoCreateLesson = options.autoCreateLesson;
       }
 
-      const response = await apiClient.post("quiz/create-from-data", requestData);
-      
-      
+      const response = await apiClient.post(
+        "quiz/create-from-data",
+        requestData
+      );
+
       return response.data;
     }
 
@@ -49,7 +63,6 @@ export const uploadWordQuiz = async (file, courseId, title, description, options
     if (!file) {
       throw new Error("No file provided for quiz upload");
     }
-
 
     const formData = new FormData();
     formData.append("wordFile", file);
@@ -67,8 +80,6 @@ export const uploadWordQuiz = async (file, courseId, title, description, options
       formData.append("autoCreateLesson", options.autoCreateLesson);
     }
 
-
-
     const response = await apiClient.post("quiz/upload-word", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -78,7 +89,7 @@ export const uploadWordQuiz = async (file, courseId, title, description, options
     return response.data;
   } catch (error) {
     console.error("Error uploading Word quiz:", error);
-    
+
     const message =
       error.response?.data?.message ||
       error.message ||
@@ -94,9 +105,7 @@ export const getQuizById = async (quizId) => {
     return response.data;
   } catch (error) {
     const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Failed to fetch quiz";
+      error.response?.data?.message || error.message || "Failed to fetch quiz";
     const richError = new Error(message);
     richError.status = error.response?.status;
     richError.data = error.response?.data;
@@ -122,28 +131,24 @@ export const getQuizzesByCourse = async (courseId) => {
 export const updateQuiz = async (quizId, quizData) => {
   try {
     // Extract ID if object is passed instead of ID string
-    const actualQuizId = typeof quizId === 'object' ? quizId._id : quizId;
-    
-    
+    const actualQuizId = typeof quizId === "object" ? quizId._id : quizId;
+
     // Validate quiz ID
-    if (!actualQuizId || typeof actualQuizId !== 'string') {
+    if (!actualQuizId || typeof actualQuizId !== "string") {
       throw new Error("Invalid Quiz ID format");
     }
 
     // Clean quiz ID - remove any prefixes or invalid characters
     const cleanQuizId = actualQuizId.toString().trim();
-    
 
     const response = await apiClient.put(`quiz/${cleanQuizId}`, quizData);
-    
+
     return response.data;
   } catch (error) {
     console.error("Error updating quiz:", error);
-    
+
     const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Failed to update quiz";
+      error.response?.data?.message || error.message || "Failed to update quiz";
     throw new Error(message);
   }
 };
@@ -155,9 +160,7 @@ export const deleteQuiz = async (quizId) => {
     return response.data;
   } catch (error) {
     const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Failed to delete quiz";
+      error.response?.data?.message || error.message || "Failed to delete quiz";
     throw new Error(message);
   }
 };
@@ -166,7 +169,7 @@ export const deleteQuiz = async (quizId) => {
 export const linkQuizToCourse = async (quizId, courseId, userId = null) => {
   try {
     const requestData = {
-      courseId: courseId
+      courseId: courseId,
     };
 
     // Add userId if provided or get from localStorage
@@ -174,13 +177,18 @@ export const linkQuizToCourse = async (quizId, courseId, userId = null) => {
       requestData.userId = userId;
     } else {
       // Try to get current user from localStorage
-      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      const currentUser = JSON.parse(
+        localStorage.getItem("currentUser") || "{}"
+      );
       if (currentUser._id || currentUser.id) {
         requestData.userId = currentUser._id || currentUser.id;
       }
     }
 
-    const response = await apiClient.put(`quiz/${quizId}/link-course`, requestData);
+    const response = await apiClient.put(
+      `quiz/${quizId}/link-course`,
+      requestData
+    );
     return response.data;
   } catch (error) {
     const message =
@@ -200,9 +208,7 @@ export const submitQuiz = async (quizId, answers, options = {}) => {
     return response.data;
   } catch (error) {
     const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Failed to submit quiz";
+      error.response?.data?.message || error.message || "Failed to submit quiz";
     const richError = new Error(message);
     richError.status = error.response?.status;
     richError.data = error.response?.data;
@@ -231,13 +237,13 @@ export const getQuizResult = async (quizId) => {
 export const getQuizHistory = async (params = {}) => {
   try {
     const queryParams = new URLSearchParams();
-    if (params.courseId) queryParams.append('courseId', params.courseId);
-    if (params.page) queryParams.append('page', params.page);
-    if (params.limit) queryParams.append('limit', params.limit);
-    
+    if (params.courseId) queryParams.append("courseId", params.courseId);
+    if (params.page) queryParams.append("page", params.page);
+    if (params.limit) queryParams.append("limit", params.limit);
+
     const queryString = queryParams.toString();
-    const url = `quiz/my-results${queryString ? `?${queryString}` : ''}`;
-    
+    const url = `quiz/my-results${queryString ? `?${queryString}` : ""}`;
+
     const response = await apiClient.get(url);
     return response.data;
   } catch (error) {
