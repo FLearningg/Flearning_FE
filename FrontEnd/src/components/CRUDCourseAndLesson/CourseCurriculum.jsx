@@ -443,6 +443,7 @@ export default function CourseCurriculum({
             title: quizInfo.quizData.title,
             description: quizInfo.quizData.description,
             courseId: actualCourseId,
+            questionPoolSize: quizInfo.quizData.questionPoolSize || null, // Add questionPoolSize support
             questions: quizInfo.quizData.questions.map(q => ({
               content: q.question,
               type: "multiple-choice",
@@ -992,6 +993,7 @@ export default function CourseCurriculum({
                                                         firebaseUrl: uploadResponse.url, // ✅ Fixed: uploadService already returns response.data
                                                         isTemporary: !hasRealQuizId, // Not temporary if has real ID
                                                         questions: transformedQuestions,
+                                                        questionPoolSize: null, // Default null for Word upload
                                                         estimatedDuration: transformedQuestions.length * 60,
                                                         // Store backend quiz info
                                                         backendQuizId: parsedQuiz.tempQuizId, // Store backend quiz ID
@@ -1037,6 +1039,7 @@ export default function CourseCurriculum({
                                                     firebaseUrl: uploadResponse.url, // ✅ Fixed: uploadService already returns response.data
                                                     isTemporary: true, // Mark as temporary (not saved to DB)
                                                     questions: [], // Empty questions for manual editing
+                                                    questionPoolSize: null, // Default null for Word upload
                                                     estimatedDuration: 0,
                                                     // Store original file data for later processing
                                                     originalFile: {

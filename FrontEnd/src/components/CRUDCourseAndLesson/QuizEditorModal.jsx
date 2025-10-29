@@ -58,6 +58,7 @@ export default function QuizEditorModal({
       const backendQuizData = {
         title: localQuizData.title,
         description: localQuizData.description,
+        questionPoolSize: localQuizData.questionPoolSize || null, // Add questionPoolSize
         questions: localQuizData.questions.map(q => ({
           content: q.question,
           type: "multiple-choice",
@@ -207,6 +208,39 @@ export default function QuizEditorModal({
                 placeholder="Enter quiz description..."
                 rows={2}
               />
+            </div>
+            <div className="form-group">
+              <label>Number of Questions for Students</label>
+              <input
+                type="number"
+                min="1"
+                max={localQuizData.questions?.length || 1}
+                value={localQuizData.questionPoolSize || localQuizData.questions?.length || ""}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  const maxQuestions = localQuizData.questions?.length || 1;
+                  
+                  // Validate input
+                  if (value > maxQuestions) {
+                    toast.error(`Cannot exceed total questions (${maxQuestions})`);
+                    return;
+                  }
+                  
+                  const updatedQuizData = {
+                    ...localQuizData,
+                    questionPoolSize: value > 0 ? value : null
+                  };
+                  handleQuizDataChange(updatedQuizData);
+                }}
+                className="quiz-pool-size-input"
+                placeholder={`Max: ${localQuizData.questions?.length || 0}`}
+              />
+              <small className="form-help-text">
+                {localQuizData.questionPoolSize && localQuizData.questionPoolSize < (localQuizData.questions?.length || 0)
+                  ? `Students will get ${localQuizData.questionPoolSize} random questions from ${localQuizData.questions?.length || 0} total questions`
+                  : `Students will get all ${localQuizData.questions?.length || 0} questions`
+                }
+              </small>
             </div>
           </div>
         </div>

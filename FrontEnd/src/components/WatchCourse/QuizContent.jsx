@@ -208,13 +208,11 @@ const QuizContent = ({
               setHasStarted(true);
             }
           } catch (resultError) {
-            console.log("No previous quiz result found");
           }
         }
 
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching quiz data:", error);
         setError(error.message || "Failed to load quiz data");
         setLoading(false);
       }
@@ -256,7 +254,6 @@ const QuizContent = ({
           );
         }
       } catch (e) {
-        console.log("No previous quiz result found");
       }
     };
     refetchResultIfNeeded();
@@ -305,7 +302,8 @@ const QuizContent = ({
         const answerIndex = selectedAnswers[question.id];
         if (answerIndex !== undefined) {
           return {
-            questionIndex: index, // Use 0-based index directly
+            questionIndex: index, // Index in randomized array (0-19)
+            originalIndex: question.originalIndex, // Index in original pool (0-59)
             selectedAnswers: [answerIndex],
           };
         }
@@ -313,9 +311,6 @@ const QuizContent = ({
       })
       .filter((item) => item !== null);
 
-    console.log("Submitting quiz with answers:", answersArray);
-    console.log("Quiz questions:", quizData.questions);
-    console.log("selectedAnswers state:", selectedAnswers);
 
     if (answersArray.length === 0) {
       toast.error("Please answer at least one question before submitting.");
@@ -324,7 +319,6 @@ const QuizContent = ({
 
     setIsSubmitting(true);
     try {
-      console.log("Calling submitQuiz with:", { quizId, answersArray });
       const response = await submitQuiz(quizId, answersArray);
 
       if (response.success && response.data) {
@@ -336,7 +330,14 @@ const QuizContent = ({
           totalQuestions: result.totalQuestions,
           passed: result.passed,
           questionResults: result.questionResults || [],
+          selectedAnswers: selectedAnswers, // Lưu selectedAnswers để dùng cho AI
         });
+
+        // Store selectedAnswers in sessionStorage for AI explanations
+        sessionStorage.setItem(
+          `quiz_selected_answers_${quizId}`,
+          JSON.stringify(selectedAnswers)
+        );
 
         if (result.passed) {
           toast.success(
@@ -363,7 +364,6 @@ const QuizContent = ({
         throw new Error(response.message || "Failed to submit quiz");
       }
     } catch (err) {
-      console.error("Error submitting quiz:", err);
       const errorMessage =
         err.message || "Failed to submit quiz. Please try again.";
       toast.error(errorMessage);
@@ -429,7 +429,6 @@ const QuizContent = ({
           const now = Date.now();
           // Cache valid for 30 minutes
           if (now - cacheTime < 30 * 60 * 1000) {
-            console.log("Loading cached AI explanations on mount");
             setAiExplanations(parsed.data);
           } else {
             // Cache expired, remove it
@@ -437,7 +436,6 @@ const QuizContent = ({
           }
         }
       } catch (error) {
-        console.error("Error loading cached AI explanations:", error);
       }
     }
   }, [quizResult, quizId, aiExplanations]);
@@ -462,7 +460,6 @@ const QuizContent = ({
           const cacheTime = parsed.timestamp;
           const now = Date.now();
           if (now - cacheTime < 30 * 60 * 1000) {
-            console.log("Loading cached AI explanations from sessionStorage");
             setAiExplanations(parsed.data);
             return;
           } else {
@@ -470,31 +467,23 @@ const QuizContent = ({
           }
         }
       } catch (error) {
-        console.error("Error reading from sessionStorage:", error);
       }
     } else {
-      console.log("Skipping cache, fetching fresh data from API");
       sessionStorage.removeItem(cacheKey);
     }
 
     let userId = null;
     try {
       const userProfile = await getUserProfile();
-      console.log("User profile fetched:", userProfile);
-      console.log("User profile data:", userProfile.data);
-
       if (userProfile && userProfile.data) {
-        console.log("Checking possible userId fields:", userProfile.data);
         userId = userProfile.data._id || userProfile.data.userId || null;
       }
     } catch (error) {
-      console.error("Error fetching user profile:", error);
       toast.error("Failed to fetch user profile. Cannot fetch explanations.");
       return;
     }
 
     if (!userId) {
-      console.error("User ID is null or undefined.");
       toast.error("User ID is missing. Cannot fetch explanations.");
       return;
     }
@@ -503,11 +492,7 @@ const QuizContent = ({
     setAiError(null);
     try {
       // Step 1: Get quiz result from sessionStorage (already fetched when entering quiz)
-      console.log("Retrieving quiz result from sessionStorage...");
-      console.log("All sessionStorage keys:", Object.keys(sessionStorage));
       const storedResult = sessionStorage.getItem(`quiz_result_${quizId}`);
-      console.log(`Looking for key: quiz_result_${quizId}`);
-      console.log("Stored result:", storedResult);
 
       if (!storedResult) {
         throw new Error(
@@ -519,10 +504,8 @@ const QuizContent = ({
       try {
         apiResponse = JSON.parse(storedResult);
       } catch (parseError) {
-        console.error("Error parsing stored result:", parseError);
         throw new Error("Invalid quiz result data");
       }
-      console.log("Raw API response:", apiResponse);
 
       // Extract details from nested structure
       const details = apiResponse.details || {};
@@ -532,69 +515,35 @@ const QuizContent = ({
       const scorePercentage = details.scorePercentage || apiResponse.score || 0;
       const passed =
         details.passed !== undefined ? details.passed : apiResponse.passed;
-      const questionResults = details.questionResults || [];
 
-      console.log("Extracted result data:", {
-        totalQuestions,
-        correctAnswers,
-        scorePercentage,
-        passed,
-      });
 
-      // Debug: Log selectedAnswers and question ids
-      console.log("selectedAnswers state:", selectedAnswers);
-      console.log(
-        "Quiz questions:",
-        quizData.questions.map((q) => ({
-          id: q.id,
-          _id: q._id,
-          question: q.question,
-        }))
-      );
-      console.log("questionResults:", questionResults);
-
-      // Step 2: Build complete questions array with all details from quizData
-      const questionsForAI = quizData.questions.map((question, index) => {
-        // Priority order to get userAnswer:
-        // 1. From selectedAnswers (during quiz, before submission)
-        // 2. From questionResults (after submission - most accurate)
-
-        let userAnswerIndex = selectedAnswers[question.id];
-
-        // If not in selectedAnswers, try to get from questionResults
-        if (
-          userAnswerIndex === undefined &&
-          questionResults &&
-          questionResults.length > 0
-        ) {
-          // Find the result by questionIndex (most reliable)
-          const qResult = questionResults.find(
-            (qr) => qr.questionIndex === index
-          );
-
-          if (
-            qResult &&
-            qResult.userAnswers &&
-            qResult.userAnswers.length > 0
-          ) {
-            // userAnswers is an array, get the first answer index
-            userAnswerIndex = qResult.userAnswers[0].index;
-            console.log(
-              `✅ Found userAnswer from questionResults[${index}]: ${userAnswerIndex} (isCorrect: ${qResult.isCorrect})`
-            );
+      // Build complete questionsForAI from quizData and selectedAnswers (no database needed)
+      
+      // Get selectedAnswers from multiple sources (priority order)
+      let answersToUse = quizResult?.selectedAnswers || selectedAnswers;
+      
+      // If still empty, try to load from sessionStorage
+      if (!answersToUse || Object.keys(answersToUse).length === 0) {
+        try {
+          const storedAnswers = sessionStorage.getItem(`quiz_selected_answers_${quizId}`);
+          if (storedAnswers) {
+            answersToUse = JSON.parse(storedAnswers);
           }
-        } else if (userAnswerIndex !== undefined) {
-          console.log(
-            `Found userAnswer from selectedAnswers[${index}]: ${userAnswerIndex}`
-          );
+        } catch (error) {
         }
+      }
+      
+      const questionsForAI = quizData.questions.map((question, index) => {
+        // Get user answer from selectedAnswers (what student actually selected)
+        const userAnswerIndex = answersToUse[question.id];
+        
+        // Determine if answer is correct
+        const isCorrect = userAnswerIndex !== undefined && userAnswerIndex === question.correctAnswer;
 
-        console.log(
-          `Question ${index} (id: ${question.id}): userAnswer = ${userAnswerIndex}`
-        );
 
         return {
           questionIndex: index,
+          originalIndex: question.originalIndex, // Include originalIndex for reference
           questionId: question._id || question.id,
           questionText: question.question,
           options: question.options.map((opt, optIndex) => ({
@@ -603,40 +552,21 @@ const QuizContent = ({
           })),
           correctAnswer: question.correctAnswer,
           userAnswer: userAnswerIndex !== undefined ? userAnswerIndex : null,
+          isCorrect: isCorrect,
+          // Add user answer text and correct answer text for AI
+          userAnswerText: userAnswerIndex !== undefined ? 
+            (typeof question.options[userAnswerIndex] === "string" ? 
+             question.options[userAnswerIndex] : 
+             question.options[userAnswerIndex]?.content || "Invalid answer") : "Not answered",
+          correctAnswerText: typeof question.options[question.correctAnswer] === "string" ? 
+            question.options[question.correctAnswer] : 
+            question.options[question.correctAnswer]?.content || "Invalid answer"
         };
       });
 
-      // Step 3: Send complete quiz data + result to AI API
-      console.log("Sending to AI API...");
-      console.log("Request payload:", {
-        quizId,
-        userId,
-        quizData: {
-          title: quizData.title,
-          description: quizData.description,
-          questions: questionsForAI,
-        },
-        quizResult: {
-          score: scorePercentage,
-          correctAnswers,
-          totalQuestions,
-          passed,
-          questionResults,
-          details: details,
-        },
-      });
 
-      // Log the actual answers being sent
-      console.log(
-        "Questions with userAnswers:",
-        questionsForAI.map((q) => ({
-          index: q.questionIndex,
-          question: q.questionText.substring(0, 50),
-          correctAnswer: q.correctAnswer,
-          userAnswer: q.userAnswer,
-          isMatch: q.correctAnswer === q.userAnswer,
-        }))
-      );
+      // Step 3: Send complete quiz data to AI API (no database questionResults needed)
+
 
       const response = await apiClient.post("/ai/explain-quiz", {
         quizId,
@@ -644,20 +574,16 @@ const QuizContent = ({
         quizData: {
           title: quizData.title,
           description: quizData.description,
-          questions: questionsForAI,
+          questions: questionsForAI, // Send complete questions with user answers
         },
         quizResult: {
           score: scorePercentage,
           correctAnswers,
           totalQuestions,
           passed,
-          questionResults,
-          details: details,
         },
       });
 
-      console.log("API Response received:", response);
-      console.log("Response data:", response.data);
 
       // Handle different response formats
       if (!response.data) {
@@ -676,7 +602,6 @@ const QuizContent = ({
           response.data ||
           [];
 
-        console.log("Extracted explanations:", explanations);
         setAiExplanations(explanations);
 
         // Save to sessionStorage
@@ -688,9 +613,7 @@ const QuizContent = ({
               timestamp: Date.now(),
             })
           );
-          console.log("Explanations cached successfully for quizId:", quizId);
         } catch (error) {
-          console.error("Error saving to sessionStorage:", error);
           if (error.name === "QuotaExceededError") {
             try {
               Object.keys(sessionStorage).forEach((key) => {
@@ -706,7 +629,6 @@ const QuizContent = ({
                 })
               );
             } catch (retryError) {
-              console.error("Failed to cache after clearing:", retryError);
             }
           }
         }
@@ -715,17 +637,9 @@ const QuizContent = ({
           response.data.message ||
           response.data.error ||
           "Failed to fetch explanations";
-        console.error("API returned failure:", errorMsg);
         setAiError(errorMsg);
       }
     } catch (error) {
-      console.error("Error fetching AI explanations:", error);
-      console.error("Error details:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        stack: error.stack,
-      });
 
       const errorMsg =
         error.response?.data?.message ||
@@ -874,13 +788,60 @@ const QuizContent = ({
             <div className="result-actions">
               <button
                 className="try-again-btn"
-                onClick={() => {
+                onClick={async () => {
+                  // Reset quiz state
                   setQuizResult(null);
                   setSelectedAnswers({});
                   setCurrentQuestionIndex(0);
                   setShowExplanation(false);
                   setRemainingSeconds(effectiveTimeLimitSeconds);
-                  setHasStarted(true);
+                  setLoading(true);
+
+                  // Clear old selectedAnswers from sessionStorage
+                  sessionStorage.removeItem(`quiz_selected_answers_${quizId}`);
+                  
+                  try {
+                    // Fetch fresh quiz data with cache busting
+                    let freshQuiz = null;
+                    
+                    if (propQuizId) {
+                      const response = await apiClient.get(`quiz/${propQuizId}?t=${Date.now()}`);
+                      freshQuiz = response.data.data;
+                    } else if (lessonId) {
+                      const response = await apiClient.get(`quiz/by-lesson/${lessonId}?t=${Date.now()}`);
+                      freshQuiz = response.data.data;
+                    }
+                    
+                    if (freshQuiz) {
+                      // Process questions to ensure they have proper IDs
+                      const processedQuestions = freshQuiz.questions.map((q, index) => ({
+                        ...q,
+                        id: q.id || `question_${index}`,
+                        question: q.content || q.question,
+                        options: q.answers
+                          ? q.answers.map((a) => a.content)
+                          : q.options || [],
+                        correctAnswer: q.answers
+                          ? q.answers.findIndex((a) => a.isCorrect)
+                          : q.correctAnswer || 0,
+                      }));
+
+                      const processedQuiz = {
+                        ...freshQuiz,
+                        questions: processedQuestions,
+                      };
+
+                      setQuizData(processedQuiz);
+                      setLoading(false);
+                      setHasStarted(true);
+                    } else {
+                      setError("Failed to load fresh quiz questions");
+                      setLoading(false);
+                    }
+                  } catch (error) {
+                    setError("Failed to load fresh quiz questions");
+                    setLoading(false);
+                  }
                 }}
               >
                 <span className="btn-icon">🔄</span>

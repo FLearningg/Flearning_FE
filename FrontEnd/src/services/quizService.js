@@ -30,6 +30,7 @@ export const uploadWordQuiz = async (
         title,
         description,
         courseId: validCourseId,
+        questionPoolSize: options.questionPoolSize || null, // Add questionPoolSize support
         questions: options.questions.map((q) => ({
           content: q.question,
           type: "multiple-choice",
