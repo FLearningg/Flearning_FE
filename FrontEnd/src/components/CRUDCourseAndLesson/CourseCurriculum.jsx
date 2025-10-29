@@ -10,6 +10,7 @@ import {
   GripVertical,
   ChevronRight,
   FileText,
+  Sparkles,
 } from "lucide-react";
 import "../../assets/CRUDCourseAndLesson/CourseCurriculum.css";
 import ProgressTabs from "./ProgressTabs";
@@ -20,6 +21,7 @@ import { uploadFile } from "../../services/uploadService";
 import { uploadWordQuiz, updateQuiz, linkQuizToCourse } from "../../services/quizService";
 import { deleteLessonFile, updateLessonFile } from "../../services/lessonService";
 import QuizEditorModal from "./QuizEditorModal";
+import AIQuizGeneratorModal from "./AIQuizGeneratorModal";
 
 
 function Modal({ open, onClose, title, children }) {
@@ -178,7 +180,7 @@ export default function CourseCurriculum({
     }));
   };
 
-  const [sections, setSections] = useState(() => 
+  const [sections, setSections] = useState(() =>
     transformSectionsData(initialData?.sections)
   );
   const [expandedSections, setExpandedSections] = useState(new Set([0]));
@@ -189,6 +191,11 @@ export default function CourseCurriculum({
     sectionIdx: null,
     lessonIdx: null,
     quizData: null,
+  });
+  const [showAIQuizGenerator, setShowAIQuizGenerator] = useState({
+    open: false,
+    sectionIdx: null,
+    lessonIdx: null,
   });
   const [isSavingCourse, setIsSavingCourse] = useState(false);
 
@@ -336,6 +343,25 @@ export default function CourseCurriculum({
           : s
       )
     );
+  };
+
+  // Handle AI quiz generation
+  const handleAIQuizGenerated = (quizData, sectionIdx, lessonIdx) => {
+    // Update lesson with AI-generated quiz data
+    handleLessonFieldChange(sectionIdx, lessonIdx, "quizData", quizData);
+    handleLessonFieldChange(sectionIdx, lessonIdx, "duration", quizData.estimatedDuration);
+
+    // Auto-expand the lesson to show the Edit button
+    const lessonKey = `${sectionIdx}-${lessonIdx}`;
+    setExpandedLessons(prev => new Set([...prev, lessonKey]));
+
+    // Mark as newly created for animation
+    handleLessonFieldChange(sectionIdx, lessonIdx, "newlyCreatedQuiz", true);
+
+    // Remove the newly created flag after animation
+    setTimeout(() => {
+      handleLessonFieldChange(sectionIdx, lessonIdx, "newlyCreatedQuiz", false);
+    }, 2000);
   };
 
   // Handle deleting lesson file
@@ -898,9 +924,9 @@ export default function CourseCurriculum({
                                           
                                           {lesson.type === "quiz" && (
                                             <div className="upload-instructions">
-                                              <p>Upload a Word document (.docx) containing your quiz questions</p>
+                                              <p>Upload a Word document (.docx) containing your quiz questions or generate with AI</p>
                                               <small>The system will automatically process and extract questions from your document</small>
-                                              <div style={{ marginTop: "10px" }}>
+                                              <div style={{ marginTop: "10px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
                                                 <a
                                                   href="https://firebasestorage.googleapis.com/v0/b/flearning-7f88f.firebasestorage.app/o/TempleteQuiz.docx?alt=media&token=ee0e4ca8-9e17-4981-a684-6854086eccfe"
                                                   target="_blank"
@@ -909,6 +935,42 @@ export default function CourseCurriculum({
                                                 >
                                                   Download Template
                                                 </a>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    setShowAIQuizGenerator({
+                                                      open: true,
+                                                      sectionIdx: sIdx,
+                                                      lessonIdx: lIdx,
+                                                    });
+                                                  }}
+                                                  className="ai-generate-btn"
+                                                  style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: "6px",
+                                                    padding: "8px 16px",
+                                                    background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+                                                    color: "white",
+                                                    border: "none",
+                                                    borderRadius: "6px",
+                                                    cursor: "pointer",
+                                                    fontSize: "14px",
+                                                    fontWeight: "500",
+                                                    transition: "all 0.2s"
+                                                  }}
+                                                  onMouseEnter={(e) => {
+                                                    e.currentTarget.style.transform = "translateY(-1px)";
+                                                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(139, 92, 246, 0.4)";
+                                                  }}
+                                                  onMouseLeave={(e) => {
+                                                    e.currentTarget.style.transform = "translateY(0)";
+                                                    e.currentTarget.style.boxShadow = "none";
+                                                  }}
+                                                >
+                                                  <Sparkles size={16} />
+                                                  Generate with AI
+                                                </button>
                                               </div>
                                             </div>
                                           )}
@@ -1288,6 +1350,23 @@ export default function CourseCurriculum({
                 onQuizUpdate={(sectionIdx, lessonIdx, updatedQuizData) => {
                   handleLessonFieldChange(sectionIdx, lessonIdx, "quizData", updatedQuizData);
                 }}
+              />
+
+              {/* AI Quiz Generator Modal */}
+              <AIQuizGeneratorModal
+                open={showAIQuizGenerator.open}
+                onClose={() =>
+                  setShowAIQuizGenerator({
+                    open: false,
+                    sectionIdx: null,
+                    lessonIdx: null,
+                  })
+                }
+                onQuizGenerated={handleAIQuizGenerated}
+                courseId={courseId}
+                sectionIndex={showAIQuizGenerator.sectionIdx}
+                lessonIndex={showAIQuizGenerator.lessonIdx}
+                currentSection={showAIQuizGenerator.sectionIdx !== null ? sections[showAIQuizGenerator.sectionIdx] : null}
               />
                             </div>
                             </div>

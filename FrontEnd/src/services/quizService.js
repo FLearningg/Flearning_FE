@@ -258,3 +258,55 @@ export const getQuizHistory = async (params = {}) => {
     throw richError;
   }
 };
+
+// Generate quiz using AI
+export const generateQuizWithAI = async (params) => {
+  try {
+    const {
+      topic,
+      lessonContent = '',
+      numberOfQuestions = 5,
+      difficulty = 'medium',
+      questionType = 'multiple-choice',
+      courseId,
+      lessonId = null,
+      title = '',
+      description = ''
+    } = params;
+
+    // Validate required fields
+    if (!topic || topic.trim().length === 0) {
+      throw new Error("Topic is required for AI quiz generation");
+    }
+
+    if (!courseId) {
+      throw new Error("Course ID is required for AI quiz generation");
+    }
+
+    const response = await apiClient.post('ai/generate-quiz', {
+      topic: topic.trim(),
+      lessonContent,
+      numberOfQuestions: parseInt(numberOfQuestions, 10),
+      difficulty,
+      questionType,
+      courseId,
+      lessonId,
+      title: title || `Quiz: ${topic}`,
+      description: description || `AI-generated quiz about ${topic}`
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error generating quiz with AI:", error);
+
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to generate quiz with AI";
+
+    const richError = new Error(message);
+    richError.status = error.response?.status;
+    richError.data = error.response?.data;
+    throw richError;
+  }
+};
