@@ -610,7 +610,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 2020;
 }
 .qc-modal {
   width: min(900px, 96%);

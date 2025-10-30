@@ -63,7 +63,6 @@ const AIExplanationPanel = ({
                 <button
                   className="ai-refresh-btn"
                   onClick={() => {
-                    console.log("Refreshing AI explanations from modal...");
                     onRetry(true); // Pass skipCache = true
                   }}
                   title="Refresh AI explanations"
