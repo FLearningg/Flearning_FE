@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import { toast } from "react-toastify";
 import { updateQuiz } from "../../services/quizService";
 import apiClient from "../../services/authService";
@@ -171,6 +171,28 @@ export default function QuizEditorModal({
     }
   };
 
+  const handleAddQuestion = () => {
+    const newQuestion = {
+      question: "",
+      options: ["", "", "", ""],
+      correctAnswer: 0,
+      score: 1
+    };
+    
+    const updatedQuestions = [...(localQuizData.questions || []), newQuestion];
+    const updatedQuizData = {
+      ...localQuizData,
+      questions: updatedQuestions
+    };
+    
+    handleQuizDataChange(updatedQuizData);
+    
+    // Select the newly added question
+    setSelectedQuestionIdx(updatedQuestions.length - 1);
+    
+    toast.success("New question added!");
+  };
+
   return (
     <Modal open={isOpen} onClose={onClose} title="Edit Quiz">
       <div className="quiz-editor-modal">
@@ -248,7 +270,17 @@ export default function QuizEditorModal({
         <div className="quiz-questions-section">
           {/* Questions Sidebar */}
           <div className="questions-sidebar">
-            <h3>Questions ({localQuizData.questions?.length || 0})</h3>
+            <div className="questions-sidebar-header">
+              <h3>Questions ({localQuizData.questions?.length || 0})</h3>
+              <button
+                onClick={handleAddQuestion}
+                className="add-question-btn"
+                title="Add New Question"
+              >
+                <Plus size={16} />
+                Add Question
+              </button>
+            </div>
             <div className="questions-list">
               {localQuizData.questions?.map((question, qIdx) => (
                 <div
@@ -264,7 +296,13 @@ export default function QuizEditorModal({
 
           {/* Question Detail */}
           <div className="question-detail">
-            {localQuizData.questions?.[selectedQuestionIdx] && (
+            {!localQuizData.questions || localQuizData.questions.length === 0 ? (
+              <div className="empty-questions-state">
+                <div className="empty-icon">📝</div>
+                <h3>No Questions Yet</h3>
+                <p>Click "Add Question" to start creating your quiz questions.</p>
+              </div>
+            ) : localQuizData.questions?.[selectedQuestionIdx] && (
               <>
                 {/* Question Header & Text Section */}
                 <div className="qe-question-section">

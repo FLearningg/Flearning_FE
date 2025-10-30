@@ -94,7 +94,6 @@ const CourseInfo = ({
 
   const handleQuizComplete = async (quizResult) => {
     // TODO: Implement quiz completion handling
-    console.log("Quiz completed:", quizResult);
   };
 
   const renderContent = () => {

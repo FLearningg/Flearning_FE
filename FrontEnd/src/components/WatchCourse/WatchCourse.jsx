@@ -419,6 +419,7 @@ const WatchCourse = ({ courseId: propCourseId }) => {
                 description={currentLesson?.description}
                 lessonNotes={currentLesson?.lessonNotes}
                 materialUrl={currentLesson?.materialUrl}
+                lessonId={currentLesson?._id}
                 onNext={handleNextLecture}
                 onAutoComplete={async () => {
                   if (currentLesson?._id && courseId) {
@@ -459,7 +460,9 @@ const WatchCourse = ({ courseId: propCourseId }) => {
             <>
               <div className="f-video-section">
                 <VideoPlayer
-                  videoUrl={currentLesson?.videoUrl}
+                  videoUrl={currentLesson?.materialUrl || currentLesson?.videoUrl}
+                  lessonTitle={currentLesson?.title}
+                  lessonId={currentLesson?._id}
                   onProgress={(progress) => {
                     // Handle video progress
                   }}

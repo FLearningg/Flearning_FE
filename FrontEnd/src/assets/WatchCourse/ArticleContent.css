@@ -1,5 +1,64 @@
 .article-container { background:#fff; border-radius: 16px; margin: 2rem; padding: 2.5rem; box-shadow: 0 8px 20px rgba(0,0,0,.06);} 
-.article-hero-title { font-size: 2.25rem; color:#1a202c; margin: 0 0 1rem; }
+
+/* Article Header with Summary Button */
+.article-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.article-hero-title { 
+  font-size: 2.25rem; 
+  color:#1a202c; 
+  margin: 0;
+  flex: 1;
+}
+
+/* Article Summary Button */
+.article-summary-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.article-summary-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.article-summary-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.summary-spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 .article-subtext { color:#4a5568; margin: 0 0 1.25rem; line-height: 1.7; }
 
 .article-file-card { display:flex; align-items:center; gap:12px; background:#f7fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px 16px; text-decoration:none; color:inherit; }
@@ -12,5 +71,46 @@
 .article-notes-block { margin-top: 1.25rem; background:#f7fafc; padding: 1rem; border-radius:10px; border-left:4px solid #3182ce; color:#4a5568; }
 
 /* Footer removed */
+
+/* Responsive Design for Article Summary */
+@media (max-width: 768px) {
+  .article-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .article-hero-title {
+    font-size: 1.875rem;
+  }
+  
+  .article-summary-button {
+    align-self: flex-start;
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .article-container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .article-hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .article-summary-button {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    gap: 6px;
+  }
+  
+  .summary-spinner-small {
+    width: 14px;
+    height: 14px;
+  }
+}
 
 

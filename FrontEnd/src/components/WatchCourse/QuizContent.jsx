@@ -75,14 +75,24 @@ const QuizContent = ({
           }
           setAllowRetake(true);
         } else if (propQuizId) {
-          const response = await getQuizById(propQuizId);
+          // Ensure propQuizId is a string, not an object
+          const actualQuizId = typeof propQuizId === 'object' ? propQuizId._id || propQuizId.id : propQuizId;
+          if (!actualQuizId) {
+            throw new Error('Invalid quiz ID provided');
+          }
+          const response = await getQuizById(actualQuizId);
           quiz = response.data;
           setAllowRetake(true);
-          fetchedQuizId = propQuizId;
+          fetchedQuizId = actualQuizId;
         } else if (lessonId) {
+          // Ensure lessonId is a string, not an object
+          const actualLessonId = typeof lessonId === 'object' ? lessonId._id || lessonId.id : lessonId;
+          if (!actualLessonId) {
+            throw new Error('Invalid lesson ID provided');
+          }
           try {
             const quizResponse = await apiClient.get(
-              `quiz/by-lesson/${lessonId}`
+              `quiz/by-lesson/${actualLessonId}`
             );
             if (quizResponse.data?.success && quizResponse.data?.data) {
               quiz = quizResponse.data.data;
@@ -112,7 +122,7 @@ const QuizContent = ({
           if (!quiz) {
             try {
               const lessonResponse = await apiClient.get(
-                `watch-course/lesson/${lessonId}`
+                `watch-course/lesson/${actualLessonId}`
               );
               if (lessonResponse.data && lessonResponse.data.quizData) {
                 quiz = lessonResponse.data.quizData;
@@ -805,10 +815,12 @@ const QuizContent = ({
                     let freshQuiz = null;
                     
                     if (propQuizId) {
-                      const response = await apiClient.get(`quiz/${propQuizId}?t=${Date.now()}`);
+                      const actualQuizId = typeof propQuizId === 'object' ? propQuizId._id || propQuizId.id : propQuizId;
+                      const response = await apiClient.get(`quiz/${actualQuizId}?t=${Date.now()}`);
                       freshQuiz = response.data.data;
                     } else if (lessonId) {
-                      const response = await apiClient.get(`quiz/by-lesson/${lessonId}?t=${Date.now()}`);
+                      const actualLessonId = typeof lessonId === 'object' ? lessonId._id || lessonId.id : lessonId;
+                      const response = await apiClient.get(`quiz/by-lesson/${actualLessonId}?t=${Date.now()}`);
                       freshQuiz = response.data.data;
                     }
                     
