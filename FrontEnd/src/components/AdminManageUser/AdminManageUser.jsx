@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Search, Users, UserPlus } from "lucide-react";
-import { DatePicker, ConfigProvider, message } from "antd";
+import { DatePicker, ConfigProvider, message, Modal } from "antd";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import CustomButton from "../common/CustomButton/CustomButton";
 import { getAllUsers, updateUserStatus } from "../../services/adminService";
+import { useSelector } from "react-redux";
 import "../../assets/AdminManageUser/AdminManageUser.css";
 
 dayjs.extend(isBetween);
 
 export default function AdminManageUser() {
+  const { currentUser } = useSelector((state) => state.auth);
   const [allUsers, setAllUsers] = useState([]); // Store all users
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -21,6 +23,8 @@ export default function AdminManageUser() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [userActionLoading, setUserActionLoading] = useState({}); // Loading state for individual users
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [userToToggle, setUserToToggle] = useState(null);
 
   // Client-side filtering and pagination
   const filteredUsers = useMemo(() => {
@@ -132,7 +136,7 @@ export default function AdminManageUser() {
         )
       );
 
-      message.error("Failed to update user status");
+      message.error("Action failed. No changes were made to the database.");
     } finally {
       // Remove loading state for this specific user
       setUserActionLoading((prev) => {
@@ -141,6 +145,37 @@ export default function AdminManageUser() {
         return newState;
       });
     }
+  };
+
+  const handleToggleStatusClick = (userId, currentStatus, userName) => {
+    // Check if this is a ban action (not unban)
+    if (currentStatus !== "banned" && currentStatus !== "Banned") {
+      // Check if admin is trying to ban their own account
+      if (currentUser && userId === currentUser._id) {
+        message.error("You cannot perform this action on your own account.");
+        return;
+      }
+      
+      // Show confirmation modal for ban action
+      setUserToToggle({ userId, currentStatus, userName });
+      setConfirmModalVisible(true);
+    } else {
+      // Directly execute unban action
+      handleToggleStatus(userId, currentStatus);
+    }
+  };
+
+  const confirmToggleStatus = () => {
+    if (userToToggle) {
+      handleToggleStatus(userToToggle.userId, userToToggle.currentStatus);
+      setConfirmModalVisible(false);
+      setUserToToggle(null);
+    }
+  };
+
+  const cancelToggleStatus = () => {
+    setConfirmModalVisible(false);
+    setUserToToggle(null);
   };
 
   // Instructor approval moved to Censor Instructor page
@@ -399,9 +434,16 @@ export default function AdminManageUser() {
                               size="small"
                               color={isBanned ? "success" : "error"}
                               type="underline"
-                              disabled={userActionLoading[user._id]}
+                              disabled={
+                                userActionLoading[user._id] ||
+                                (currentUser && user._id === currentUser._id && !isBanned)
+                              }
                               onClick={() =>
-                                handleToggleStatus(user._id, user.status)
+                                handleToggleStatusClick(
+                                  user._id,
+                                  user.status,
+                                  `${user.firstName} ${user.lastName}`
+                                )
                               }
                             >
                               {userActionLoading[user._id]
@@ -462,6 +504,23 @@ export default function AdminManageUser() {
             )}
           </>
         )}
+        
+        {/* Confirmation Modal */}
+        <Modal
+          title="Confirm Ban User"
+          open={confirmModalVisible}
+          onOk={confirmToggleStatus}
+          onCancel={cancelToggleStatus}
+          okText="Ban"
+          cancelText="Cancel"
+          okButtonProps={{ danger: true }}
+        >
+          <p>
+            Are you sure you want to ban user{" "}
+            <strong>{userToToggle?.userName}</strong>?
+          </p>
+          <p>This action will prevent the user from accessing the system and send them a notification email.</p>
+        </Modal>
       </div>
     </ConfigProvider>
   );
