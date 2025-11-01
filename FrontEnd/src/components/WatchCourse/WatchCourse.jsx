@@ -25,6 +25,8 @@ import {
   updateCourseFeedback,
   getCourseAverageRating,
 } from "../../services/feedbackService";
+import certificateService from "../../services/certificateService";
+import CourseCompletedModal from "./CourseCompletedModal";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
@@ -56,6 +58,12 @@ const WatchCourse = ({ courseId: propCourseId }) => {
   const [completedLessons, setCompletedLessons] = useState([]);
   const [courseFeedback, setCourseFeedback] = useState(null);
   const [allLessonsCompleted, setAllLessonsCompleted] = useState(false);
+
+  // Certificate state
+  const [isGeneratingCertificate, setIsGeneratingCertificate] = useState(false);
+  const [certificate, setCertificate] = useState(null);
+
+  const [isCompletedModalOpen, setIsCompletedModalOpen] = useState(false);
 
   // Fetch course info and sections/lessons
   useEffect(() => {
@@ -190,6 +198,47 @@ const WatchCourse = ({ courseId: propCourseId }) => {
         setLoadingLesson(false);
       });
   }, [currentLesson]);
+
+  // Certificate handlers
+  useEffect(() => {
+    // Chỉ chạy khi:
+    // 1. Khoá học đã hoàn thành
+    // 2. CHƯA có dữ liệu chứng chỉ
+    // 3. KHÔNG đang trong quá trình tạo
+    if (
+      allLessonsCompleted &&
+      !certificate &&
+      !isGeneratingCertificate &&
+      courseId
+    ) {
+      const createCertificateForUser = async () => {
+        // Mở popup và bắt đầu loading
+        setIsCompletedModalOpen(true);
+        setIsGeneratingCertificate(true);
+
+        try {
+          // Gọi API service thật
+          const res = await certificateService.generateCertificate(courseId);
+
+          // Lưu lại dữ liệu chứng chỉ
+          setCertificate(res.data.certificate);
+          // Ẩn spinner (popup vẫn mở)
+          setIsGeneratingCertificate(false);
+
+          // (Không cần toast nữa vì modal đã thông báo rồi)
+        } catch (err) {
+          console.error("Lỗi khi tạo chứng chỉ:", err);
+          toast.error(
+            err.response?.data?.message || "Có lỗi xảy ra khi tạo chứng chỉ."
+          );
+          // Ẩn spinner, popup sẽ hiển thị lỗi
+          setIsGeneratingCertificate(false);
+        }
+      };
+
+      createCertificateForUser();
+    }
+  }, [allLessonsCompleted, courseId, certificate, isGeneratingCertificate]);
 
   // Comment handlers
   const handleAddComment = async (content) => {
@@ -361,6 +410,8 @@ const WatchCourse = ({ courseId: propCourseId }) => {
           onNextLecture={handleNextLecture}
           showReviewButton={allLessonsCompleted}
           allLessonsCompleted={allLessonsCompleted}
+          certificateUrl={certificate?.url}
+          isGeneratingCertificate={isGeneratingCertificate}
           isLastLesson={(() => {
             if (!sections?.length || !currentLesson?._id) return false;
             const flat = sections.flatMap((s) => s.lessons || []);
@@ -460,7 +511,9 @@ const WatchCourse = ({ courseId: propCourseId }) => {
             <>
               <div className="f-video-section">
                 <VideoPlayer
-                  videoUrl={currentLesson?.materialUrl || currentLesson?.videoUrl}
+                  videoUrl={
+                    currentLesson?.materialUrl || currentLesson?.videoUrl
+                  }
                   lessonTitle={currentLesson?.title}
                   lessonId={currentLesson?._id}
                   onProgress={(progress) => {
@@ -558,6 +611,13 @@ const WatchCourse = ({ courseId: propCourseId }) => {
         defaultRating={courseFeedback?.rateStar || 0}
         defaultFeedback={courseFeedback?.content || ""}
         reviewMode={!!courseFeedback}
+      />
+      <CourseCompletedModal
+        isOpen={isCompletedModalOpen}
+        onClose={() => setIsCompletedModalOpen(false)}
+        isGenerating={isGeneratingCertificate}
+        certificate={certificate}
+        courseTitle={courseData?.title || ""}
       />
       <ToastContainer autoClose={3000} />
     </div>
