@@ -31,6 +31,8 @@ import CertificateDisplay from "./CertificateDisplay";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
+import Confetti from "react-confetti";
+import useWindowSize from "../../hooks/useWindowSize";
 
 const WatchCourse = ({ courseId: propCourseId }) => {
   const params = useParams();
@@ -55,6 +57,8 @@ const WatchCourse = ({ courseId: propCourseId }) => {
   const [allLessonsCompleted, setAllLessonsCompleted] = useState(false);
   const [isGeneratingCertificate, setIsGeneratingCertificate] = useState(false);
   const [certificate, setCertificate] = useState(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const { width, height } = useWindowSize();
 
   // SỬA 2: Xóa state của modal
   // const [isCompletedModalOpen, setIsCompletedModalOpen] = useState(false);
@@ -96,6 +100,9 @@ const WatchCourse = ({ courseId: propCourseId }) => {
             completedLessonsArr.includes(lessonId)
           );
         setAllLessonsCompleted(allCompleted);
+        if (allCompleted) {
+          setShowConfetti(true);
+        }
         const progressPercent = progressRes.data?.data?.progressPercentage || 0;
         setProgress(progressPercent);
         let firstUncompleted = null;
@@ -235,6 +242,8 @@ const WatchCourse = ({ courseId: propCourseId }) => {
       setAllLessonsCompleted(allCompleted);
       if (allCompleted) {
         console.log("REAL-TIME: Khóa học đã hoàn thành!");
+
+        setShowConfetti(true);
       }
     } catch (e) {
       console.error("Lỗi khi kiểm tra tiến độ:", e);
@@ -383,6 +392,15 @@ const WatchCourse = ({ courseId: propCourseId }) => {
 
   return (
     <div className="f-watch-course-wrapper">
+      {showConfetti && (
+        <Confetti
+          width={width}
+          height={height}
+          recycle={false} // Chạy 1 lần rồi ngưng
+          onConfettiComplete={() => setShowConfetti(false)} // Tự động dọn dẹp
+          style={{ zIndex: 2000 }} // Đảm bảo nó nằm trên cùng
+        />
+      )}
       <div className="f-watch-course-container">
         <CourseHeader
           courseData={courseData}
