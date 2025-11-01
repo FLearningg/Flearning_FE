@@ -12,6 +12,16 @@ import "../../assets/CourseDetails/SingleCourse.css";
 import { getCourseById } from "../../services/courseService";
 import { Link } from "react-router-dom";
 
+function formatTotalDuration(totalSeconds) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+  if (hours > 0) {
+    return `${hours} hours ${minutes} minutes`;
+  }
+  return `${minutes} minutes`;
+}
+
 export default function SingleCourse() {
   const { courseId } = useParams();
 
@@ -127,7 +137,7 @@ export default function SingleCourse() {
     { label: "Home", path: "/" },
     {
       label: categoryInfo?.name || "Category",
-      path: "/courses",
+      path: `/category?category=${categoryInfo?.name}`,
     },
     { label: title, path: null },
   ];
@@ -152,6 +162,19 @@ export default function SingleCourse() {
     targetAudience: detail.targetAudience ?? [],
     requirement: detail.requirement ?? [],
   };
+
+  const totalDurationSeconds =
+    course.sections?.reduce(
+      (total, section) =>
+        total +
+        (section.lessons?.reduce(
+          (sectionTotal, lesson) => sectionTotal + (lesson.duration || 0),
+          0
+        ) || 0),
+      0
+    ) || 0;
+
+  const formattedTotalDuration = formatTotalDuration(totalDurationSeconds);
 
   const isDiscountValid = (discount) => {
     if (!discount) return false;
@@ -193,10 +216,11 @@ export default function SingleCourse() {
         : "",
     details: [
       { label: "Level", value: course.level ?? "All levels" },
-      { label: "Duration", value: course.duration ?? "0h" },
+      { label: "Duration", value: formattedTotalDuration },
       {
         label: "Students enrolled",
-        value: course.studentsEnrolled?.length.toLocaleString() ?? "0",
+        value:
+          `${course.totalStudentsEnrolled?.toLocaleString()} students` ?? "0",
       },
       { label: "Language", value: course.language ?? "English" },
       {
@@ -403,9 +427,7 @@ export default function SingleCourse() {
               isScreenSmall={isScreenSmall}
               onBurgerClick={() => setIsModalOpen(true)}
               instructorCard={
-                <InstructorInfoCard 
-                  instructor={course.createdBy}
-                />
+                <InstructorInfoCard instructor={course.createdBy} />
               }
             />
 
