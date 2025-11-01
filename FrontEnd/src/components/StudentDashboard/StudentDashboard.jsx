@@ -13,10 +13,15 @@ import {
   getCourseAverageRating,
 } from "../../services/feedbackService";
 import "../../assets/StudentDashboard/StudentDashboard.css";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import ReviewModal from "../WatchCourse/ReviewModal";
+import SurveyModal from "../LearningPath/SurveyModal";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import {
+  checkSurveyCompletion,
+  openSurveyModal,
+} from "../../store/learningPathSlice";
 
 const StatCard = ({ icon, count, label, color }) => (
   <div className="dashboard-stat-card">
@@ -96,7 +101,9 @@ const LearningCard = ({
 const StudentDashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.auth);
+  const { surveyCompleted } = useSelector((state) => state.learningPath);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [coursesProgress, setCoursesProgress] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -109,7 +116,9 @@ const StudentDashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+    // Check survey completion status
+    dispatch(checkSurveyCompletion());
+  }, [dispatch]);
 
   useEffect(() => {
     // Khi đã có danh sách courses, fetch feedback cho từng course
@@ -275,6 +284,14 @@ const StudentDashboard = () => {
       <div className="dashboard-content">
         <div className="dashboard-header">
           <h2>Dashboard</h2>
+          <div className="dashboard-header-actions">
+            <button
+              className="learning-path-btn"
+              onClick={() => navigate("/profile/learning-path")}
+            >
+              Create Your Learning Path
+            </button>
+          </div>
         </div>
 
         <div className="stats-grid">
@@ -401,6 +418,10 @@ const StudentDashboard = () => {
         defaultFeedback={feedbackByCourseId[selectedCourseId]?.content || ""}
         reviewMode={!!feedbackByCourseId[selectedCourseId]}
       />
+
+      {/* Survey Modal */}
+      <SurveyModal />
+
       <ToastContainer autoClose={3000} />
     </ProfileSection>
   );
