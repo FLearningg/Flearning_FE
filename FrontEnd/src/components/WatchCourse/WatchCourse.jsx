@@ -26,7 +26,8 @@ import {
   getCourseAverageRating,
 } from "../../services/feedbackService";
 import certificateService from "../../services/certificateService";
-import CourseCompletedModal from "./CourseCompletedModal";
+// SỬA 1: Import CertificateDisplay, XÓA CourseCompletedModal
+import CertificateDisplay from "./CertificateDisplay";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
@@ -35,13 +36,11 @@ const WatchCourse = ({ courseId: propCourseId }) => {
   const params = useParams();
   const courseId = propCourseId || params.courseId;
 
-  // Main course info
+  // (Các state khác giữ nguyên)
   const [courseData, setCourseData] = useState(null);
   const [sections, setSections] = useState([]);
   const [loadingCourse, setLoadingCourse] = useState(true);
   const [errorCourse, setErrorCourse] = useState(null);
-
-  // Lesson & comments
   const [currentLesson, setCurrentLesson] = useState(null);
   const [lessonComments, setLessonComments] = useState([]);
   const [loadingLesson, setLoadingLesson] = useState(false);
@@ -49,23 +48,18 @@ const WatchCourse = ({ courseId: propCourseId }) => {
   const [addingComment, setAddingComment] = useState(false);
   const [updatingCommentId, setUpdatingCommentId] = useState(null);
   const [deletingCommentId, setDeletingCommentId] = useState(null);
-
-  // UI state
-  const [progress, setProgress] = useState(0); // Progress should be dynamic
+  const [progress, setProgress] = useState(0);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-
-  // Track completed lessons
   const [completedLessons, setCompletedLessons] = useState([]);
   const [courseFeedback, setCourseFeedback] = useState(null);
   const [allLessonsCompleted, setAllLessonsCompleted] = useState(false);
-
-  // Certificate state
   const [isGeneratingCertificate, setIsGeneratingCertificate] = useState(false);
   const [certificate, setCertificate] = useState(null);
 
-  const [isCompletedModalOpen, setIsCompletedModalOpen] = useState(false);
+  // SỬA 2: Xóa state của modal
+  // const [isCompletedModalOpen, setIsCompletedModalOpen] = useState(false);
 
-  // Fetch course info and sections/lessons
+  // (useEffect fetch khóa học, feedback, comments giữ nguyên)
   useEffect(() => {
     if (!courseId) return;
     setLoadingCourse(true);
@@ -86,20 +80,15 @@ const WatchCourse = ({ courseId: propCourseId }) => {
           ? completedLessonsRes.data.data.map((lesson) => lesson._id)
           : [];
         setCompletedLessons(completedLessonsArr);
-
-        // Calculate total lessons and check if all are completed
         const totalLessons = sectionsData.reduce((total, section) => {
           return total + (section.lessons ? section.lessons.length : 0);
         }, 0);
-
-        // Get all lesson IDs from sections to ensure accurate comparison
         const allLessonIds = sectionsData.reduce((ids, section) => {
           if (section.lessons) {
             ids.push(...section.lessons.map((lesson) => lesson._id));
           }
           return ids;
         }, []);
-
         const allCompleted =
           totalLessons > 0 &&
           allLessonIds.length > 0 &&
@@ -107,11 +96,8 @@ const WatchCourse = ({ courseId: propCourseId }) => {
             completedLessonsArr.includes(lessonId)
           );
         setAllLessonsCompleted(allCompleted);
-
-        // Set progress percentage
         const progressPercent = progressRes.data?.data?.progressPercentage || 0;
         setProgress(progressPercent);
-        // Auto-select first uncompleted lesson
         let firstUncompleted = null;
         for (const section of sectionsData) {
           for (const lesson of section.lessons || []) {
@@ -122,7 +108,6 @@ const WatchCourse = ({ courseId: propCourseId }) => {
           }
           if (firstUncompleted) break;
         }
-        // If all lessons completed, select first lesson
         if (
           !firstUncompleted &&
           sectionsData.length > 0 &&
@@ -130,7 +115,6 @@ const WatchCourse = ({ courseId: propCourseId }) => {
         ) {
           firstUncompleted = sectionsData[0].lessons[0];
         }
-        // Ensure quiz lessons are prepared properly
         if (firstUncompleted?.type === "quiz") {
           setCurrentLesson({
             ...firstUncompleted,
@@ -180,7 +164,6 @@ const WatchCourse = ({ courseId: propCourseId }) => {
       .catch(() => setCourseFeedback(null));
   }, [courseId]);
 
-  // Fetch comments when currentLesson changes
   useEffect(() => {
     if (!currentLesson?._id) {
       setLessonComments([]);
@@ -199,12 +182,8 @@ const WatchCourse = ({ courseId: propCourseId }) => {
       });
   }, [currentLesson]);
 
-  // Certificate handlers
+  // SỬA 3: Cập nhật Certificate handler (xóa setIsCompletedModalOpen)
   useEffect(() => {
-    // Chỉ chạy khi:
-    // 1. Khoá học đã hoàn thành
-    // 2. CHƯA có dữ liệu chứng chỉ
-    // 3. KHÔNG đang trong quá trình tạo
     if (
       allLessonsCompleted &&
       !certificate &&
@@ -212,26 +191,18 @@ const WatchCourse = ({ courseId: propCourseId }) => {
       courseId
     ) {
       const createCertificateForUser = async () => {
-        // Mở popup và bắt đầu loading
-        setIsCompletedModalOpen(true);
+        // XÓA DÒNG NÀY: setIsCompletedModalOpen(true);
         setIsGeneratingCertificate(true);
 
         try {
-          // Gọi API service thật
           const res = await certificateService.generateCertificate(courseId);
-
-          // Lưu lại dữ liệu chứng chỉ
           setCertificate(res.data.certificate);
-          // Ẩn spinner (popup vẫn mở)
           setIsGeneratingCertificate(false);
-
-          // (Không cần toast nữa vì modal đã thông báo rồi)
         } catch (err) {
           console.error("Lỗi khi tạo chứng chỉ:", err);
           toast.error(
             err.response?.data?.message || "Có lỗi xảy ra khi tạo chứng chỉ."
           );
-          // Ẩn spinner, popup sẽ hiển thị lỗi
           setIsGeneratingCertificate(false);
         }
       };
@@ -240,7 +211,37 @@ const WatchCourse = ({ courseId: propCourseId }) => {
     }
   }, [allLessonsCompleted, courseId, certificate, isGeneratingCertificate]);
 
-  // Comment handlers
+  // Hàm checkCourseCompletion (giữ nguyên)
+  const checkCourseCompletion = async (updatedCompletedList) => {
+    try {
+      const progressRes = await getCourseProgress(courseId);
+      const progressPercent = progressRes.data?.data?.progressPercentage || 0;
+      setProgress(progressPercent);
+      const totalLessons = sections.reduce((total, section) => {
+        return total + (section.lessons ? section.lessons.length : 0);
+      }, 0);
+      const allLessonIds = sections.reduce((ids, section) => {
+        if (section.lessons) {
+          ids.push(...section.lessons.map((lesson) => lesson._id));
+        }
+        return ids;
+      }, []);
+      const allCompleted =
+        totalLessons > 0 &&
+        allLessonIds.length > 0 &&
+        allLessonIds.every((lessonId) =>
+          updatedCompletedList.includes(lessonId)
+        );
+      setAllLessonsCompleted(allCompleted);
+      if (allCompleted) {
+        console.log("REAL-TIME: Khóa học đã hoàn thành!");
+      }
+    } catch (e) {
+      console.error("Lỗi khi kiểm tra tiến độ:", e);
+    }
+  };
+
+  // (Các hàm handle comment, review, lesson... giữ nguyên)
   const handleAddComment = async (content) => {
     if (!currentLesson?._id || !content) return;
     setAddingComment(true);
@@ -255,7 +256,6 @@ const WatchCourse = ({ courseId: propCourseId }) => {
       setAddingComment(false);
     }
   };
-
   const handleUpdateComment = async (commentId, content) => {
     if (!currentLesson?._id || !commentId || !content) return;
     setUpdatingCommentId(commentId);
@@ -274,7 +274,6 @@ const WatchCourse = ({ courseId: propCourseId }) => {
       setUpdatingCommentId(null);
     }
   };
-
   const handleDeleteComment = async (commentId) => {
     if (!currentLesson?._id || !commentId) return;
     setDeletingCommentId(commentId);
@@ -289,9 +288,6 @@ const WatchCourse = ({ courseId: propCourseId }) => {
       setDeletingCommentId(null);
     }
   };
-
-  // Map API sections/lessons to CourseContents expected format
-  // Also compute sequential locking: only lessons up to the first incomplete are unlocked
   let encounteredFirstIncomplete = false;
   const mappedSections = sections.map((section) => {
     const lectures = (section.lessons || []).map((lesson) => {
@@ -299,31 +295,23 @@ const WatchCourse = ({ courseId: propCourseId }) => {
       let locked = false;
       if (!isCompleted) {
         if (!encounteredFirstIncomplete) {
-          locked = false; // first incomplete is unlocked
+          locked = false;
           encounteredFirstIncomplete = true;
         } else {
-          locked = true; // subsequent incompletes are locked
+          locked = true;
         }
       }
-      return {
-        ...lesson,
-        id: lesson._id,
-        completed: isCompleted,
-        locked,
-      };
+      return { ...lesson, id: lesson._id, completed: isCompleted, locked };
     });
     return { ...section, title: section.name, lectures };
   });
-
   const handleSelectLesson = (lesson) => {
-    // Nếu là quiz, cập nhật state nhưng không load video
     if (lesson.type === "quiz") {
       setCurrentLesson({
         ...lesson,
-        videoUrl: null, // Không có video cho quiz
+        videoUrl: null,
         description: "Complete this quiz to proceed to the next lesson.",
         title: lesson.title,
-        // ensure quizId is available for QuizContent
         quizId:
           lesson.quizId?._id ||
           lesson.quizId ||
@@ -333,7 +321,6 @@ const WatchCourse = ({ courseId: propCourseId }) => {
       setCurrentLesson(lesson);
     }
   };
-
   const handleReviewSubmit = async ({ rating, feedback }) => {
     try {
       if (courseFeedback) {
@@ -349,7 +336,6 @@ const WatchCourse = ({ courseId: propCourseId }) => {
         });
         toast.success("Review submitted successfully!");
       }
-      // Refetch feedback
       const res = await getCourseFeedback(courseId);
       const currentUser = JSON.parse(localStorage.getItem("currentUser"));
       const myFeedback = res.feedback.find((fb) => {
@@ -362,28 +348,23 @@ const WatchCourse = ({ courseId: propCourseId }) => {
         );
       });
       setCourseFeedback(myFeedback || null);
-      // Gọi API cập nhật rating trung bình
       await getCourseAverageRating(courseId);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to submit review!");
     }
     setIsReviewModalOpen(false);
   };
-
   const handleNextLecture = () => {
     if (!currentLesson || !sections.length) return;
-    // Tìm section chứa currentLesson
     let found = false;
     for (let i = 0; i < sections.length; i++) {
       const lessons = sections[i].lessons || [];
       for (let j = 0; j < lessons.length; j++) {
         if (lessons[j]._id === currentLesson._id) {
-          // Nếu còn bài tiếp theo trong section
           if (j + 1 < lessons.length) {
             setCurrentLesson(lessons[j + 1]);
             return;
           }
-          // Nếu hết section, chuyển sang bài đầu của section tiếp theo
           if (i + 1 < sections.length && sections[i + 1].lessons?.length > 0) {
             setCurrentLesson(sections[i + 1].lessons[0]);
             return;
@@ -410,7 +391,8 @@ const WatchCourse = ({ courseId: propCourseId }) => {
           onNextLecture={handleNextLecture}
           showReviewButton={allLessonsCompleted}
           allLessonsCompleted={allLessonsCompleted}
-          certificateUrl={certificate?.url}
+          // SỬA 4: Sửa lại key cho đúng (url -> certificateUrl)
+          certificateUrl={certificate?.certificateUrl}
           isGeneratingCertificate={isGeneratingCertificate}
           isLastLesson={(() => {
             if (!sections?.length || !currentLesson?._id) return false;
@@ -421,6 +403,16 @@ const WatchCourse = ({ courseId: propCourseId }) => {
           })()}
         />
       </div>
+
+      {/* SỬA 5: Thêm component CertificateDisplay ở đây */}
+      {allLessonsCompleted && (
+        <CertificateDisplay
+          isGenerating={isGeneratingCertificate}
+          certificate={certificate}
+          courseTitle={courseData?.title || ""}
+        />
+      )}
+
       <div className="f-watch-course-main">
         <div className="f-watch-course-left">
           {currentLesson?.type === "quiz" ||
@@ -437,24 +429,19 @@ const WatchCourse = ({ courseId: propCourseId }) => {
                 }
                 quizData={currentLesson?.quizData}
                 duration={currentLesson?.duration}
+                // SỬA 6 (REAL-TIME): Cập nhật onQuizComplete
                 onQuizComplete={async (quizResult) => {
                   if (quizResult.completed && currentLesson?._id && courseId) {
                     try {
-                      // Mark quiz lesson as completed like video lessons
                       await markLessonCompleted(courseId, currentLesson._id);
-                      setCompletedLessons((prev) =>
-                        prev.includes(currentLesson._id)
-                          ? prev
-                          : [...prev, currentLesson._id]
-                      );
-
-                      // Update progress
-                      const progressRes = await getCourseProgress(courseId);
-                      const progressPercent =
-                        progressRes.data?.data?.progressPercentage || 0;
-                      setProgress(progressPercent);
-
-                      // Auto move to next lesson
+                      const updatedCompletedLessons = completedLessons.includes(
+                        currentLesson._id
+                      )
+                        ? completedLessons
+                        : [...completedLessons, currentLesson._id];
+                      setCompletedLessons(updatedCompletedLessons);
+                      // Gọi hàm check real-time
+                      await checkCourseCompletion(updatedCompletedLessons);
                       handleNextLecture();
                     } catch (e) {
                       console.error("Error updating completion after quiz:", e);
@@ -472,34 +459,19 @@ const WatchCourse = ({ courseId: propCourseId }) => {
                 materialUrl={currentLesson?.materialUrl}
                 lessonId={currentLesson?._id}
                 onNext={handleNextLecture}
+                // SỬA 7 (REAL-TIME): Cập nhật onAutoComplete
                 onAutoComplete={async () => {
                   if (currentLesson?._id && courseId) {
                     try {
                       await markLessonCompleted(courseId, currentLesson._id);
-                      // refresh completed lessons from server to ensure persistence across reloads
-                      try {
-                        const completedLessonsRes =
-                          await getCompletedLessonsDetails(courseId);
-                        const completedLessonsArr = Array.isArray(
-                          completedLessonsRes.data?.data
-                        )
-                          ? completedLessonsRes.data.data.map(
-                              (lesson) => lesson._id
-                            )
-                          : [];
-                        setCompletedLessons(completedLessonsArr);
-                      } catch (e) {
-                        // fallback to optimistic update
-                        setCompletedLessons((prev) =>
-                          prev.includes(currentLesson._id)
-                            ? prev
-                            : [...prev, currentLesson._id]
-                        );
-                      }
-                      const progressRes = await getCourseProgress(courseId);
-                      const progressPercent =
-                        progressRes.data?.data?.progressPercentage || 0;
-                      setProgress(progressPercent);
+                      const updatedCompletedLessons = completedLessons.includes(
+                        currentLesson._id
+                      )
+                        ? completedLessons
+                        : [...completedLessons, currentLesson._id];
+                      setCompletedLessons(updatedCompletedLessons);
+                      // Gọi hàm check real-time
+                      await checkCourseCompletion(updatedCompletedLessons);
                     } catch (e) {
                       console.error("Error auto-completing article:", e);
                     }
@@ -519,54 +491,18 @@ const WatchCourse = ({ courseId: propCourseId }) => {
                   onProgress={(progress) => {
                     // Handle video progress
                   }}
+                  // SỬA 8 (REAL-TIME): Cập nhật onEnded
                   onEnded={async () => {
                     if (currentLesson?._id && courseId) {
                       try {
                         await markLessonCompleted(courseId, currentLesson._id);
-                        setCompletedLessons((prev) =>
-                          prev.includes(currentLesson._id)
-                            ? prev
-                            : [...prev, currentLesson._id]
-                        );
-
-                        // Update progress after marking complete
-                        const progressRes = await getCourseProgress(courseId);
-                        const progressPercent =
-                          progressRes.data?.data?.progressPercentage || 0;
-                        setProgress(progressPercent);
-
-                        // Check if all lessons are now completed
                         const updatedCompletedLessons =
                           completedLessons.includes(currentLesson._id)
                             ? completedLessons
                             : [...completedLessons, currentLesson._id];
-
-                        const totalLessons = sections.reduce(
-                          (total, section) => {
-                            return (
-                              total +
-                              (section.lessons ? section.lessons.length : 0)
-                            );
-                          },
-                          0
-                        );
-
-                        const allLessonIds = sections.reduce((ids, section) => {
-                          if (section.lessons) {
-                            ids.push(
-                              ...section.lessons.map((lesson) => lesson._id)
-                            );
-                          }
-                          return ids;
-                        }, []);
-
-                        const allCompleted =
-                          totalLessons > 0 &&
-                          allLessonIds.length > 0 &&
-                          allLessonIds.every((lessonId) =>
-                            updatedCompletedLessons.includes(lessonId)
-                          );
-                        setAllLessonsCompleted(allCompleted);
+                        setCompletedLessons(updatedCompletedLessons);
+                        // Gọi hàm check real-time
+                        await checkCourseCompletion(updatedCompletedLessons);
                       } catch (err) {
                         console.error("Error marking lesson completed:", err);
                       }
@@ -612,13 +548,7 @@ const WatchCourse = ({ courseId: propCourseId }) => {
         defaultFeedback={courseFeedback?.content || ""}
         reviewMode={!!courseFeedback}
       />
-      <CourseCompletedModal
-        isOpen={isCompletedModalOpen}
-        onClose={() => setIsCompletedModalOpen(false)}
-        isGenerating={isGeneratingCertificate}
-        certificate={certificate}
-        courseTitle={courseData?.title || ""}
-      />
+
       <ToastContainer autoClose={3000} />
     </div>
   );
