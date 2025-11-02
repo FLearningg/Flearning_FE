@@ -174,6 +174,8 @@ const QuizContent = ({
             id: q._id || index + 1,
             question: q.question || q.content,
             explanation: q.explanation || "",
+            // CRITICAL: Store originalIndex from backend (used for randomization mapping)
+            originalIndex: q.originalIndex !== undefined ? q.originalIndex : index,
             options:
               (q.options &&
                 q.options.map((opt, i) => ({
@@ -343,10 +345,25 @@ const QuizContent = ({
           selectedAnswers: selectedAnswers, // Lưu selectedAnswers để dùng cho AI
         });
 
-        // Store selectedAnswers in sessionStorage for AI explanations
+        // Store selectedAnswers mapped by originalIndex for consistent AI explanations
+        // This ensures AI can always find the right answers even after quiz randomization
+        const answersMapByOriginalIndex = {};
+        quizData.questions.forEach((question, index) => {
+          const answerIndex = selectedAnswers[question.id];
+          if (answerIndex !== undefined && question.originalIndex !== undefined) {
+            answersMapByOriginalIndex[question.originalIndex] = answerIndex;
+          }
+        });
+        
         sessionStorage.setItem(
           `quiz_selected_answers_${quizId}`,
-          JSON.stringify(selectedAnswers)
+          JSON.stringify(answersMapByOriginalIndex)
+        );
+        
+        // Also store full quiz result for AI
+        sessionStorage.setItem(
+          `quiz_result_${quizId}`,
+          JSON.stringify(result)
         );
 
         if (result.passed) {
@@ -517,60 +534,79 @@ const QuizContent = ({
         throw new Error("Invalid quiz result data");
       }
 
-      // Extract details from nested structure
+      // Extract details from nested structure or flat structure
       const details = apiResponse.details || {};
       const totalQuestions =
-        details.totalQuestions || quizData.questions.length;
-      const correctAnswers = details.correctAnswers || 0;
+        details.totalQuestions || apiResponse.totalQuestions || quizData.questions.length;
+      const correctAnswers = details.correctAnswers || apiResponse.correctAnswers || 0;
       const scorePercentage = details.scorePercentage || apiResponse.score || 0;
       const passed =
         details.passed !== undefined ? details.passed : apiResponse.passed;
 
 
-      // Build complete questionsForAI from quizData and selectedAnswers (no database needed)
+      // Use questionResults from backend (already has correct originalIndex mapping)
+      // This is more reliable than rebuilding from frontend state
+      // Try to get from details first (old format), then from root level (new format)
+      const questionResultsFromBackend = details.questionResults || apiResponse.questionResults || [];
       
-      // Get selectedAnswers from multiple sources (priority order)
-      let answersToUse = quizResult?.selectedAnswers || selectedAnswers;
-      
-      // If still empty, try to load from sessionStorage
-      if (!answersToUse || Object.keys(answersToUse).length === 0) {
-        try {
-          const storedAnswers = sessionStorage.getItem(`quiz_selected_answers_${quizId}`);
-          if (storedAnswers) {
-            answersToUse = JSON.parse(storedAnswers);
-          }
-        } catch (error) {
-        }
+      // If no questionResults from backend, we can't proceed
+      if (!questionResultsFromBackend || questionResultsFromBackend.length === 0) {
+        throw new Error("No question results available. Please retake the quiz.");
       }
       
-      const questionsForAI = quizData.questions.map((question, index) => {
-        // Get user answer from selectedAnswers (what student actually selected)
-        const userAnswerIndex = answersToUse[question.id];
+      // Fetch full quiz to get all answer options (backend questionResults only has user+correct answers)
+      let fullQuizData = null;
+      try {
+        const quizResponse = await apiClient.get(`quiz/${quizId}`);
+        if (quizResponse.data?.data) {
+          fullQuizData = quizResponse.data.data;
+        }
+      } catch (quizFetchError) {
+        console.error("Failed to fetch full quiz data for AI:", quizFetchError);
+        // Continue without full quiz - use limited data from questionResults
+      }
+      
+      // Build questionsForAI from backend questionResults (already mapped correctly)
+      const questionsForAI = questionResultsFromBackend.map((qResult) => {
+        // Try to get full options from fullQuizData using originalIndex
+        let allOptions = [];
+        if (fullQuizData && fullQuizData.questions && fullQuizData.questions[qResult.originalIndex]) {
+          const fullQuestion = fullQuizData.questions[qResult.originalIndex];
+          // Get all options from full quiz data
+          if (fullQuestion.answers && Array.isArray(fullQuestion.answers)) {
+            allOptions = fullQuestion.answers.map((answer, idx) => ({
+              index: idx,
+              content: answer.content
+            }));
+          }
+        }
         
-        // Determine if answer is correct
-        const isCorrect = userAnswerIndex !== undefined && userAnswerIndex === question.correctAnswer;
-
-
+        // Fallback: build options from questionResults (limited to user+correct answers)
+        if (allOptions.length === 0) {
+          allOptions = [
+            ...(qResult.userAnswers || []),
+            ...(qResult.correctAnswers || [])
+          ].reduce((unique, answer) => {
+            // Remove duplicates and build options array
+            if (!unique.find(u => u.index === answer.index)) {
+              unique.push({ index: answer.index, content: answer.content });
+            }
+            return unique;
+          }, []).sort((a, b) => a.index - b.index);
+        }
+        
         return {
-          questionIndex: index,
-          originalIndex: question.originalIndex, // Include originalIndex for reference
-          questionId: question._id || question.id,
-          questionText: question.question,
-          options: question.options.map((opt, optIndex) => ({
-            index: optIndex,
-            content: typeof opt === "string" ? opt : opt.content,
-          })),
-          correctAnswer: question.correctAnswer,
-          userAnswer: userAnswerIndex !== undefined ? userAnswerIndex : null,
-          isCorrect: isCorrect,
+          questionIndex: qResult.questionIndex, // Index in randomized array
+          originalIndex: qResult.originalIndex, // Index in original pool (correct mapping)
+          questionId: qResult.questionId || qResult.originalIndex,
+          questionText: qResult.questionContent,
+          options: allOptions,
+          correctAnswer: qResult.correctAnswers?.[0]?.index,
+          userAnswer: qResult.userAnswers?.[0]?.index !== undefined ? qResult.userAnswers[0].index : null,
+          isCorrect: qResult.isCorrect,
           // Add user answer text and correct answer text for AI
-          userAnswerText: userAnswerIndex !== undefined ? 
-            (typeof question.options[userAnswerIndex] === "string" ? 
-             question.options[userAnswerIndex] : 
-             question.options[userAnswerIndex]?.content || "Invalid answer") : "Not answered",
-          correctAnswerText: typeof question.options[question.correctAnswer] === "string" ? 
-            question.options[question.correctAnswer] : 
-            question.options[question.correctAnswer]?.content || "Invalid answer"
+          userAnswerText: qResult.userAnswers?.[0]?.content || "Not answered",
+          correctAnswerText: qResult.correctAnswers?.[0]?.content || "No correct answer"
         };
       });
 
@@ -825,11 +861,13 @@ const QuizContent = ({
                     }
                     
                     if (freshQuiz) {
-                      // Process questions to ensure they have proper IDs
+                      // Process questions to ensure they have proper IDs and originalIndex
                       const processedQuestions = freshQuiz.questions.map((q, index) => ({
                         ...q,
                         id: q.id || `question_${index}`,
                         question: q.content || q.question,
+                        // CRITICAL: Preserve originalIndex from backend (for randomization)
+                        originalIndex: q.originalIndex !== undefined ? q.originalIndex : index,
                         options: q.answers
                           ? q.answers.map((a) => a.content)
                           : q.options || [],
