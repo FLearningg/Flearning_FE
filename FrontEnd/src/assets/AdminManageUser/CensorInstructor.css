@@ -464,6 +464,12 @@
   border: 1px solid #fbbf24;
 }
 
+.ai-status-manual-approved {
+  background-color: #e0e7ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+}
+
 .ai-status-pending {
   background-color: #f0f9ff;
   color: #1e40af;
