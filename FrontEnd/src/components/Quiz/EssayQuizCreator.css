@@ -1,0 +1,66 @@
+.essay-quiz-creator {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.creator-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+.creator-card .ant-card-body {
+  padding: 40px;
+}
+
+.info-alert {
+  margin: 24px 0;
+}
+
+.questions-section {
+  margin: 32px 0;
+}
+
+.question-card {
+  margin-bottom: 24px;
+  border: 2px solid #f0f0f0;
+  border-radius: 8px;
+}
+
+.question-card .ant-card-head {
+  background-color: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.question-input,
+.guideline-input {
+  margin-top: 8px;
+}
+
+.add-question-btn {
+  margin-top: 16px;
+  height: 50px;
+  font-size: 16px;
+}
+
+.action-buttons {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.action-buttons button {
+  min-width: 200px;
+  height: 48px;
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .essay-quiz-creator {
+    padding: 10px;
+  }
+
+  .creator-card .ant-card-body {
+    padding: 20px;
+  }
+}

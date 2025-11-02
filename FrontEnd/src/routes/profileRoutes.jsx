@@ -9,6 +9,7 @@ import { StudentMessage } from '../components/StudentMessage/StudentMessage';
 import WishListPage from '../components/StudentWishList/WishListPage';
 import ProfileSetting from '../components/ProfileSetting/ProfileSetting';
 import CartPage from "../components/StudentCartPage/CartPage";
+import LearningPathDisplay from "../components/LearningPath/LearningPathDisplay";
 
 const ProfileRoutes = () => {
   return (
@@ -20,6 +21,7 @@ const ProfileRoutes = () => {
       <Route path="cart" element={<CartPage/>} />
       <Route path="purchase-history" element={<PurchaseHistory />} />
       <Route path="settings" element={<ProfileSetting />} />
+      <Route path="learning-path" element={<LearningPathDisplay />} />
     </Routes>
   );
 };

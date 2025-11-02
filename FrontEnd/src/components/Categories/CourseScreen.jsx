@@ -500,7 +500,7 @@ export default function CourseScreen() {
                     price={`${formatVND(course.price)} VND`}
                     title={course.title}
                     rating={course.rating || 0}
-                    students={0}
+                    students={course.studentsCount || 0}
                     variant="normal"
                   />
                 </div>

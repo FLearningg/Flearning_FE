@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 2020;
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -531,6 +531,63 @@
   font-size: 0.875rem;
   color: #718096;
   font-weight: 500;
+}
+
+/* Failed Answer Items (for quiz not passed) */
+.failed-answers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.failed-answer-item {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border-left: 5px solid transparent;
+}
+
+.failed-answer-item:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateX(3px);
+}
+
+.failed-answer-item.correct {
+  border-left-color: #48bb78;
+  background: linear-gradient(to right, #f0fff4 0%, #ffffff 3%);
+}
+
+.failed-answer-item.wrong {
+  border-left-color: #f56565;
+  background: linear-gradient(to right, #fff5f5 0%, #ffffff 3%);
+}
+
+/* Failed Item Header */
+.failed-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.failed-answer-item.correct .ai-item-status {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.failed-answer-item.wrong .ai-item-status {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+/* Failed Item Body */
+.failed-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 /* Responsive Design */

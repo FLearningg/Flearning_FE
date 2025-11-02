@@ -1,0 +1,154 @@
+.essay-quiz-taking {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.quiz-header-card {
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quiz-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.quiz-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 200px;
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  padding: 12px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+}
+
+.time-warning {
+  color: #ff4d4f;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.progress-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.instruction-alert {
+  margin-bottom: 24px;
+}
+
+.questions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.question-card {
+  border: 2px solid #f0f0f0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.question-content {
+  font-size: 16px;
+  line-height: 1.6;
+  padding: 16px;
+  background-color: #fafafa;
+  border-radius: 8px;
+}
+
+.hint-alert {
+  background-color: #e6f7ff;
+  border-left: 4px solid #1890ff;
+}
+
+.answer-area {
+  position: relative;
+}
+
+.essay-input {
+  font-size: 15px;
+  line-height: 1.6;
+  padding: 16px;
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.character-count {
+  text-align: right;
+  margin-top: 8px;
+}
+
+.submit-card {
+  margin-top: 32px;
+  border: 2px solid #1890ff;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.2);
+}
+
+.submit-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background-color: #f6ffed;
+  border-radius: 8px;
+}
+
+.summary-icon {
+  font-size: 32px;
+  color: #52c41a;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 24px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .essay-quiz-taking {
+    padding: 10px;
+  }
+
+  .quiz-header-content {
+    flex-direction: column;
+  }
+
+  .quiz-meta {
+    width: 100%;
+  }
+
+  .timer {
+    font-size: 16px;
+  }
+
+  .essay-input {
+    font-size: 14px;
+  }
+}
