@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 export default function CourseForm({
   onNext = () => {},
   onPrev = () => {},
+  onSaveDraft = () => {},
   initialData = {},
   completedTabs = [],
   onTabClick = () => {},
@@ -353,6 +354,28 @@ export default function CourseForm({
     if (input) input.value = "";
   };
 
+  const buildAdvanceData = () => {
+    let uploadedFiles = {};
+    if (thumbnailUrl) {
+      uploadedFiles.image = { url: thumbnailUrl };
+    }
+    if (trailerUrl) {
+      uploadedFiles.video = { url: trailerUrl };
+    }
+
+    return {
+      detail: {
+        description: description || "No description provided", // Required by backend
+        willLearn: courseInputs.filter((item) => item.trim() !== ""),
+        targetAudience: audienceInputs.filter((item) => item.trim() !== ""),
+        requirement: requirementInputs.filter((item) => item.trim() !== ""),
+      },
+      uploadedFiles,
+      thumbnail: thumbnailUrl || "", // Required by backend
+      trailer: trailerUrl || "", // Required by backend
+    };
+  };
+
   const handleSaveNext = async () => {
     setLoading(true);
     try {
@@ -364,25 +387,7 @@ export default function CourseForm({
         await handleTrailerChange({ target: { files: [trailerFile] } });
       }
 
-      let uploadedFiles = {};
-      if (thumbnailUrl) {
-        uploadedFiles.image = { url: thumbnailUrl };
-      }
-      if (trailerUrl) {
-        uploadedFiles.video = { url: trailerUrl };
-      }
-
-      const data = {
-        detail: {
-          description: description || "No description provided", // Required by backend
-          willLearn: courseInputs.filter((item) => item.trim() !== ""),
-          targetAudience: audienceInputs.filter((item) => item.trim() !== ""),
-          requirement: requirementInputs.filter((item) => item.trim() !== ""),
-        },
-        uploadedFiles,
-        thumbnail: thumbnailUrl || "", // Required by backend
-        trailer: trailerUrl || "", // Required by backend
-      };
+      const data = buildAdvanceData();
 
       // If in edit mode and files are in temporary folder, try to move them
       if (isEditMode && courseId && (thumbnailUrl || trailerUrl)) {
@@ -406,6 +411,19 @@ export default function CourseForm({
     } catch (err) {
       console.error("Save next error:", err);
       toast.error(err.message || "Failed to save advance info");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    setLoading(true);
+    try {
+      const data = buildAdvanceData();
+      await onSaveDraft(data);
+    } catch (err) {
+      console.error("Save draft error:", err);
+      toast.error(err.message || "Failed to save draft");
     } finally {
       setLoading(false);
     }
@@ -629,15 +647,26 @@ export default function CourseForm({
               >
                 Previous
               </CustomButton>
-              <CustomButton
-                color="primary"
-                type="normal"
-                size="large"
-                onClick={handleSaveNext}
-                disabled={loading || uploadingThumbnail || uploadingTrailer}
-              >
-                {loading ? "Saving..." : "Save & Next"}
-              </CustomButton>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <CustomButton
+                  color="primary"
+                  type="normal"
+                  size="large"
+                  onClick={handleSaveDraft}
+                  disabled={loading || uploadingThumbnail || uploadingTrailer}
+                >
+                  Save to Draft
+                </CustomButton>
+                <CustomButton
+                  color="primary"
+                  type="normal"
+                  size="large"
+                  onClick={handleSaveNext}
+                  disabled={loading || uploadingThumbnail || uploadingTrailer}
+                >
+                  {loading ? "Saving..." : "Save & Next"}
+                </CustomButton>
+              </div>
             </div>
           </div>
         </div>

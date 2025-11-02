@@ -20,12 +20,11 @@ import {
   FaBookOpen,
   FaStar,
   FaCheckCircle,
-  FaGraduationCap,
   FaChartBar,
   FaClock,
   FaSpinner,
 } from "react-icons/fa";
-import "./InstructorDashboard.css";
+import "../../assets/InstructorDashboard/InstructorDashboard.css";
 
 ChartJS.register(
   CategoryScale,
@@ -278,8 +277,8 @@ const InstructorDashboard = () => {
 
   if (loading) {
     return (
-      <div className="modern-dashboard-loading">
-        <div className="spinner"></div>
+      <div className="instructor-dash-loading">
+        <div className="instructor-dash-spinner"></div>
         <p>Đang tải dashboard...</p>
       </div>
     );
@@ -287,7 +286,7 @@ const InstructorDashboard = () => {
 
   if (error) {
     return (
-      <div className="modern-dashboard-error">
+      <div className="instructor-dash-error">
         <p>{error}</p>
         <button onClick={fetchInitialData}>Thử lại</button>
       </div>
@@ -295,71 +294,71 @@ const InstructorDashboard = () => {
   }
 
   return (
-    <div className="modern-instructor-dashboard">
+    <div className="instructor-dash-container">
       {/* Header */}
-      <div className="dashboard-header">
-        <div className="dashboard-title-section">
+      <div className="instructor-dash-header">
+        <div className="instructor-dash-title-section">
           <h1>Instructor Dashboard</h1>
         </div>
       </div>
 
       {/* 4 Key Metrics Cards */}
-      <div className="metrics-grid">
-        <div className="metric-card revenue">
-          <div className="metric-icon">
+      <div className="instructor-dash-metrics-grid">
+        <div className="instructor-dash-metric-card instructor-dash-revenue">
+          <div className="instructor-dash-metric-icon">
             <FaDollarSign />
           </div>
-          <div className="metric-content">
-            <p className="metric-label">Tổng doanh thu</p>
-            <h2 className="metric-value">
+          <div className="instructor-dash-metric-content">
+            <p className="instructor-dash-metric-label">Tổng doanh thu</p>
+            <h2 className="instructor-dash-metric-value">
               {formatVNDCompact(stats.overview?.totalRevenue || 0)}
             </h2>
-            <p className="metric-trend positive">
+            <p className="instructor-dash-metric-trend instructor-dash-positive">
               +{formatVNDCompact(stats.overview?.periodRevenue || 0)} kỳ này
             </p>
           </div>
         </div>
 
-        <div className="metric-card students">
-          <div className="metric-icon">
+        <div className="instructor-dash-metric-card instructor-dash-students">
+          <div className="instructor-dash-metric-icon">
             <FaUsers />
           </div>
-          <div className="metric-content">
-            <p className="metric-label">Tổng học viên</p>
-            <h2 className="metric-value">
+          <div className="instructor-dash-metric-content">
+            <p className="instructor-dash-metric-label">Tổng học viên</p>
+            <h2 className="instructor-dash-metric-value">
               {stats.overview?.totalStudents?.toLocaleString() || 0}
             </h2>
-            <p className="metric-trend positive">
+            <p className="instructor-dash-metric-trend instructor-dash-positive">
               +{stats.overview?.newStudentsThisMonth || 0} tháng này
             </p>
           </div>
         </div>
 
-        <div className="metric-card courses">
-          <div className="metric-icon">
+        <div className="instructor-dash-metric-card instructor-dash-courses">
+          <div className="instructor-dash-metric-icon">
             <FaBookOpen />
           </div>
-          <div className="metric-content">
-            <p className="metric-label">Khóa học</p>
-            <h2 className="metric-value">
+          <div className="instructor-dash-metric-content">
+            <p className="instructor-dash-metric-label">Khóa học</p>
+            <h2 className="instructor-dash-metric-value">
               {stats.overview?.totalCourses?.toLocaleString() || 0}
             </h2>
-            <p className="metric-trend neutral">
+            <p className="instructor-dash-metric-trend instructor-dash-neutral">
               {stats.analytics?.topCoursesByRevenue?.length || 0} đang hoạt động
             </p>
           </div>
         </div>
 
-        <div className="metric-card rating">
-          <div className="metric-icon">
+        <div className="instructor-dash-metric-card instructor-dash-rating">
+          <div className="instructor-dash-metric-icon">
             <FaStar />
           </div>
-          <div className="metric-content">
-            <p className="metric-label">Đánh giá TB</p>
-            <h2 className="metric-value">
+          <div className="instructor-dash-metric-content">
+            <p className="instructor-dash-metric-label">Đánh giá TB</p>
+            <h2 className="instructor-dash-metric-value">
               {stats.courseRating?.averageRating?.toFixed(1) || "N/A"}
             </h2>
-            <p className="metric-trend neutral">
+            <p className="instructor-dash-metric-trend instructor-dash-neutral">
               {stats.courseRating?.breakdown?.reduce(
                 (sum, r) => sum + r.count,
                 0
@@ -371,15 +370,15 @@ const InstructorDashboard = () => {
       </div>
 
       {/* Main Charts Row: Revenue (2/3) + Rating (1/3) */}
-      <div className="main-charts-row">
-        <div className="chart-card large">
-          <div className="chart-header">
+      <div className="instructor-dash-main-charts-row">
+        <div className="instructor-dash-chart-card instructor-dash-large">
+          <div className="instructor-dash-chart-header">
             <h3>Doanh thu theo tháng</h3>
-            <div className="chart-filters">
+            <div className="instructor-dash-chart-filters">
               <select
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="filter-select-compact"
+                className="instructor-dash-filter-select-compact"
                 disabled={revenueLoading}
               >
                 <option value="week">Tuần</option>
@@ -391,7 +390,7 @@ const InstructorDashboard = () => {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
-                className="filter-select-compact"
+                className="instructor-dash-filter-select-compact"
                 disabled={selectedPeriod === "all" || revenueLoading}
               >
                 {getYearOptions().map((year) => (
@@ -401,14 +400,14 @@ const InstructorDashboard = () => {
                 ))}
               </select>
               {revenueLoading && (
-                <span className="loading-indicator">
-                  <FaSpinner className="spinning" />
+                <span className="instructor-dash-loading-indicator">
+                  <FaSpinner className="instructor-dash-spinning" />
                 </span>
               )}
             </div>
           </div>
           <div
-            className="chart-container"
+            className="instructor-dash-chart-container"
             style={{
               opacity: revenueLoading ? 0.5 : 1,
               transition: "opacity 0.3s",
@@ -418,14 +417,14 @@ const InstructorDashboard = () => {
           </div>
         </div>
 
-        <div className="chart-card small">
-          <div className="chart-header">
+        <div className="instructor-dash-chart-card instructor-dash-small">
+          <div className="instructor-dash-chart-header">
             <h3>Đánh giá khóa học</h3>
           </div>
-          <div className="rating-summary">
-            <div className="rating-score">
+          <div className="instructor-dash-rating-summary">
+            <div className="instructor-dash-rating-score">
               <h1>{stats.courseRating?.averageRating?.toFixed(1) || "0.0"}</h1>
-              <div className="stars">
+              <div className="instructor-dash-stars">
                 {Array(Math.round(stats.courseRating?.averageRating || 0))
                   .fill(0)
                   .map((_, i) => (
@@ -440,13 +439,13 @@ const InstructorDashboard = () => {
                 đánh giá
               </p>
             </div>
-            <div className="rating-bars">
+            <div className="instructor-dash-rating-bars">
               {stats.courseRating?.breakdown?.map((r) => (
-                <div key={r.stars} className="rating-bar-row">
+                <div key={r.stars} className="instructor-dash-rating-bar-row">
                   <span>{r.stars}★</span>
-                  <div className="bar">
+                  <div className="instructor-dash-bar">
                     <div
-                      className="bar-fill"
+                      className="instructor-dash-bar-fill"
                       style={{ width: `${r.percentage}%` }}
                     ></div>
                   </div>
@@ -459,40 +458,40 @@ const InstructorDashboard = () => {
       </div>
 
       {/* Pie Charts Row - 4 Charts */}
-      <div className="pie-charts-row">
-        <div className="pie-chart-card">
+      <div className="instructor-dash-pie-charts-row">
+        <div className="instructor-dash-pie-chart-card">
           <h3>Trạng thái học viên</h3>
-          <div className="pie-container">
+          <div className="instructor-dash-pie-container">
             <Doughnut data={enrollmentStatusData} options={pieChartOptions} />
           </div>
         </div>
 
-        <div className="pie-chart-card">
+        <div className="instructor-dash-pie-chart-card">
           <h3>Doanh thu theo danh mục</h3>
-          <div className="pie-container">
+          <div className="instructor-dash-pie-container">
             <Doughnut data={revenueByCategoryData} options={pieChartOptions} />
           </div>
         </div>
 
-        <div className="pie-chart-card">
+        <div className="instructor-dash-pie-chart-card">
           <h3>Doanh thu theo khóa học</h3>
-          <div className="pie-container">
+          <div className="instructor-dash-pie-container">
             <Doughnut data={revenueByCourseData} options={pieChartOptions} />
           </div>
         </div>
 
-        <div className="pie-chart-card">
+        <div className="instructor-dash-pie-chart-card">
           <h3>Phân bố đánh giá</h3>
-          <div className="pie-container">
+          <div className="instructor-dash-pie-container">
             <Doughnut data={ratingDistributionData} options={pieChartOptions} />
           </div>
         </div>
       </div>
 
       {/* Top Courses Grid */}
-      <div className="section-card">
+      <div className="instructor-dash-section-card">
         <h3>Top khóa học theo doanh thu</h3>
-        <div className="top-courses-grid">
+        <div className="instructor-dash-top-courses-grid">
           {revenueData?.topCoursesByRevenue &&
           revenueData.topCoursesByRevenue.length > 0 ? (
             revenueData.topCoursesByRevenue.slice(0, 6).map((course) => {
@@ -509,19 +508,19 @@ const InstructorDashboard = () => {
                 "Không có tên";
 
               return (
-                <div key={course._id} className="course-card">
+                <div key={course._id} className="instructor-dash-course-card">
                   <img
                     src={course.thumbnail || "/placeholder.jpg"}
                     alt={courseTitle}
                     onError={(e) => (e.target.src = "/placeholder.jpg")}
                   />
-                  <div className="course-info">
+                  <div className="instructor-dash-course-info">
                     <h4 title={courseTitle}>{courseTitle}</h4>
-                    <p className="course-revenue">
+                    <p className="instructor-dash-course-revenue">
                       <FaDollarSign size={14} style={{ marginRight: "4px" }} />
                       {formatVND(Number(revenue))}
                     </p>
-                    <p className="course-meta">
+                    <p className="instructor-dash-course-meta">
                       <FaUsers size={14} /> {course.enrollments || 0} ·{" "}
                       <FaStar size={14} color="#fbbf24" />{" "}
                       {course.rating?.toFixed(1) || "N/A"}
@@ -546,11 +545,11 @@ const InstructorDashboard = () => {
       </div>
 
       {/* Bottom Row: Transactions + Completion */}
-      <div className="bottom-row">
-        <div className="section-card">
+      <div className="instructor-dash-bottom-row">
+        <div className="instructor-dash-section-card">
           <h3>Giao dịch gần đây</h3>
-          <div className="table-wrapper">
-            <table className="transactions-table">
+          <div className="instructor-dash-table-wrapper">
+            <table className="instructor-dash-transactions-table">
               <thead>
                 <tr>
                   <th>Học viên</th>
@@ -586,7 +585,7 @@ const InstructorDashboard = () => {
                             : "N/A"}
                         </td>
                         <td>
-                          <span className={`badge ${t.status || ""}`}>
+                          <span className={`instructor-dash-badge instructor-dash-${t.status || ""}`}>
                             {t.status || "N/A"}
                           </span>
                         </td>
@@ -612,26 +611,26 @@ const InstructorDashboard = () => {
           </div>
         </div>
 
-        <div className="section-card">
+        <div className="instructor-dash-section-card">
           <h3>Tỷ lệ hoàn thành</h3>
-          <div className="completion-list">
+          <div className="instructor-dash-completion-list">
             {revenueData?.courseCompletion &&
             revenueData.courseCompletion.length > 0 ? (
               revenueData.courseCompletion.map((course) => (
-                <div key={course.courseId} className="completion-item">
-                  <div className="completion-header">
+                <div key={course.courseId} className="instructor-dash-completion-item">
+                  <div className="instructor-dash-completion-header">
                     <span>{course.title || "Không có tên"}</span>
-                    <span className="completion-rate">
+                    <span className="instructor-dash-completion-rate">
                       {course.completionRate || 0}%
                     </span>
                   </div>
-                  <div className="progress-bar">
+                  <div className="instructor-dash-progress-bar">
                     <div
-                      className="progress-fill"
+                      className="instructor-dash-progress-fill"
                       style={{ width: `${course.completionRate || 0}%` }}
                     ></div>
                   </div>
-                  <div className="completion-stats">
+                  <div className="instructor-dash-completion-stats">
                     <span>
                       <FaCheckCircle size={14} /> {course.completed || 0}
                     </span>
