@@ -74,7 +74,7 @@ const RevenueChart = () => {
         displayColors: false,
         callbacks: {
           title: () => null,
-          label: (context) => `$${context.parsed.y.toLocaleString()}`,
+          label: (context) => `${context.parsed.y.toLocaleString('vi-VN')} VND`,
           afterBody: (context) => context[0].label.replace("Aug ", "") + " Aug",
         },
       },
