@@ -336,7 +336,15 @@
   min-height: 100vh;
 }
 
-/* Warning Modal Styles */
+/* Warning Modal Styles - Ensure it's above everything */
+.ant-modal-wrap {
+  z-index: 10000 !important;
+}
+
+.ant-modal-mask {
+  z-index: 10000 !important;
+}
+
 .ant-modal-content .ant-alert-error {
   font-size: 16px;
   padding: 16px;

@@ -55,8 +55,8 @@ const QuizContent = ({
   const [proctoringSessionId, setProctoringSessionId] = useState(null);
   const [quizLocked, setQuizLocked] = useState(false);
   const [lockReason, setLockReason] = useState("");
-  const [lockCount, setLockCount] = useState(0);
   const [lockUntil, setLockUntil] = useState(null);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   const PASS_THRESHOLD = 80;
   const DEFAULT_TIME_LIMIT_MIN = 15;
@@ -250,7 +250,12 @@ const QuizContent = ({
   // Check if quiz is locked
   useEffect(() => {
     if (!quizId) return;
-    
+
+    // Reset all lock-related states when quiz changes
+    setQuizLocked(false);
+    setLockUntil(null);
+    setLockReason('');
+
     const savedLockTime = localStorage.getItem(`quiz_lock_${quizId}`);
     if (savedLockTime) {
       const lockTime = new Date(savedLockTime);
@@ -261,7 +266,6 @@ const QuizContent = ({
       } else {
         // Lock expired, clear it
         localStorage.removeItem(`quiz_lock_${quizId}`);
-        setLockCount(0);
       }
     }
   }, [quizId]);
@@ -457,36 +461,24 @@ const QuizContent = ({
 
   // Handle quiz locked
   const handleLocked = (reason) => {
-    const newLockCount = lockCount + 1;
-    setLockCount(newLockCount);
-    
-    // After 3 locks, lock for 1 hour
-    if (newLockCount >= 3) {
-      const lockTime = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
-      setLockUntil(lockTime);
-      setQuizLocked(true);
-      setLockReason(`Bạn đã bị khóa làm bài do vi phạm quá nhiều. Vui lòng thử lại sau ${lockTime.toLocaleTimeString('vi-VN')}`);
-      
-      toast.error('Bạn đã bị khóa làm quiz 1 tiếng do vi phạm 3 lần!', { duration: 10 });
-      
-      // Save lock time to localStorage
-      localStorage.setItem(`quiz_lock_${quizId}`, lockTime.toISOString());
-      return;
+    // ProctorMonitor already handles counting violations (3 times)
+    // When this callback is called, it means quiz should be locked immediately
+    const lockTime = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+    setLockUntil(lockTime);
+    setQuizLocked(true);
+    setLockReason(`Bạn đã bị khóa làm bài do vi phạm: ${reason}. Vui lòng thử lại sau ${lockTime.toLocaleTimeString('vi-VN')}`);
+
+    toast.error('Bạn đã bị khóa làm quiz 1 tiếng do vi phạm 3 lần!', { duration: 10000 });
+
+    // Save lock time to localStorage
+    localStorage.setItem(`quiz_lock_${quizId}`, lockTime.toISOString());
+
+    // End proctoring session if active
+    if (proctoringSessionId) {
+      endProctoringSession(proctoringSessionId, 'locked').catch(err => {
+        console.error('Failed to end proctoring session:', err);
+      });
     }
-    
-    // Reset to quiz intro (not locked permanently, just retry)
-    toast.warning(`Vi phạm lần ${newLockCount}/3: ${reason}`, { duration: 5 });
-    
-    setHasStarted(false);
-    setCurrentQuestionIndex(0);
-    setRemainingSeconds(effectiveTimeLimitSeconds);
-    
-    // Clear answers
-    const resetAnswers = {};
-    quizData.questions.forEach((q, idx) => {
-      resetAnswers[idx] = q.type === 'multiple-choice' ? [] : null;
-    });
-    setSelectedAnswers(resetAnswers);
   };
 
   useEffect(() => {
@@ -853,7 +845,28 @@ const QuizContent = ({
         sessionId={proctoringSessionId}
         onViolation={handleViolation}
         onLocked={handleLocked}
-        isActive={true}
+        onIdentityVerified={(verified) => {
+          if (verified) {
+            // After verification, start the quiz automatically
+            setRemainingSeconds(effectiveTimeLimitSeconds);
+            setHasStarted(true);
+            setShowVerificationModal(false);
+
+            // Start proctoring session
+            startProctoringSession(quizId)
+              .then(result => {
+                if (result.success) {
+                  setProctoringSessionId(result.data.sessionId);
+                  toast.info("Anti-cheating system activated. Keep fullscreen and camera on!");
+                }
+              })
+              .catch(error => {
+                console.error("Failed to start proctoring:", error);
+                toast.warning("Quiz started but proctoring may not be active.");
+              });
+          }
+        }}
+        isActive={showVerificationModal}
       >
         <div className="quiz-intro">
           <h2 className="intro-title">Quiz</h2>
@@ -876,28 +889,16 @@ const QuizContent = ({
                 Pass threshold: <strong>{PASS_THRESHOLD}%</strong>.
               </li>
               <li>Timer starts when you begin the quiz.</li>
-              <li><strong>⚠️ Complete identity verification before starting</strong></li>
+              <li><strong>⚠️ Identity verification required before starting</strong></li>
             </ul>
           </div>
 
           <div className="quiz-actions">
             <button
               className="start-quiz-btn"
-              onClick={async () => {
-                setRemainingSeconds(effectiveTimeLimitSeconds);
-                setHasStarted(true);
-                
-                // Start proctoring session
-                try {
-                  const result = await startProctoringSession(quizId);
-                  if (result.success) {
-                    setProctoringSessionId(result.data.sessionId);
-                    toast.info("Anti-cheating system activated. Keep fullscreen and camera on!");
-                  }
-                } catch (error) {
-                  console.error("Failed to start proctoring:", error);
-                  toast.warning("Quiz started but proctoring may not be active.");
-                }
+              onClick={() => {
+                // Show verification modal when user clicks Start Quiz
+                setShowVerificationModal(true);
               }}
             >
               Start Quiz
