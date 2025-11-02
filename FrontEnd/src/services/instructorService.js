@@ -204,3 +204,8 @@ export const getPublicProfile = async (userId) => {
 export const getInstructorStats = async (userId) => {
   return await apiClient.get(`/instructor/stats/${userId}`);
 };
+
+// Get instructor feedbacks
+export const getInstructorFeedbacks = async (userId, page = 1, limit = 10) => {
+  return await apiClient.get(`/instructor/feedbacks/${userId}?page=${page}&limit=${limit}`);
+};
