@@ -11,9 +11,10 @@ export const getDashboardStats = () => {
 
 /**
  * @desc    Lấy dữ liệu thống kê cho dashboard (Instructor)
+ * @param {Object} params - Query parameters (year, startDate, endDate, period)
  * @returns {Promise}
  */
-export const getInstructorDashboardStats = () => {
+export const getInstructorDashboardStats = (params = {}) => {
     // apiClient sẽ tự động thêm token và gọi đến /api/instructor/dashboard
-    return apiClient.get('/instructor/dashboard');
+    return apiClient.get('/instructor/dashboard', { params });
 };
