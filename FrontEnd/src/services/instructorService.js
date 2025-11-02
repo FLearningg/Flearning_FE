@@ -209,3 +209,8 @@ export const getInstructorStats = async (userId) => {
 export const getInstructorFeedbacks = async (userId, page = 1, limit = 10) => {
   return await apiClient.get(`/instructor/feedbacks/${userId}?page=${page}&limit=${limit}`);
 };
+
+// Get course analytics (revenue, views, comments, rating breakdown)
+export const getCourseAnalytics = async (courseId, period = 'month') => {
+  return await apiClient.get(`/instructor/courses/${courseId}/analytics?period=${period}`);
+};
