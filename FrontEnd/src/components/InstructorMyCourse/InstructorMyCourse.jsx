@@ -14,8 +14,9 @@ import {
   ArcElement,
 } from "chart.js";
 import "../../assets/AdminMyCourse/AdminMyCourse.css";
-import { getCourseById, deleteCourse } from "../../services/instructorService";
+import { getCourseById, deleteCourse, getCourseAnalytics } from "../../services/instructorService";
 import { toast } from "react-toastify";
+import { formatVND } from "../../utils/formatCurrency";
 
 // Đăng ký các module cần thiết của Chart.js
 ChartJS.register(
@@ -32,13 +33,13 @@ ChartJS.register(
 
 // --- CÁC COMPONENT BIỂU ĐỒ ---
 
-const RevenueChart = () => {
+const RevenueChart = ({ analyticsData }) => {
   const data = {
-    labels: ["Aug 01", "Aug 10", "Aug 20", "Aug 31"],
+    labels: analyticsData?.revenue?.labels || [],
     datasets: [
       {
         label: "Revenue",
-        data: [50000, 150000, 51749, 120000],
+        data: analyticsData?.revenue?.data || [],
         borderColor: "#23bd33",
         borderWidth: 3,
         pointRadius: 0,
@@ -75,7 +76,6 @@ const RevenueChart = () => {
         callbacks: {
           title: () => null,
           label: (context) => `${context.parsed.y.toLocaleString('vi-VN')} VND`,
-          afterBody: (context) => context[0].label.replace("Aug ", "") + " Aug",
         },
       },
     },
@@ -96,20 +96,20 @@ const RevenueChart = () => {
   return <Line data={data} options={options} />;
 };
 
-const CourseOverviewChart = () => {
+const CourseOverviewChart = ({ analyticsData }) => {
   const data = {
-    labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    labels: analyticsData?.courseOverview?.labels || [],
     datasets: [
       {
         label: "Comments",
-        data: [120, 190, 150, 220, 180, 250, 210],
+        data: analyticsData?.courseOverview?.comments || [],
         borderColor: "#ff6636",
         tension: 0.4,
         pointRadius: 0,
       },
       {
         label: "View",
-        data: [80, 110, 90, 150, 130, 170, 140],
+        data: analyticsData?.courseOverview?.views || [],
         borderColor: "#564ffd",
         tension: 0.4,
         pointRadius: 0,
@@ -128,7 +128,7 @@ const CourseOverviewChart = () => {
         padding: 10,
         cornerRadius: 4,
         callbacks: {
-          label: (context) => `${context.dataset.label}: ${context.parsed.y}k`,
+          label: (context) => `${context.dataset.label}: ${context.parsed.y}`,
         },
       },
     },
@@ -138,7 +138,6 @@ const CourseOverviewChart = () => {
         grid: { color: "#e5e7eb" },
         ticks: {
           color: "#9ca3af",
-          callback: (value) => `${value}k`,
         },
       },
     },
@@ -146,12 +145,12 @@ const CourseOverviewChart = () => {
   return <Line data={data} options={options} />;
 };
 
-const RatingLineChart = () => {
+const RatingLineChart = ({ analyticsData }) => {
   const data = {
     labels: ["", "", "", "", "", "", ""],
     datasets: [
       {
-        data: [20, 40, 30, 50, 45, 60, 55],
+        data: analyticsData?.ratingTrend || [20, 40, 30, 50, 45, 60, 55],
         borderColor: "#f97316",
         borderWidth: 2.5,
         tension: 0.4,
@@ -202,6 +201,12 @@ function InstructorMyCourse() {
   const [error, setError] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  
+  // Analytics state
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [revenuePeriod, setRevenuePeriod] = useState('month');
+  const [overviewPeriod, setOverviewPeriod] = useState('week');
 
   useEffect(() => {
     if (!courseData) {
@@ -209,13 +214,94 @@ function InstructorMyCourse() {
       setError(null);
       getCourseById(id)
         .then((res) => {
-          console.log("Course data from API:", res.data);
           setCourseData(res.data);
         })
         .catch(() => setError("Course not found or failed to fetch."))
         .finally(() => setLoading(false));
     }
   }, [id, courseData]);
+
+  // Fetch analytics data (initial load)
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      if (!id) return;
+      
+      try {
+        setAnalyticsLoading(true);
+        // Fetch with both periods on initial load + all-time summary
+        const [overviewResponse, revenueResponse, allTimeSummary] = await Promise.all([
+          getCourseAnalytics(id, overviewPeriod),
+          getCourseAnalytics(id, revenuePeriod),
+          getCourseAnalytics(id, 'all') // Get all-time revenue summary
+        ]);
+        
+        const mergedData = {
+          ...overviewResponse.data.data,
+          revenue: revenueResponse.data.data.revenue,
+          summary: allTimeSummary.data.data.summary, // All-time summary for display
+        };
+        
+        setAnalyticsData(mergedData);
+      } catch (error) {
+        console.error("Error fetching analytics:", error);
+        // Set default empty data on error
+        setAnalyticsData({
+          revenue: { labels: [], data: [] },
+          courseOverview: { labels: [], comments: [], views: [] },
+          ratingBreakdown: { stars: [5, 4, 3, 2, 1], percentages: [0, 0, 0, 0, 0], counts: [0, 0, 0, 0, 0] },
+          ratingTrend: [0, 0, 0, 0, 0, 0, 0],
+        });
+      } finally {
+        setAnalyticsLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  // Fetch overview data when period changes
+  useEffect(() => {
+    const fetchOverviewData = async () => {
+      if (!id || !analyticsData) return;
+      
+      try {
+        const response = await getCourseAnalytics(id, overviewPeriod);
+        setAnalyticsData(prev => ({
+          ...prev,
+          courseOverview: response.data.data.courseOverview,
+          ratingBreakdown: response.data.data.ratingBreakdown, // Keep updated
+          ratingTrend: response.data.data.ratingTrend, // Keep updated
+        }));
+      } catch (error) {
+        console.error("Error fetching overview data:", error);
+      }
+    };
+
+    fetchOverviewData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [overviewPeriod]);
+
+  // Fetch revenue data when period changes
+  useEffect(() => {
+    const fetchRevenueData = async () => {
+      if (!id || !analyticsData) return;
+      
+      try {
+        const response = await getCourseAnalytics(id, revenuePeriod);
+        setAnalyticsData(prev => ({
+          ...prev,
+          revenue: response.data.data.revenue,
+          // Keep the all-time summary, don't update it
+        }));
+      } catch (error) {
+        console.error("Error fetching revenue data:", error);
+      }
+    };
+
+    fetchRevenueData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revenuePeriod]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -264,8 +350,9 @@ function InstructorMyCourse() {
   const confirmDelete = async () => {
     if (courseData) {
       const studentsEnrolled =
-        courseData.enrollmentCount ||
-        (courseData.studentsEnrolled ? courseData.studentsEnrolled.length : 0);
+        analyticsData?.summary?.totalStudents ??
+        (courseData.enrollmentCount ||
+        (courseData.studentsEnrolled ? courseData.studentsEnrolled.length : 0));
 
       if (studentsEnrolled > 0) {
         toast.info(
@@ -329,8 +416,9 @@ function InstructorMyCourse() {
     );
 
   const studentsEnrolled =
-    courseData.enrollmentCount ||
-    (courseData.studentsEnrolled ? courseData.studentsEnrolled.length : 0);
+    analyticsData?.summary?.totalStudents ?? // Prioritize analytics data (real-time count)
+    (courseData.enrollmentCount ||
+    (courseData.studentsEnrolled ? courseData.studentsEnrolled.length : 0));
   const courseImage =
     courseData.thumbnail ||
     courseData.image ||
@@ -524,8 +612,8 @@ function InstructorMyCourse() {
                         <p>Course prices</p>
                       </div>
                       <div className="amc-price-item">
-                        <h3>$0.00</h3>
-                        <p>USD dollar revenue</p>
+                        <h3>{formatVND(analyticsData?.summary?.totalRevenue || 0)}</h3>
+                        <p>Course revenue</p>
                       </div>
                     </div>
                   </div>
@@ -618,44 +706,43 @@ function InstructorMyCourse() {
                     <div className="amc-rating-label">Course Rating</div>
                   </div>
                   <div className="amc-rating-mini-chart">
-                    <RatingLineChart />
+                    <RatingLineChart analyticsData={analyticsData} />
                   </div>
                 </div>
                 <div className="amc-rating-breakdown">
-                  {[
-                    { stars: 5, percentage: 67 },
-                    { stars: 4, percentage: 27 },
-                    { stars: 3, percentage: 5 },
-                    { stars: 2, percentage: 1 },
-                    { stars: 1, percentage: 1, isLessThan: true },
-                  ].map((rating) => (
-                    <div className="amc-rating-row" key={rating.stars}>
-                      <div className="amc-rating-stars-small">
-                        {[...Array(5)].map((_, i) => (
-                          <StarIcon
-                            key={i}
-                            filled={i < rating.stars}
-                            className="amc-star-small"
-                          />
-                        ))}
-                        <span className="amc-rating-text-small">
-                          {rating.stars} Star
-                        </span>
-                      </div>
-                      <div className="amc-progress-bar">
-                        <div
-                          className="amc-progress-fill"
-                          style={{ width: `${rating.percentage}%` }}
-                        ></div>
-                      </div>
-                      <span className="amc-rating-percentage">
-                        {rating.isLessThan
-                          ? `<${rating.percentage}`
-                          : rating.percentage}
-                        %
-                      </span>
-                    </div>
-                  ))}
+                  {analyticsLoading ? (
+                    <div style={{ textAlign: 'center', padding: '20px' }}>Loading...</div>
+                  ) : (
+                    analyticsData?.ratingBreakdown?.stars?.map((stars, index) => {
+                      const percentage = analyticsData.ratingBreakdown.percentages[index];
+                      const isLessThan = percentage < 1 && percentage > 0;
+                      return (
+                        <div className="amc-rating-row" key={stars}>
+                          <div className="amc-rating-stars-small">
+                            {[...Array(5)].map((_, i) => (
+                              <StarIcon
+                                key={i}
+                                filled={i < stars}
+                                className="amc-star-small"
+                              />
+                            ))}
+                            <span className="amc-rating-text-small">
+                              {stars} Star
+                            </span>
+                          </div>
+                          <div className="amc-progress-bar">
+                            <div
+                              className="amc-progress-fill"
+                              style={{ width: `${percentage}%` }}
+                            ></div>
+                          </div>
+                          <span className="amc-rating-percentage">
+                            {isLessThan ? `<1` : percentage}%
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </div>
@@ -674,10 +761,14 @@ function InstructorMyCourse() {
           <div className="amc-card">
             <div className="amc-card-header">
               <h3 className="amc-card-title">Revenue</h3>
-              <select className="amc-select">
-                <option>This month</option>
-                <option>This week</option>
-                <option>This year</option>
+              <select 
+                className="amc-select"
+                value={revenuePeriod}
+                onChange={(e) => setRevenuePeriod(e.target.value)}
+              >
+                <option value="month">This month</option>
+                <option value="week">This week</option>
+                <option value="year">This year</option>
               </select>
             </div>
             <div className="amc-card-content">
@@ -685,7 +776,13 @@ function InstructorMyCourse() {
                 className="amc-chart-placeholder"
                 style={{ height: "250px", position: "relative" }}
               >
-                <RevenueChart />
+                {analyticsLoading ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    Loading...
+                  </div>
+                ) : (
+                  <RevenueChart analyticsData={analyticsData} />
+                )}
               </div>
             </div>
           </div>
@@ -725,10 +822,14 @@ function InstructorMyCourse() {
                     View
                   </span>
                 </div>
-                <select className="amc-select">
-                  <option>This month</option>
-                  <option>This week</option>
-                  <option>This year</option>
+                <select 
+                  className="amc-select"
+                  value={overviewPeriod}
+                  onChange={(e) => setOverviewPeriod(e.target.value)}
+                >
+                  <option value="month">This month</option>
+                  <option value="week">This week</option>
+                  <option value="year">This year</option>
                 </select>
               </div>
             </div>
@@ -737,7 +838,13 @@ function InstructorMyCourse() {
                 className="amc-chart-placeholder"
                 style={{ height: "250px", position: "relative" }}
               >
-                <CourseOverviewChart />
+                {analyticsLoading ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    Loading...
+                  </div>
+                ) : (
+                  <CourseOverviewChart analyticsData={analyticsData} />
+                )}
               </div>
             </div>
           </div>
@@ -749,10 +856,11 @@ function InstructorMyCourse() {
         courseData &&
         (() => {
           const studentsEnrolled =
-            courseData.enrollmentCount ||
+            analyticsData?.summary?.totalStudents ??
+            (courseData.enrollmentCount ||
             (courseData.studentsEnrolled
               ? courseData.studentsEnrolled.length
-              : 0);
+              : 0));
           const hasStudents = studentsEnrolled > 0;
 
           return (
