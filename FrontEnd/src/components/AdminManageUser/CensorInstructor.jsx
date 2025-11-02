@@ -133,10 +133,15 @@ export default function CensorInstructor() {
       }));
       
       // Separate applications and approved instructors
-      const pendingApps = transformedData.filter(app => app.status === "pending" || app.status === "emailNotVerified");
-      const approvedInstructors = transformedData.filter(app => app.status === "approved");
+      // Include AI-approved applications in the applications tab
+      const allApplications = transformedData.filter(app =>
+        app.status !== "approved" || app.aiReviewStatus === "approved"
+      );
+      const approvedInstructors = transformedData.filter(app =>
+        app.status === "approved" && app.aiReviewStatus !== "approved"
+      );
       
-      setApplications(pendingApps);
+      setApplications(allApplications);
       setInstructors(approvedInstructors);
     } catch (err) {
       console.error("API Error:", err); // Log any API errors
@@ -439,6 +444,7 @@ export default function CensorInstructor() {
                     <th>{activeTab === "applications" ? "Applicant" : "Instructor"}</th>
                     <th>Email</th>
                     <th>Status</th>
+                    <th>AI Review</th>
                     <th>{activeTab === "applications" ? "Date Applied" : "Date Approved"}</th>
                     <th>Actions</th>
                   </tr>
@@ -447,6 +453,26 @@ export default function CensorInstructor() {
                   {paginatedData.map((app, index) => {
                     const rowNumber =
                       (currentPage - 1) * itemsPerPage + index + 1;
+                    
+                    // Determine AI review status display
+                    const getAIReviewStatus = (app) => {
+                      if (!app.aiReviewStatus) {
+                        return { text: "", class: "" }; // Leave empty when no AI review data
+                      }
+                      switch (app.aiReviewStatus) {
+                        case "approved":
+                          return { text: "AI Approved", class: "ai-status-approved" };
+                        case "rejected":
+                          return { text: "AI Rejected", class: "ai-status-rejected" };
+                        case "manual_review":
+                          return { text: "Manual Review", class: "ai-status-manual" };
+                        default:
+                          return { text: "", class: "" }; // Leave empty for unknown status
+                      }
+                    };
+                    
+                    const aiStatus = getAIReviewStatus(app);
+                    
                     return (
                       <tr key={app._id} className="amu-table-row">
                         <td className="amu-table-cell amu-row-number">
@@ -486,6 +512,18 @@ export default function CensorInstructor() {
                           >
                             {app.status}
                           </span>
+                        </td>
+                        <td className="amu-table-cell">
+                          {aiStatus.text && (
+                            <span className={`ai-status-badge ${aiStatus.class}`}>
+                              {aiStatus.text}
+                            </span>
+                          )}
+                          {app.aiReviewScore && (
+                            <div className="ai-score-info">
+                              Score: {app.aiReviewScore}/100
+                            </div>
+                          )}
                         </td>
                         <td className="amu-table-cell amu-date-joined">
                           {dayjs(app.createdAt).format("DD/MM/YYYY")}
@@ -722,6 +760,60 @@ export default function CensorInstructor() {
                         {selectedApplication.status}
                       </span>
                     </div>
+                    <div className="ci-info-item">
+                      <span className="ci-info-label">AI Review Status:</span>
+                      {(() => {
+                        if (!selectedApplication.aiReviewStatus) {
+                          return (
+                            <span className="ci-info-value">
+                              -
+                            </span>
+                          );
+                        }
+                        switch (selectedApplication.aiReviewStatus) {
+                          case "approved":
+                            return (
+                              <span className="ai-status-badge ai-status-approved">
+                                AI Approved
+                              </span>
+                            );
+                          case "rejected":
+                            return (
+                              <span className="ai-status-badge ai-status-rejected">
+                                AI Rejected
+                              </span>
+                            );
+                          case "manual_review":
+                            return (
+                              <span className="ai-status-badge ai-status-manual">
+                                Manual Review Required
+                              </span>
+                            );
+                          default:
+                            return (
+                              <span className="ci-info-value">
+                                -
+                              </span>
+                            );
+                        }
+                      })()}
+                    </div>
+                    {selectedApplication.aiReviewScore && (
+                      <div className="ci-info-item">
+                        <span className="ci-info-label">AI Score:</span>
+                        <span className="ci-info-value">
+                          {selectedApplication.aiReviewScore}/100
+                        </span>
+                      </div>
+                    )}
+                    {selectedApplication.aiReviewDetails?.decision?.reason && (
+                      <div className="ci-info-item ci-info-item-full">
+                        <span className="ci-info-label">AI Review Reason:</span>
+                        <span className="ci-info-value">
+                          {selectedApplication.aiReviewDetails.decision.reason}
+                        </span>
+                      </div>
+                    )}
                     <b></b>
                     <div className="ci-info-item">
                       <span className="ci-info-label">Created At:</span>

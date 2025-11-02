@@ -132,7 +132,7 @@ export function Sidebar({ open, setOpen, isMobile }) {
             <NavItem
               href="/admin/users"
               icon="users"
-              label="Manage Users"
+              label="User Management"
               active={location.pathname.startsWith("/admin/users")}
               onClick={handleNavClick}
             />
