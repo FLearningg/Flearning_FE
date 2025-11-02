@@ -1,0 +1,206 @@
+.essay-quiz-result {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.essay-result-loading,
+.essay-result-error {
+  max-width: 600px;
+  margin: 60px auto;
+  padding: 20px;
+}
+
+.loading-card,
+.error-card {
+  text-align: center;
+  padding: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Score Card */
+.score-card {
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.score-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.trophy-icon {
+  font-size: 64px;
+  color: #ffd700;
+}
+
+.score-info {
+  flex: 1;
+}
+
+.score-info h2 {
+  color: white !important;
+  margin: 0 !important;
+  font-size: 48px;
+}
+
+.score-info .ant-typography {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 18px;
+}
+
+.pass-status .status-tag {
+  font-size: 16px;
+  padding: 8px 16px;
+  border: none;
+}
+
+.score-progress {
+  margin: 24px 0 !important;
+}
+
+.quiz-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Details Card */
+.details-card {
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.answer-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.question-section,
+.answer-section,
+.feedback-section,
+.strengths-section,
+.improvements-section {
+  padding: 12px 0;
+}
+
+.question-text {
+  font-size: 16px;
+  line-height: 1.6;
+  margin-top: 12px;
+  padding: 16px;
+  background-color: #fafafa;
+  border-radius: 8px;
+  margin-bottom: 0 !important;
+}
+
+.answer-card {
+  background-color: #f6ffed;
+  margin-top: 12px;
+}
+
+.answer-text {
+  font-size: 15px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  margin-bottom: 0 !important;
+}
+
+.feedback-alert {
+  margin-top: 12px;
+  border-left: 4px solid #1890ff;
+}
+
+.section-title {
+  font-size: 16px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.success-text {
+  color: #52c41a;
+}
+
+.warning-text {
+  color: #fa8c16;
+}
+
+.strength-list,
+.improvement-list {
+  margin: 12px 0 0 0;
+  padding-left: 24px;
+  list-style: none;
+}
+
+.strength-list li,
+.improvement-list li {
+  margin: 8px 0;
+  padding: 8px;
+  background-color: #f6ffed;
+  border-radius: 4px;
+  line-height: 1.6;
+}
+
+.improvement-list li {
+  background-color: #fff7e6;
+}
+
+.icon-success {
+  color: #52c41a;
+  margin-right: 8px;
+}
+
+.grading-info {
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 12px;
+}
+
+/* Actions Card */
+.actions-card {
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .essay-quiz-result {
+    padding: 10px;
+  }
+
+  .score-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .trophy-icon {
+    font-size: 48px;
+  }
+
+  .score-info h2 {
+    font-size: 36px;
+  }
+
+  .quiz-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .answer-panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

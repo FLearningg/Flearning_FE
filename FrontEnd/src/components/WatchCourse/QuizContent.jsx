@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Modal } from "antd";
 import "../../assets/WatchCourse/QuizContent.css";
 import "../../assets/WatchCourse/AIExplanationPanel.css";
 import apiClient, { getUserProfile } from "../../services/authService";
@@ -9,6 +10,12 @@ import {
 } from "../../services/quizService";
 import { toast } from "react-toastify";
 import AIExplanationPanel from "./AIExplanationPanel";
+import ProctorMonitor from "../Proctoring/ProctorMonitor";
+import {
+  startProctoringSession,
+  logViolation,
+  endProctoringSession
+} from "../../services/proctoringService";
 
 const QuizContent = ({
   lessonId,
@@ -43,6 +50,13 @@ const QuizContent = ({
 
   // Re-added state for managing the detail modal visibility
   const [showDetailModal, setShowDetailModal] = useState(false);
+
+  // Proctoring states
+  const [proctoringSessionId, setProctoringSessionId] = useState(null);
+  const [quizLocked, setQuizLocked] = useState(false);
+  const [lockReason, setLockReason] = useState("");
+  const [lockCount, setLockCount] = useState(0);
+  const [lockUntil, setLockUntil] = useState(null);
 
   const PASS_THRESHOLD = 80;
   const DEFAULT_TIME_LIMIT_MIN = 15;
@@ -233,6 +247,25 @@ const QuizContent = ({
     fetchQuizData();
   }, [lessonId, propQuizData, propQuizId, timeLimitSeconds]);
 
+  // Check if quiz is locked
+  useEffect(() => {
+    if (!quizId) return;
+    
+    const savedLockTime = localStorage.getItem(`quiz_lock_${quizId}`);
+    if (savedLockTime) {
+      const lockTime = new Date(savedLockTime);
+      if (Date.now() < lockTime.getTime()) {
+        setQuizLocked(true);
+        setLockUntil(lockTime);
+        setLockReason(`Bạn đã bị khóa làm bài do vi phạm. Vui lòng thử lại sau ${lockTime.toLocaleTimeString('vi-VN')}`);
+      } else {
+        // Lock expired, clear it
+        localStorage.removeItem(`quiz_lock_${quizId}`);
+        setLockCount(0);
+      }
+    }
+  }, [quizId]);
+
   useEffect(() => {
     const refetchResultIfNeeded = async () => {
       if (!quizId) return;
@@ -399,6 +432,62 @@ const QuizContent = ({
       setIsSubmitting(false);
     }
   }, [quizId, selectedAnswers, quizData, onQuizComplete, lessonId]);
+
+  // Handle proctoring violation
+  const handleViolation = async (sessionId, violationType, details) => {
+    try {
+      const result = await logViolation(sessionId, violationType, details);
+      
+      if (result.success && result.data.isLocked) {
+        setQuizLocked(true);
+        setLockReason(result.data.lockReason);
+        toast.error("Quiz locked due to violations!");
+        
+        // End proctoring
+        if (proctoringSessionId) {
+          await endProctoringSession(proctoringSessionId, 'locked');
+        }
+      }
+      
+      return result.data;
+    } catch (error) {
+      console.error("Failed to log violation:", error);
+    }
+  };
+
+  // Handle quiz locked
+  const handleLocked = (reason) => {
+    const newLockCount = lockCount + 1;
+    setLockCount(newLockCount);
+    
+    // After 3 locks, lock for 1 hour
+    if (newLockCount >= 3) {
+      const lockTime = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+      setLockUntil(lockTime);
+      setQuizLocked(true);
+      setLockReason(`Bạn đã bị khóa làm bài do vi phạm quá nhiều. Vui lòng thử lại sau ${lockTime.toLocaleTimeString('vi-VN')}`);
+      
+      toast.error('Bạn đã bị khóa làm quiz 1 tiếng do vi phạm 3 lần!', { duration: 10 });
+      
+      // Save lock time to localStorage
+      localStorage.setItem(`quiz_lock_${quizId}`, lockTime.toISOString());
+      return;
+    }
+    
+    // Reset to quiz intro (not locked permanently, just retry)
+    toast.warning(`Vi phạm lần ${newLockCount}/3: ${reason}`, { duration: 5 });
+    
+    setHasStarted(false);
+    setCurrentQuestionIndex(0);
+    setRemainingSeconds(effectiveTimeLimitSeconds);
+    
+    // Clear answers
+    const resetAnswers = {};
+    quizData.questions.forEach((q, idx) => {
+      resetAnswers[idx] = q.type === 'multiple-choice' ? [] : null;
+    });
+    setSelectedAnswers(resetAnswers);
+  };
 
   useEffect(() => {
     if (!hasStarted || quizResult) return;
@@ -736,44 +825,86 @@ const QuizContent = ({
   const currentQuestion = quizData.questions[currentQuestionIndex];
   // const resultDetail = quizResult ? getQuestionResultForIndex(currentQuestionIndex) : null;
 
+  // Show lock screen if locked
+  if (quizLocked && lockUntil) {
+    const timeRemaining = Math.ceil((lockUntil.getTime() - Date.now()) / 1000 / 60); // minutes
+    return (
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '60px 20px',
+        maxWidth: '600px',
+        margin: '0 auto'
+      }}>
+        <div style={{ fontSize: '80px', marginBottom: '24px' }}>🔒</div>
+        <h2 style={{ color: '#ff4d4f', marginBottom: '16px' }}>Quiz đã bị khóa</h2>
+        <p style={{ fontSize: '16px', color: '#595959', marginBottom: '8px' }}>
+          {lockReason}
+        </p>
+        <p style={{ fontSize: '14px', color: '#8c8c8c' }}>
+          Còn khoảng {timeRemaining} phút
+        </p>
+      </div>
+    );
+  }
+
   if (!hasStarted) {
     return (
-      <div className="quiz-intro">
-        <h2 className="intro-title">Quiz</h2>
-        <div className="intro-info">
-          <div className="intro-row">
-            <span>Total questions:</span>
-            <strong>{totalQuestions}</strong>
+      <ProctorMonitor
+        sessionId={proctoringSessionId}
+        onViolation={handleViolation}
+        onLocked={handleLocked}
+        isActive={true}
+      >
+        <div className="quiz-intro">
+          <h2 className="intro-title">Quiz</h2>
+          <div className="intro-info">
+            <div className="intro-row">
+              <span>Total questions:</span>
+              <strong>{totalQuestions}</strong>
+            </div>
+            <div className="intro-row">
+              <span>Time limit:</span>
+              <strong>{Math.ceil(effectiveTimeLimitSeconds / 60)} minutes</strong>
+            </div>
           </div>
-          <div className="intro-row">
-            <span>Time limit:</span>
-            <strong>{Math.ceil(effectiveTimeLimitSeconds / 60)} minutes</strong>
+
+          <div className="quiz-instructions">
+            <h3>Instructions</h3>
+            <ul>
+              <li>Answer all questions before submitting.</li>
+              <li>
+                Pass threshold: <strong>{PASS_THRESHOLD}%</strong>.
+              </li>
+              <li>Timer starts when you begin the quiz.</li>
+              <li><strong>⚠️ Complete identity verification before starting</strong></li>
+            </ul>
+          </div>
+
+          <div className="quiz-actions">
+            <button
+              className="start-quiz-btn"
+              onClick={async () => {
+                setRemainingSeconds(effectiveTimeLimitSeconds);
+                setHasStarted(true);
+                
+                // Start proctoring session
+                try {
+                  const result = await startProctoringSession(quizId);
+                  if (result.success) {
+                    setProctoringSessionId(result.data.sessionId);
+                    toast.info("Anti-cheating system activated. Keep fullscreen and camera on!");
+                  }
+                } catch (error) {
+                  console.error("Failed to start proctoring:", error);
+                  toast.warning("Quiz started but proctoring may not be active.");
+                }
+              }}
+            >
+              Start Quiz
+            </button>
           </div>
         </div>
-
-        <div className="quiz-instructions">
-          <h3>Instructions</h3>
-          <ul>
-            <li>Answer all questions before submitting.</li>
-            <li>
-              Pass threshold: <strong>{PASS_THRESHOLD}%</strong>.
-            </li>
-            <li>Timer starts when you begin the quiz.</li>
-          </ul>
-        </div>
-
-        <div className="quiz-actions">
-          <button
-            className="start-quiz-btn"
-            onClick={() => {
-              setRemainingSeconds(effectiveTimeLimitSeconds);
-              setHasStarted(true);
-            }}
-          >
-            Start Quiz
-          </button>
-        </div>
-      </div>
+      </ProctorMonitor>
     );
   }
 
@@ -933,8 +1064,14 @@ const QuizContent = ({
         </div>
       )}
 
-      {!quizResult && (
-        <div className="quiz-main-content">
+      {!quizResult && !quizLocked && (
+        <ProctorMonitor
+          sessionId={proctoringSessionId}
+          onViolation={handleViolation}
+          onLocked={handleLocked}
+          isActive={hasStarted && !quizResult}
+        >
+          <div className="quiz-main-content">
           {/* Header */}
           <div className="quiz-header-bar">
             <div className="quiz-progress">
@@ -1152,6 +1289,21 @@ const QuizContent = ({
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+        </ProctorMonitor>
+      )}
+
+      {quizLocked && (
+        <div className="quiz-locked-screen">
+          <div className="locked-content">
+            <div className="locked-icon">🔒</div>
+            <h2>Quiz Locked</h2>
+            <p>{lockReason}</p>
+            <div className="locked-message">
+              Your quiz has been locked due to violation of exam rules.
+              Please contact your instructor for assistance.
             </div>
           </div>
         </div>
