@@ -89,6 +89,7 @@ export default function CourseCurriculum({
   initialData,
   onNext,
   onPrev,
+  onSaveDraft,
   completedTabs,
   onTabClick,
   courseId,
@@ -1303,32 +1304,59 @@ export default function CourseCurriculum({
                     >
                       Previous
                     </CustomButton>
-                    <CustomButton
-                      color="primary"
-                      type="normal"
-                      size="large"
-                      onClick={async () => {
-                        if (isSavingCourse) return; // Prevent multiple clicks
-                        
-                        setIsSavingCourse(true);
-                        try {
-                          // Save temporary quizzes to database if courseId is available
-                          let updatedSections = sections;
-                          if (courseId && courseId !== "undefined" && courseId !== "null") {
-                            updatedSections = await saveTemporaryQuizzes(courseId, sections);
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <CustomButton
+                        color="primary"
+                        type="normal"
+                        size="large"
+                        onClick={async () => {
+                          if (isSavingCourse) return;
+                          setIsSavingCourse(true);
+                          try {
+                            // Save temporary quizzes if needed
+                            let updatedSections = sections;
+                            if (courseId && courseId !== "undefined" && courseId !== "null") {
+                              updatedSections = await saveTemporaryQuizzes(courseId, sections);
+                            }
+                            await onSaveDraft({ sections: updatedSections });
+                          } catch (error) {
+                            console.error("Error saving draft:", error);
+                            toast.error("Failed to save draft");
+                          } finally {
+                            setIsSavingCourse(false);
                           }
-                          onNext({ sections: updatedSections });
-                        } catch (error) {
-                          console.error("Error saving course:", error);
-                          toast.error("Failed to save course");
-                        } finally {
-                          setIsSavingCourse(false);
-                        }
-                      }}
-                      disabled={isSavingCourse}
-                    >
-                      Next
-                    </CustomButton>
+                        }}
+                        disabled={isSavingCourse}
+                      >
+                        Save to Draft
+                      </CustomButton>
+                      <CustomButton
+                        color="primary"
+                        type="normal"
+                        size="large"
+                        onClick={async () => {
+                          if (isSavingCourse) return; // Prevent multiple clicks
+                          
+                          setIsSavingCourse(true);
+                          try {
+                            // Save temporary quizzes to database if courseId is available
+                            let updatedSections = sections;
+                            if (courseId && courseId !== "undefined" && courseId !== "null") {
+                              updatedSections = await saveTemporaryQuizzes(courseId, sections);
+                            }
+                            onNext({ sections: updatedSections });
+                          } catch (error) {
+                            console.error("Error saving course:", error);
+                            toast.error("Failed to save course");
+                          } finally {
+                            setIsSavingCourse(false);
+                          }
+                        }}
+                        disabled={isSavingCourse}
+                      >
+                        Next
+                      </CustomButton>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -85,6 +85,16 @@ export const createCourse = async (courseData) => {
   }
 };
 
+// Save course as draft
+export const saveToDraft = async (courseData) => {
+  try {
+    return await apiClient.post("/instructor/courses/draft", courseData);
+  } catch (error) {
+    console.error("Error saving course to draft:", error);
+    throw error;
+  }
+};
+
 // Update existing course
 export const updateCourse = async (courseId, courseData) => {
   try {
