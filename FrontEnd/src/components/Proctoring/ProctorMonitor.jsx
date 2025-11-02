@@ -18,12 +18,13 @@ import './ProctorMonitor.css';
  * Handles fullscreen lock, tab switch detection, camera monitoring
  * Automatically pauses quiz when violations detected
  */
-const ProctorMonitor = ({ 
-  sessionId, 
-  onViolation, 
-  onLocked, 
+const ProctorMonitor = ({
+  sessionId,
+  onViolation,
+  onLocked,
+  onIdentityVerified,
   isActive = true,
-  children 
+  children
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [violations, setViolations] = useState([]);
@@ -62,7 +63,10 @@ const ProctorMonitor = ({
   const multipleFaceCountRef = useRef(0); // Track total multiple-face violations
   const referenceFaceDescriptorRef = useRef(null); // Store verified face descriptor
   const faceMatchFailCountRef = useRef(0);
+  const lastFaceMismatchWarningRef = useRef(0); // Throttle face mismatch warnings
   const cocoSsdModelRef = useRef(null);
+  const noFaceStartTimeRef = useRef(null); // Track when no face detection started
+  const noFaceWarningShownRef = useRef(false); // Track if warning already shown for current absence
 
   /**
    * Load face-api.js and COCO-SSD models on mount
@@ -709,19 +713,24 @@ const ProctorMonitor = ({
       console.log('✅ Using already captured identity, closing modal...');
       setIdentityVerified(true);
       setShowIdentityModal(false);
-      
+
+      // Notify parent component that identity is verified
+      if (onIdentityVerified) {
+        onIdentityVerified(true);
+      }
+
       // Wait for React to re-render with camera preview, then start camera
       setTimeout(async () => {
         try {
           console.log('🎥 Starting main monitoring camera...');
           await startCamera();
-          
+
           // Wait a bit more then start face detection
           setTimeout(() => {
             console.log('Starting face detection...');
             startFaceDetection();
             console.log('✅ Face detection started');
-            
+
             // Object detection disabled due to TensorFlow conflict
             // startObjectDetection();
           }, 300);
@@ -731,18 +740,18 @@ const ProctorMonitor = ({
       }, 500); // Reduced timeout for faster response
       return;
     }
-    
+
     console.log('🔐 Starting identity verification...');
-    
+
     try {
       const success = await captureIdentityPhoto();
       console.log('Identity capture result:', success);
-      
+
       if (success) {
         console.log('✅ Identity verification successful');
         setVerificationAttempts(0);
         // Don't close modal yet, let user click OK button to confirm
-        
+
       } else {
         console.log('❌ Identity verification failed');
         // Allow 3 attempts
@@ -868,41 +877,51 @@ const ProctorMonitor = ({
         // Draw bounding boxes with match info
         drawBoundingBoxes(detections, matches);
 
-        // No face detected
+        // No face detected - Track duration and warn after 3-4 seconds
         if (numFaces === 0) {
-          noFaceDetectedCountRef.current += 1;
-          const totalNoFaceCount = noFaceDetectedCountRef.current;
-          setFaceDetectionRetryCount(totalNoFaceCount); // Update UI counter
-          
-          logViolation('noFaceDetected', {
-            timestamp: new Date().toISOString(),
-            totalCount: totalNoFaceCount,
-            faceCount: 0
-          });
-          
-          if (totalNoFaceCount < 3) {
-            showWarning({
-              title: `⚠️ Không phát hiện khuôn mặt! (${totalNoFaceCount}/3)`,
-              message: `Hãy nhìn vào camera. Còn ${3 - totalNoFaceCount} lần cảnh báo.`,
-              severity: 'high'
+          const now = Date.now();
+
+          // Start tracking time if not already tracking
+          if (!noFaceStartTimeRef.current) {
+            noFaceStartTimeRef.current = now;
+            noFaceWarningShownRef.current = false;
+          }
+
+          // Calculate how long face has been absent
+          const absenceDuration = (now - noFaceStartTimeRef.current) / 1000; // in seconds
+
+          // If absent for 3+ seconds and warning not yet shown, show warning
+          if (absenceDuration >= 3 && !noFaceWarningShownRef.current) {
+            noFaceDetectedCountRef.current += 1;
+            const totalNoFaceCount = noFaceDetectedCountRef.current;
+            setFaceDetectionRetryCount(totalNoFaceCount);
+
+            // Log violation
+            logViolation('noFaceDetected', {
+              timestamp: new Date().toISOString(),
+              totalCount: totalNoFaceCount,
+              faceCount: 0,
+              absenceDuration: absenceDuration.toFixed(1)
             });
-          } else if (totalNoFaceCount === 3) {
-            // Lock after 3 warnings
+
+            // Show warning
             showWarning({
-              title: '🚫 Quiz bị khóa',
-              message: 'Không phát hiện khuôn mặt quá 3 lần. Quiz sẽ bị khóa.',
-              severity: 'critical'
+              title: `⚠️ Không phát hiện khuôn mặt!`,
+              message: `Vui lòng quay lại màn hình và nhìn vào camera. Thời gian rời khỏi: ${absenceDuration.toFixed(1)}s`,
+              severity: 'warning'
             });
-            
-            setIsLocked(true);
-            setLockReason('Không phát hiện khuôn mặt sau 3 lần cảnh báo. Quiz đã bị khóa.');
-            if (onLocked) {
-              onLocked('Không phát hiện khuôn mặt sau 3 lần cảnh báo');
-            }
+
+            noFaceWarningShownRef.current = true; // Mark warning as shown
           }
         }
         // Multiple faces detected (CHEATING!)
         else if (numFaces > 1) {
+          // Reset no-face timer since faces are detected
+          if (noFaceStartTimeRef.current) {
+            noFaceStartTimeRef.current = null;
+            noFaceWarningShownRef.current = false;
+          }
+
           multipleFaceCountRef.current += 1;
           const totalMultipleFaceCount = multipleFaceCountRef.current;
           setMultipleFaceCount(totalMultipleFaceCount); // Update UI counter
@@ -941,18 +960,24 @@ const ProctorMonitor = ({
           if (!isMatchedFace) {
             // Different person detected!
             faceMatchFailCountRef.current++;
-            
+
             logViolation('differentPerson', {
               timestamp: new Date().toISOString(),
               failCount: faceMatchFailCountRef.current,
               message: 'Detected face does not match reference face'
             });
 
-            showWarning({
-              title: `⚠️ Phát hiện người khác! (${faceMatchFailCountRef.current}/3)`,
-              message: `Khuôn mặt không khớp với người đã xác thực ban đầu. Đây là lần vi phạm thứ ${faceMatchFailCountRef.current}.`,
-              severity: 'critical'
-            });
+            // Throttle warning: only show once every 5 seconds
+            const now = Date.now();
+            if (now - lastFaceMismatchWarningRef.current > 5000) {
+              lastFaceMismatchWarningRef.current = now;
+
+              showWarning({
+                title: `⚠️ Phát hiện người khác! (${faceMatchFailCountRef.current}/3)`,
+                message: `Khuôn mặt không khớp với người đã xác thực ban đầu. Đây là lần vi phạm thứ ${faceMatchFailCountRef.current}.`,
+                severity: 'critical'
+              });
+            }
 
             // Lock after 3 mismatches
             if (faceMatchFailCountRef.current >= 3) {
@@ -966,6 +991,13 @@ const ProctorMonitor = ({
             // Face matches - reset counters
             if (faceMatchFailCountRef.current > 0) {
               faceMatchFailCountRef.current = 0;
+              lastFaceMismatchWarningRef.current = 0; // Reset throttle
+            }
+
+            // Reset no-face timer since correct face is detected
+            if (noFaceStartTimeRef.current) {
+              noFaceStartTimeRef.current = null;
+              noFaceWarningShownRef.current = false;
             }
           }
         }
@@ -1249,12 +1281,6 @@ const ProctorMonitor = ({
             <div className="camera-retry-warning">
               <WarningOutlined />
               <span>Đang thử lại camera... ({cameraRetryCount}/3)</span>
-            </div>
-          )}
-          {faceDetectionRetryCount > 0 && (
-            <div className="face-detection-warning">
-              <WarningOutlined />
-              <span>Cảnh báo không có mặt: {faceDetectionRetryCount}/3</span>
             </div>
           )}
           {multipleFaceCount > 0 && (
