@@ -46,6 +46,38 @@ function RecentlyAddedCourse() {
       .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
+  const formatLevel = (level) => {
+    if (!level || typeof level !== "string") {
+      return "All Levels"; // Trả về giá trị mặc định nếu không có
+    } // Viết hoa chữ cái đầu
+    return level.charAt(0).toUpperCase() + level.slice(1);
+  };
+
+  const formatDuration = (duration) => {
+    if (!duration || typeof duration !== "string") {
+      return "N/A"; // Trả về giá trị mặc định nếu không có
+    }
+
+    const hasHours = duration.includes("h");
+    const hasMinutes = duration.includes("m");
+
+    if (hasHours && hasMinutes) {
+      // Case: "2h38m" -> "2h 38 minutes"
+      const parts = duration.split("h"); // Tách thành ["2", "38m"]
+      const hours = parts[0] + "h"; // Giữ "2h"
+      const minutes = parts[1].replace("m", " minutes"); // Đổi "38m" thành "38 minutes"
+      return `${hours} ${minutes}`; // Ghép lại "2h 38 minutes"
+    } else if (hasHours) {
+      // Case: "2h" -> "2 hours"
+      return duration.replace("h", " hours");
+    } else if (hasMinutes) {
+      // Case: "38m" -> "38 minutes"
+      return duration.replace("m", " minutes");
+    }
+
+    return duration; // Trả về nguyên bản nếu không khớp (ví dụ: "N/A")
+  };
+
   // Log to check course data and status
   console.log("Recently Added Courses Data:", coursesInfo1);
   console.log(
@@ -88,15 +120,10 @@ function RecentlyAddedCourse() {
         detailedProps: {
           courseId: course._id,
           title: course.title,
-          author: course.createdBy 
-            ? `${course.createdBy.firstName || ''} ${course.createdBy.lastName || ''}`.trim() || "Instructor"
-            : "Instructor",
-          authorAvatar: course.createdBy?.userImage || "/images/defaultImageUser.png",
-          rating: course.rating || 0, // If there is one, take it
-          ratingCount: 0, // If there is one, take it
+          instructor: course.createdBy,
           students: course.studentsCount || 0,
-          level: course.level,
-          duration: course.duration,
+          level: formatLevel(course.level),
+          duration: formatDuration(course.duration),
           price: `${formatPrice(finalPrice)} VND`,
           oldPrice: isDiscountValid(course.discountId)
             ? `${formatPrice(course.price)} VND`
