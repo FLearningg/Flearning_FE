@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../../services/cartService";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { isUserEnrolled } from "../../../services/courseService";
 
 // SVG Components
 export const StarIcon = () => (
@@ -429,6 +430,33 @@ export const DetailedCard = ({
   const errorMsg = useSelector((state) => state.cart.addItemToCart.errorMsg);
   const navigate = useNavigate();
 
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [isLoadingEnrollment, setIsLoadingEnrollment] = useState(true);
+
+  // === (MỚI) EFFECT ĐỂ KIỂM TRA ENROLLMENT ===
+  useEffect(() => {
+    setIsEnrolled(false);
+    setIsLoadingEnrollment(true);
+
+    const checkEnrollment = async () => {
+      if (!currentUser?._id || !courseId) {
+        setIsLoadingEnrollment(false); // Không có user, không load nữa
+        return;
+      }
+      try {
+        const enrolled = await isUserEnrolled(currentUser._id, courseId);
+        setIsEnrolled(enrolled);
+      } catch (error) {
+        console.error("Failed to check enrollment status", error);
+        setIsEnrolled(false); // Lỗi thì coi như chưa mua
+      } finally {
+        setIsLoadingEnrollment(false);
+      }
+    };
+
+    checkEnrollment();
+  }, [currentUser, courseId]);
+
   const {
     _id: _id,
     firstName,
@@ -561,34 +589,74 @@ export const DetailedCard = ({
           </ul>
         </div>
 
-        <button
-          className="card-button"
-          aria-label={`Add ${title} to cart`}
-          type="button"
-          onClick={AddCourseToCart}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <span
-              className="spinner-border spinner-border-sm text-light"
-              role="status"
-              aria-hidden="true"
-              style={{ verticalAlign: "middle" }}
-            ></span>
-          ) : (
-            <>Add To Cart</>
-          )}
-        </button>
-        <button
-          className="card-detail-button"
-          aria-label={`View details for ${title}`}
-          type="button"
-          onClick={() => {
-            navigate(`/course/${courseId}`);
-          }}
-        >
-          Course Detail
-        </button>
+        {isLoadingEnrollment ? (
+          // 1. TRẠNG THÁI ĐANG LOAD
+          <>
+            <button
+              className="card-button"
+              aria-label="Loading..."
+              type="button"
+              disabled
+            >
+              <span
+                className="spinner-border spinner-border-sm text-light"
+                role="status"
+                aria-hidden="true"
+                style={{ verticalAlign: "middle" }}
+              ></span>
+            </button>
+            <button
+              className="card-detail-button"
+              aria-label="Loading..."
+              type="button"
+              disabled
+            >
+              Course Detail
+            </button>
+          </>
+        ) : isEnrolled ? (
+          // 2. TRẠNG THÁI ĐÃ MUA
+          <button
+            className="card-button" // Dùng style của nút chính
+            aria-label={`Go to course ${title}`}
+            type="button"
+            onClick={() => navigate(`/watch-course/${courseId}`)} // Sửa link đến trang xem khóa học
+          >
+            Go To Course
+          </button>
+        ) : (
+          // 3. TRẠNG THÁI CHƯA MUA (như cũ)
+          <>
+            <button
+              className="card-button"
+              aria-label={`Add ${title} to cart`}
+              type="button"
+              onClick={AddCourseToCart}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <span
+                  className="spinner-border spinner-border-sm text-light"
+                  role="status"
+                  aria-hidden="true"
+                  style={{ verticalAlign: "middle" }}
+                ></span>
+              ) : (
+                <>Add To Cart</>
+              )}
+            </button>
+            <button
+              className="card-detail-button"
+              aria-label={`View details for ${title}`}
+              type="button"
+              onClick={() => {
+                navigate(`/course/${courseId}`);
+              }}
+            >
+              Course Detail
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

@@ -258,9 +258,6 @@ const ActionButtons = ({ course }) => {
     }
   };
 
-  // ======================================================
-  // BẮT ĐẦU SỬA TRONG RETURN
-  // ======================================================
   return (
     <div className="mb-4">
       {isLoadingEnrollment ? (
@@ -343,9 +340,65 @@ const ActionButtons = ({ course }) => {
               )}
             </button>
           )}
+
+          {/* === (ĐÃ DI CHUYỂN) KHỐI WISHLIST & GIFT === */}
+          <div className="row g-2">
+            <div className="col-6 col-sm-7">
+              {/* === NÚT WISHLIST === */}
+              {profile?.role !== "student" ? (
+                <span
+                  className="d-inline-block w-100"
+                  title="You are not a student"
+                >
+                  <button
+                    className="btn btn-outline-secondary w-100 wishlist-btn"
+                    style={{ pointerEvents: "none" }}
+                    type="button"
+                    disabled
+                  >
+                    Add To Wishlist
+                  </button>
+                </span>
+              ) : (
+                <button
+                  className="btn btn-outline-secondary w-100 wishlist-btn"
+                  onClick={handleAddToWishList}
+                  disabled={isLoadingWishlist}
+                >
+                  {isLoadingWishlist ? (
+                    <span className="spinner-border spinner-border-sm" />
+                  ) : (
+                    "Add To Wishlist"
+                  )}
+                </button>
+              )}
+            </div>
+            <div className="col-6 col-sm-5">
+              {/* === NÚT GIFT COURSE === */}
+              {profile?.role !== "student" ? (
+                <span
+                  className="d-inline-block w-100"
+                  title="You are not a student"
+                >
+                  <button
+                    className="btn btn-outline-secondary w-100 gift-btn"
+                    style={{ pointerEvents: "none" }}
+                    type="button"
+                    disabled
+                  >
+                    Gift Course
+                  </button>
+                </span>
+              ) : (
+                <button className="btn btn-outline-secondary w-100 gift-btn">
+                  Gift Course
+                </button>
+              )}
+            </div>
+          </div>
         </>
       ) : (
-        // Nút "Go To Course" (giữ nguyên)
+        // Nút "Go To Course" (khi đã mua)
         <button
           className="btn w-100 fw-medium py-2 mb-3"
           style={{
@@ -358,61 +411,6 @@ const ActionButtons = ({ course }) => {
           Go To Course
         </button>
       )}
-
-      <div className="row g-2">
-        <div className="col-6 col-sm-7">
-          {/* === NÚT WISHLIST === */}
-          {profile?.role !== "student" ? (
-            <span
-              className="d-inline-block w-100"
-              title="You are not a student"
-            >
-              <button
-                className="btn btn-outline-secondary w-100 wishlist-btn"
-                style={{ pointerEvents: "none" }}
-                type="button"
-                disabled
-              >
-                Add To Wishlist
-              </button>
-            </span>
-          ) : (
-            <button
-              className="btn btn-outline-secondary w-100 wishlist-btn"
-              onClick={handleAddToWishList}
-              disabled={isLoadingWishlist}
-            >
-              {isLoadingWishlist ? (
-                <span className="spinner-border spinner-border-sm" />
-              ) : (
-                "Add To Wishlist"
-              )}
-            </button>
-          )}
-        </div>
-        <div className="col-6 col-sm-5">
-          {/* === NÚT GIFT COURSE === */}
-          {profile?.role !== "student" ? (
-            <span
-              className="d-inline-block w-100"
-              title="You are not a student"
-            >
-              <button
-                className="btn btn-outline-secondary w-100 gift-btn"
-                style={{ pointerEvents: "none" }}
-                type="button"
-                disabled
-              >
-                Gift Course
-              </button>
-            </span>
-          ) : (
-            <button className="btn btn-outline-secondary w-100 gift-btn">
-              Gift Course
-            </button>
-          )}
-        </div>
-      </div>
     </div>
   );
 };
