@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import "./Card.css";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../../services/cartService";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 // SVG Components
@@ -214,7 +214,7 @@ const Card = ({
   customImageHeight,
   onMenuAction,
   menuActions = [],
-  linkToCourseDetail, 
+  linkToCourseDetail,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [triggerRect, setTriggerRect] = useState(null);
@@ -414,10 +414,7 @@ Card.defaultProps = {
 export const DetailedCard = ({
   courseId,
   title,
-  author,
-  authorAvatar,
-  rating,
-  ratingCount,
+  instructor,
   students,
   level,
   duration,
@@ -431,6 +428,25 @@ export const DetailedCard = ({
   const isLoading = useSelector((state) => state.cart.addItemToCart.isLoading);
   const errorMsg = useSelector((state) => state.cart.addItemToCart.errorMsg);
   const navigate = useNavigate();
+
+  const {
+    _id: _id,
+    firstName,
+    lastName,
+    userImage,
+    instructorProfile,
+  } = instructor || {}; // Thêm '|| {}' để tránh lỗi nếu instructor là null
+
+  // Tạo tên đầy đủ
+  const author = `${firstName || ""} ${lastName || ""}`.trim() || "Instructor";
+
+  // Lấy ảnh avatar, sử dụng ảnh mặc định nếu không có
+  const authorAvatar = userImage || "/api/placeholder/36/36";
+
+  // Đây là logic cốt lõi bạn muốn: lấy rating và total reviews từ instructorProfile
+  const rating = instructorProfile?.averageRating || 0;
+  const ratingCount = instructorProfile?.totalReviews || 0;
+
   const AddCourseToCart = async () => {
     if (!currentUser) {
       navigate("/login");
@@ -457,22 +473,28 @@ export const DetailedCard = ({
           <div className="author-info">
             <div
               className="author-avatar"
-              style={{ backgroundImage: `url(${authorAvatar})` }}
+              style={{ backgroundImage: `url(${authorAvatar})` }} // Sử dụng biến mới
               role="img"
-              aria-label={`${author}'s profile picture`}
+              aria-label={`${author}'s profile picture`} // Sử dụng biến mới
             />
             <div className="author-name">
               Course by
-              <strong>{author}</strong>
+              <strong>{author}</strong> {/* Sử dụng biến mới */}
             </div>
           </div>
           <div
             className="rating-info"
-            aria-label={`Rating: ${rating} stars from ${ratingCount} reviews`}
+            // Cập nhật aria-label để rõ ràng đây là rating của instructor
+            aria-label={`Instructor Rating: ${rating.toFixed(
+              1
+            )} stars from ${ratingCount} reviews`}
           >
             <StarIcon />
-            {rating}
-            <span style={{ color: "#6E7A8A" }}>({ratingCount})</span>
+            {rating.toFixed(1)} {/* Sử dụng biến rating mới */}
+            <span style={{ color: "#6E7A8A" }}>
+              ({ratingCount.toLocaleString()}){" "}
+              {/* Sử dụng biến ratingCount mới */}
+            </span>
           </div>
         </div>
 
@@ -575,11 +597,19 @@ export const DetailedCard = ({
 DetailedCard.propTypes = {
   courseId: PropTypes.string,
   title: PropTypes.string.isRequired,
-  author: PropTypes.string.isRequired,
-  authorAvatar: PropTypes.string,
-  rating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  ratingCount: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-    .isRequired,
+
+  // Thay thế các prop cũ bằng 'instructor'
+  instructor: PropTypes.shape({
+    _id: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+    userImage: PropTypes.string,
+    instructorProfile: PropTypes.shape({
+      averageRating: PropTypes.number,
+      totalReviews: PropTypes.number,
+    }),
+  }),
+
   students: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     .isRequired,
   level: PropTypes.string.isRequired,
@@ -591,7 +621,16 @@ DetailedCard.propTypes = {
 };
 
 DetailedCard.defaultProps = {
-  authorAvatar: "/api/placeholder/36/36",
+  // Xóa default cũ và thêm default cho instructor
+  instructor: {
+    firstName: "Not",
+    lastName: "Available",
+    userImage: "/api/placeholder/36/36",
+    instructorProfile: {
+      averageRating: 0,
+      totalReviews: 0,
+    },
+  },
   oldPrice: null,
   discount: null,
   learnList: [],
