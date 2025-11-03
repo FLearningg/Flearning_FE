@@ -517,7 +517,6 @@ const InstructorDashboard = () => {
                   <div className="instructor-dash-course-info">
                     <h4 title={courseTitle}>{courseTitle}</h4>
                     <p className="instructor-dash-course-revenue">
-                      <FaDollarSign size={14} style={{ marginRight: "4px" }} />
                       {formatVND(Number(revenue))}
                     </p>
                     <p className="instructor-dash-course-meta">
@@ -585,7 +584,11 @@ const InstructorDashboard = () => {
                             : "N/A"}
                         </td>
                         <td>
-                          <span className={`instructor-dash-badge instructor-dash-${t.status || ""}`}>
+                          <span
+                            className={`instructor-dash-badge instructor-dash-${
+                              t.status || ""
+                            }`}
+                          >
                             {t.status || "N/A"}
                           </span>
                         </td>
@@ -617,7 +620,10 @@ const InstructorDashboard = () => {
             {revenueData?.courseCompletion &&
             revenueData.courseCompletion.length > 0 ? (
               revenueData.courseCompletion.map((course) => (
-                <div key={course.courseId} className="instructor-dash-completion-item">
+                <div
+                  key={course.courseId}
+                  className="instructor-dash-completion-item"
+                >
                   <div className="instructor-dash-completion-header">
                     <span>{course.title || "Không có tên"}</span>
                     <span className="instructor-dash-completion-rate">

@@ -3,6 +3,7 @@ import { Route } from "react-router-dom";
 
 import InstructorDashboard from "../components/InstructorDashboard/InstructorDashboard";
 import InstructorDiscount from "../components/InstructorDiscount/InstructorDiscount";
+import InstructorWithdrawal from "../components/Withdrawal/InstructorWithdraw";
 import CourseWizard from "../components/CRUDCourseAndLesson/CourseWizard";
 import InstructorMyCourse from "../components/InstructorMyCourse/InstructorMyCourse";
 import InstructorAllCourses from "../components/InstructorMyCourse/InstructorAllCourses";
@@ -13,6 +14,7 @@ const instructorRoutesContent = (
     <Route path="dashboard" element={<InstructorDashboard />} />
     <Route path="profile/edit" element={<InstructorProfileEdit />} />
     <Route path="discounts" element={<InstructorDiscount />} />
+    <Route path="withdrawals" element={<InstructorWithdrawal />} />
     <Route path="courses" element={<InstructorAllCourses />} />
     <Route path="courses/:id" element={<InstructorMyCourse />} />
     <Route path="courses/new" element={<CourseWizard />} />
