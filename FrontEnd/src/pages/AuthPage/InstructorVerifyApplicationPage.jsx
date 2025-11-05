@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Spin, Result, Button, Row, Col, Typography, Card } from 'antd';
-import { CheckCircleOutlined, CloseCircleOutlined, MailOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import { verifyInstructorEmail } from '../../services/authService';
+import { CheckCircleOutlined, CloseCircleOutlined, MailOutlined, ClockCircleOutlined, RocketOutlined } from '@ant-design/icons';
+import { verifyInstructorApplication } from '../../services/authService';
 
 const { Title, Paragraph, Text } = Typography;
 const F_LEARNING_ORANGE = '#FF6B00';
 
-const InstructorVerifyEmailPage = () => {
+const InstructorVerifyApplicationPage = () => {
     const { token } = useParams();
     const [status, setStatus] = useState('loading'); // 'loading', 'success', 'error'
 
@@ -23,11 +23,11 @@ const InstructorVerifyEmailPage = () => {
                     return;
                 }
                 try {
-                    // Gọi API để xác thực token
-                    await verifyInstructorEmail(token);
+                    // Gọi API để xác thực application
+                    await verifyInstructorApplication(token);
                     setStatus('success');
                 } catch (error) {
-                    console.error("Lỗi xác thực email:", error);
+                    console.error("Lỗi xác thực application:", error);
                     setStatus('error');
                 }
             };
@@ -48,9 +48,9 @@ const InstructorVerifyEmailPage = () => {
                 <Card style={{ textAlign: 'center', padding: '40px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                     <Spin size="large" />
                     <Title level={4} style={{ marginTop: '20px', color: '#595959' }}>
-                        Verifying your email...
+                        Verifying your application...
                     </Title>
-                    <Text type="secondary">Please wait while we verify your instructor account</Text>
+                    <Text type="secondary">Please wait while we process your instructor application</Text>
                 </Card>
             </div>
         );
@@ -73,18 +73,18 @@ const InstructorVerifyEmailPage = () => {
                             padding: '40px',
                             textAlign: 'center'
                         }}>
-                            <CheckCircleOutlined style={{ fontSize: '72px', color: 'white' }} />
+                            <RocketOutlined style={{ fontSize: '72px', color: 'white' }} />
                             <Title level={2} style={{ color: 'white', marginTop: '20px', marginBottom: '10px' }}>
-                                Application Received!
+                                Application Verified!
                             </Title>
                             <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: '16px' }}>
-                                Your instructor application has been submitted successfully
+                                Your application is now being reviewed by our AI system
                             </Text>
                         </div>
 
                         <div style={{ padding: '40px' }}>
                             <Title level={4} style={{ marginBottom: '20px', color: '#262626' }}>
-                                What's Next?
+                                What's Happening Now?
                             </Title>
 
                             <div style={{ marginBottom: '20px' }}>
@@ -92,22 +92,22 @@ const InstructorVerifyEmailPage = () => {
                                     <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '20px', marginRight: '12px', marginTop: '2px' }} />
                                     <div>
                                         <Text strong style={{ display: 'block', marginBottom: '4px' }}>
-                                            Email Verified
+                                            Application Verified
                                         </Text>
                                         <Text type="secondary" style={{ fontSize: '14px' }}>
-                                            Your email address has been confirmed
+                                            Your application has been successfully verified
                                         </Text>
                                     </div>
                                 </div>
 
                                 <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '16px' }}>
-                                    <ClockCircleOutlined style={{ color: F_LEARNING_ORANGE, fontSize: '20px', marginRight: '12px', marginTop: '2px' }} />
+                                    <RocketOutlined style={{ color: F_LEARNING_ORANGE, fontSize: '20px', marginRight: '12px', marginTop: '2px' }} />
                                     <div>
                                         <Text strong style={{ display: 'block', marginBottom: '4px' }}>
-                                            Pending Admin Approval
+                                            AI Review in Progress
                                         </Text>
                                         <Text type="secondary" style={{ fontSize: '14px' }}>
-                                            Our team is reviewing your instructor application. This usually takes 1-2 business days.
+                                            Our AI is automatically analyzing your application right now
                                         </Text>
                                     </div>
                                 </div>
@@ -119,22 +119,23 @@ const InstructorVerifyEmailPage = () => {
                                             Check Your Email
                                         </Text>
                                         <Text type="secondary" style={{ fontSize: '14px' }}>
-                                            We'll send you an email notification once your account is approved
+                                            You'll receive a notification email within minutes with the review result
                                         </Text>
                                     </div>
                                 </div>
                             </div>
 
                             <div style={{
-                                background: '#fff7e6',
-                                border: '1px solid #ffd591',
+                                background: '#e6f7ff',
+                                border: '1px solid #91d5ff',
                                 borderRadius: '8px',
                                 padding: '16px',
                                 marginTop: '24px',
                                 marginBottom: '24px'
                             }}>
-                                <Text style={{ color: '#ad6800', fontSize: '14px' }}>
-                                    <strong>Note:</strong> You can log in to your account, but instructor features will be available only after admin approval.
+                                <Text style={{ color: '#0050b3', fontSize: '14px' }}>
+                                    <strong>💡 Quick Review:</strong> Our AI system typically completes the review within 1-2 minutes. 
+                                    If approved, you'll be able to start teaching immediately!
                                 </Text>
                             </div>
 
@@ -189,7 +190,7 @@ const InstructorVerifyEmailPage = () => {
                             Verification Failed
                         </Title>
                         <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: '16px' }}>
-                            We couldn't verify your email address
+                            We couldn't verify your application
                         </Text>
                     </div>
 
@@ -207,6 +208,9 @@ const InstructorVerifyEmailPage = () => {
                             </li>
                             <li style={{ marginBottom: '8px', color: '#8c8c8c' }}>
                                 The link was copied incorrectly
+                            </li>
+                            <li style={{ marginBottom: '8px', color: '#8c8c8c' }}>
+                                Your account email is not verified yet
                             </li>
                         </ul>
 
@@ -242,4 +246,4 @@ const InstructorVerifyEmailPage = () => {
     );
 };
 
-export default InstructorVerifyEmailPage;
+export default InstructorVerifyApplicationPage;

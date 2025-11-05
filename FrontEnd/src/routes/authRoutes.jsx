@@ -5,6 +5,7 @@ import LoginPage from "../pages/AuthPage/LoginPage";
 import SignUpPage from "../pages/AuthPage/SignUpPage";
 import VerifyEmailPage from "../pages/AuthPage/VerifyEmailPage";
 import InstructorVerifyEmailPage from "../pages/AuthPage/InstructorVerifyEmailPage";
+import InstructorVerifyApplicationPage from "../pages/AuthPage/InstructorVerifyApplicationPage";
 import RegistrationSuccessPage from "../pages/AuthPage/RegistrationSuccessPage";
 import CheckEmailPage from "../pages/AuthPage/CheckEmailPage";
 import ForgotPasswordPage from "../pages/AuthPage/ForgotPasswordPage";
@@ -27,6 +28,7 @@ export const authRoutesWithoutLayout = (
     <Route path="/check-email" element={<CheckEmailPage />} />
     <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
     <Route path="/verify-instructor-email/:token" element={<InstructorVerifyEmailPage />} />
+    <Route path="/verify-instructor-application/:token" element={<InstructorVerifyApplicationPage />} />
   </>
 );
 
