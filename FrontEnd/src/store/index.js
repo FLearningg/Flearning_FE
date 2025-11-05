@@ -5,6 +5,8 @@ import categoryReducer from "./categorySlice";
 import notificationReducer from "./notificationSlice";
 import wishlistReducer from "./wishlistSlice";
 import cartReducer from "./cartSlice";
+import learningPathReducer from "./learningPathSlice";
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -13,5 +15,6 @@ export const store = configureStore({
     notifications: notificationReducer,
     wishlist: wishlistReducer,
     cart: cartReducer,
+    learningPath: learningPathReducer,
   },
 });

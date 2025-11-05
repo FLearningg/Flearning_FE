@@ -1,0 +1,330 @@
+/* Create Path Form Overlay */
+.f-lp-create-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Modal */
+.f-lp-create-form-modal {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: f-lp-createSlideUp 0.3s ease-out;
+}
+
+@keyframes f-lp-createSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.f-lp-create-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.f-lp-create-form-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.f-lp-create-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.f-lp-create-close-btn:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+/* Form Content */
+.f-lp-create-form-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+}
+
+/* Form Group */
+.f-lp-form-group {
+  margin-bottom: 24px;
+}
+
+.f-lp-form-label {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.f-lp-required {
+  color: #ef4444;
+}
+
+/* Form Inputs */
+.f-lp-form-input,
+.f-lp-form-textarea,
+.f-lp-form-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  background: white;
+}
+
+.f-lp-form-input:focus,
+.f-lp-form-textarea:focus,
+.f-lp-form-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.f-lp-form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Skills Grid */
+.f-lp-skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.f-lp-skill-chip {
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: #4b5563;
+  background: white;
+}
+
+.f-lp-skill-chip:hover {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.f-lp-skill-chip.selected {
+  border-color: #3b82f6;
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.f-lp-skill-icon {
+  font-size: 20px;
+}
+
+/* Form Row */
+.f-lp-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Footer */
+.f-lp-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 24px 32px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.f-lp-form-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.f-lp-form-btn-primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.f-lp-form-btn-primary:hover:not(:disabled) {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.f-lp-form-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.f-lp-form-btn-secondary {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.f-lp-form-btn-secondary:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .f-lp-create-form-modal {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .f-lp-create-form-header,
+  .f-lp-create-form-content,
+  .f-lp-form-footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .f-lp-skills-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .f-lp-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Phases List */
+.f-lp-phases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.f-lp-phase-card {
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.f-lp-phase-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.f-lp-phase-header .f-lp-form-input {
+  flex: 1;
+}
+
+.f-lp-icon-btn {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.f-lp-icon-btn:hover {
+  background: #fecaca;
+}
+
+/* Steps List */
+.f-lp-steps-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.f-lp-step-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.f-lp-step-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.f-lp-step-actions,
+.f-lp-phase-actions {
+  margin-top: 12px;
+}
+
+.f-lp-step-actions button,
+.f-lp-phase-actions button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Scrollbar */
+.f-lp-create-form-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.f-lp-create-form-content::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.f-lp-create-form-content::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.f-lp-create-form-content::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

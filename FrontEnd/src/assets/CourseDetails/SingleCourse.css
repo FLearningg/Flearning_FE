@@ -114,6 +114,10 @@
 @media screen and (min-width: 1399.98px) {
   .course-header .breadcrumb-container {
     font-size: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
   }
   .course-header .breadcrumb-big-container {
     margin-bottom: 0;
@@ -122,6 +126,10 @@
 @media screen and (max-width: 792.98px) {
   .course-header .breadcrumb-container {
     margin-top: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
   }
 }
 /* CourseDecription */

@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 const CoursePublish = ({
   onSubmit = () => {},
   onPrev = () => {},
+  onSaveDraft = () => {},
   initialData = {},
   completedTabs = [],
   onTabClick = () => {},
@@ -27,6 +28,15 @@ const CoursePublish = ({
     setCongratsMsg(initialData.message?.congrats || "");
   }, [initialData]);
 
+  const buildMessageData = () => {
+    return {
+      message: {
+        welcome: welcomeMsg,
+        congrats: congratsMsg,
+      },
+    };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -34,6 +44,18 @@ const CoursePublish = ({
       await onSubmit({ welcome: welcomeMsg, congrats: congratsMsg });
     } catch (err) {
       toast.error(err.message || "Failed to publish course");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    setLoading(true);
+    try {
+      const data = buildMessageData();
+      await onSaveDraft(data);
+    } catch (err) {
+      toast.error(err.message || "Failed to save draft");
     } finally {
       setLoading(false);
     }
@@ -91,26 +113,32 @@ const CoursePublish = ({
                   type="normal"
                   onClick={() => {
                     // Save current data before going back
-                    const data = {
-                      message: {
-                        welcome: welcomeMsg,
-                        congrats: congratsMsg,
-                      },
-                    };
+                    const data = buildMessageData();
                     onPrev(data);
                   }}
                 >
                   Previous
                 </CustomButton>
-                <CustomButton
-                  color="primary"
-                  size="large"
-                  type="normal"
-                  style={{ padding: "12px 32px" }}
-                  disabled={loading}
-                >
-                  {loading ? "Submitting..." : "Submit For Review"}
-                </CustomButton>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <CustomButton
+                    color="primary"
+                    size="large"
+                    type="normal"
+                    onClick={handleSaveDraft}
+                    disabled={loading}
+                  >
+                    Save to Draft
+                  </CustomButton>
+                  <CustomButton
+                    color="primary"
+                    size="large"
+                    type="normal"
+                    style={{ padding: "12px 32px" }}
+                    disabled={loading}
+                  >
+                    {loading ? "Submitting..." : "Submit For Review"}
+                  </CustomButton>
+                </div>
               </div>
             </form>
           </div>

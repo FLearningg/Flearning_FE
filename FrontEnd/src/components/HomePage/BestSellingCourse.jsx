@@ -66,7 +66,7 @@ function BestSellingCourse() {
           price: `${formatPrice(finalPrice)} VND`,
           title: course.title,
           rating: course?.rating || 0, // If there is a rating field, take it, otherwise 0
-          students: course.studentsEnrolled?.length || 0,
+          students: course.studentsCount || 0,
           linkToCourseDetail: `/course/${course._id}`,
         },
         detailedProps: {
@@ -78,7 +78,7 @@ function BestSellingCourse() {
           authorAvatar: course.createdBy?.userImage || "/images/defaultImageUser.png",
           rating: course.rating || 0, // If there is one, take it
           ratingCount: 0, // If there is one, take it
-          students: course.studentsEnrolled?.length || 0,
+          students: course.studentsCount || 0,
           level: course.level,
           duration: course.duration,
           price: `${formatPrice(finalPrice)} VND`,

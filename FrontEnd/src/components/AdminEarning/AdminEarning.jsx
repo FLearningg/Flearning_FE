@@ -87,7 +87,7 @@ const chartOptions = {
       yAlign: "bottom",
       callbacks: {
         title: () => null, // Ẩn tiêu đề mặc định của tooltip
-        label: (context) => `$${context.parsed.y.toLocaleString()}`,
+        label: (context) => `${context.parsed.y.toLocaleString('vi-VN')} VND`,
         // Thêm footer để hiển thị ngày tháng
         afterBody: (context) => {
           // Lấy ngày từ label của điểm dữ liệu

@@ -5,7 +5,10 @@ import CourseCurriculum from "./CourseCurriculum";
 import CoursePublish from "./CoursePublish";
 import apiClient from "../../services/authService";
 import { getCourseById as getAdminCourseById } from "../../services/adminService";
-import { getCourseById as getInstructorCourseById } from "../../services/instructorService";
+import { 
+  getCourseById as getInstructorCourseById,
+  saveToDraft as saveCourseToDraft 
+} from "../../services/instructorService";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -267,6 +270,82 @@ const CourseWizard = () => {
     }
   };
 
+  const handleSaveDraft = async (data) => {
+    try {
+      setIsLoading(true);
+      
+      // Merge new data with existing course data
+      const updatedCourseData = { ...courseData, ...data };
+      setCourseData(updatedCourseData);
+
+      // Only instructors can save drafts
+      if (!isInstructor) {
+        toast.error("Only instructors can save drafts");
+        return;
+      }
+
+      // Prepare data for backend
+      const dataToSend = {
+        title: updatedCourseData.title,
+        subTitle: updatedCourseData.subTitle || updatedCourseData.subtitle,
+        detail: {
+          description: updatedCourseData.detail?.description || "",
+          willLearn: updatedCourseData.detail?.willLearn || [],
+          targetAudience: updatedCourseData.detail?.targetAudience || [],
+          requirement: updatedCourseData.detail?.requirement || [],
+        },
+        price: parseFloat(updatedCourseData.price) || 0,
+        level: updatedCourseData.level?.toLowerCase() || "beginner",
+        language:
+          updatedCourseData.language === "Vietnamese"
+            ? "vietnam"
+            : updatedCourseData.language === "English"
+            ? "english"
+            : updatedCourseData.language?.toLowerCase() || "vietnam",
+        subtitleLanguage:
+          updatedCourseData.subtitleLanguage === "Vietnamese"
+            ? "vietnam"
+            : updatedCourseData.subtitleLanguage === "English"
+            ? "english"
+            : updatedCourseData.subtitleLanguage?.toLowerCase() || "vietnam",
+        duration: updatedCourseData.duration || "",
+        categoryIds: updatedCourseData.categoryIds || [],
+        thumbnail: updatedCourseData.thumbnail || "",
+        trailer: updatedCourseData.trailer || "",
+        materials: updatedCourseData.materials || [],
+        message: updatedCourseData.message || { welcome: "", congrats: "" },
+        sections: updatedCourseData.sections || [],
+        status: "draft", // Ensure status is draft
+      };
+
+      let res;
+      if (isEditMode && id) {
+        // If editing existing course, use PUT endpoint
+        res = await apiClient.put(`/instructor/courses/${id}`, dataToSend);
+      } else {
+        // If creating new course, use POST draft endpoint
+        res = await saveCourseToDraft(dataToSend);
+      }
+
+      if (res.data && res.data.success) {
+        toast.success(
+          isEditMode 
+            ? "Course draft updated successfully!" 
+            : "Course saved as draft successfully!"
+        );
+        // Navigate to courses page
+        navigate("/instructor/courses");
+      }
+    } catch (err) {
+      console.error("Error saving draft:", err);
+      toast.error(
+        err.response?.data?.message || err.message || "Failed to save draft"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (messages) => {
     try {
 
@@ -345,6 +424,8 @@ const CourseWizard = () => {
         ...(courseData.materials && { materials: courseData.materials }),
         ...(courseData.discountId && { discountId: courseData.discountId }),
         ...(courseData.rating && { rating: courseData.rating }),
+        // Submit for review sets status to pending
+        status: "pending",
       };
 
       let res;
@@ -435,6 +516,7 @@ const CourseWizard = () => {
       key="step-0"
       initialData={courseData}
       onNext={handleNext}
+      onSaveDraft={handleSaveDraft}
       completedTabs={completedTabs}
       onTabClick={handleTabClick}
       title={isEditMode ? "Edit Course" : "Create New Course"}
@@ -444,6 +526,7 @@ const CourseWizard = () => {
       initialData={courseData}
       onNext={handleNext}
       onPrev={handlePrev}
+      onSaveDraft={handleSaveDraft}
       completedTabs={completedTabs}
       onTabClick={handleTabClick}
       courseId={id}
@@ -462,6 +545,7 @@ const CourseWizard = () => {
       initialData={courseData}
       onNext={handleNext}
       onPrev={handlePrev}
+      onSaveDraft={handleSaveDraft}
       completedTabs={completedTabs}
       onTabClick={handleTabClick}
       courseId={id || courseData._id || courseData.id}
@@ -471,6 +555,7 @@ const CourseWizard = () => {
       initialData={courseData}
       onPrev={handlePrev}
       onSubmit={handleSubmit}
+      onSaveDraft={handleSaveDraft}
       completedTabs={completedTabs}
       onTabClick={handleTabClick}
     />,
