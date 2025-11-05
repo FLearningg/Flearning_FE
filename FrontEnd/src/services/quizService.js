@@ -258,3 +258,198 @@ export const getQuizHistory = async (params = {}) => {
     throw richError;
   }
 };
+
+// Generate quiz using AI
+export const generateQuizWithAI = async (params) => {
+  try {
+    const {
+      topic,
+      lessonContent = '',
+      numberOfQuestions = 5,
+      difficulty = 'medium',
+      questionType = 'multiple-choice',
+      courseId,
+      lessonId = null,
+      title = '',
+      description = ''
+    } = params;
+
+    // Validate required fields
+    if (!topic || topic.trim().length === 0) {
+      throw new Error("Topic is required for AI quiz generation");
+    }
+
+    if (!courseId) {
+      throw new Error("Course ID is required for AI quiz generation");
+    }
+
+    const response = await apiClient.post('ai/generate-quiz', {
+      topic: topic.trim(),
+      lessonContent,
+      numberOfQuestions: parseInt(numberOfQuestions, 10),
+      difficulty,
+      questionType,
+      courseId,
+      lessonId,
+      title: title || `Quiz: ${topic}`,
+      description: description || `AI-generated quiz about ${topic}`
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error generating quiz with AI:", error);
+
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to generate quiz with AI";
+
+    const richError = new Error(message);
+    richError.status = error.response?.status;
+    richError.data = error.response?.data;
+    throw richError;
+  }
+};
+
+// Create essay-only quiz
+export const createEssayQuiz = async (quizData) => {
+  try {
+    const { title, description, courseId, lessonId, questions } = quizData;
+
+    // Validate required fields
+    if (!title || title.trim().length === 0) {
+      throw new Error("Quiz title is required");
+    }
+
+    if (!questions || questions.length === 0) {
+      throw new Error("At least one essay question is required");
+    }
+
+    // Validate essay questions
+    const invalidQuestions = questions.filter(
+      q => !q.content || !q.content.trim() || q.type !== 'essay'
+    );
+
+    if (invalidQuestions.length > 0) {
+      throw new Error("All questions must have content and be of type 'essay'");
+    }
+
+    const response = await apiClient.post('quiz/create-essay', {
+      title: title.trim(),
+      description: description?.trim() || '',
+      courseId: courseId || null,
+      lessonId: lessonId || null,
+      quizType: 'essay',
+      questions: questions.map(q => ({
+        content: q.content.trim(),
+        type: 'essay',
+        essayGuideline: q.essayGuideline?.trim() || '',
+        essayMaxLength: q.essayMaxLength || 1000,
+        score: q.score || 10,
+        order: q.order || 0
+      }))
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error creating essay quiz:", error);
+
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to create essay quiz";
+
+    const richError = new Error(message);
+    richError.status = error.response?.status;
+    richError.data = error.response?.data;
+    throw richError;
+  }
+};
+
+// Submit essay quiz answers
+export const submitEssayQuiz = async (quizId, essayAnswers) => {
+  try {
+    if (!quizId) {
+      throw new Error("Quiz ID is required");
+    }
+
+    if (!essayAnswers || essayAnswers.length === 0) {
+      throw new Error("Essay answers are required");
+    }
+
+    const response = await apiClient.post(`quiz/${quizId}/submit`, {
+      essayAnswers: essayAnswers.map(ans => ({
+        questionIndex: ans.questionIndex,
+        questionContent: ans.questionContent,
+        studentAnswer: ans.studentAnswer?.trim() || '',
+        maxScore: ans.maxScore || 10
+      }))
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error submitting essay quiz:", error);
+
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to submit essay quiz";
+
+    const richError = new Error(message);
+    richError.status = error.response?.status;
+    richError.data = error.response?.data;
+    throw richError;
+  }
+};
+
+// Grade essay answers with AI
+export const gradeEssayAnswers = async (resultId) => {
+  try {
+    if (!resultId) {
+      throw new Error("Result ID is required");
+    }
+
+    const response = await apiClient.post('ai/grade-essay', {
+      resultId
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error grading essay answers:", error);
+
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to grade essay answers";
+
+    const richError = new Error(message);
+    richError.status = error.response?.status;
+    richError.data = error.response?.data;
+    throw richError;
+  }
+};
+
+// Get essay quiz result with AI grading
+export const getEssayQuizResult = async (quizId) => {
+  try {
+    if (!quizId) {
+      throw new Error("Quiz ID is required");
+    }
+
+    const response = await apiClient.get(`quiz/${quizId}/result`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching essay quiz result:", error);
+
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to fetch essay quiz result";
+
+    const richError = new Error(message);
+    richError.status = error.response?.status;
+    richError.data = error.response?.data;
+    throw richError;
+  }
+};

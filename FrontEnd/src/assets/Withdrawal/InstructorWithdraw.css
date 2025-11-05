@@ -1,0 +1,30 @@
+.instructor-balance-section-withdrawal {
+  display: flex;
+  gap: 20px;
+  padding: 40px 20px;
+  align-items: stretch;
+}
+.instructor-balance-card-withdrawal {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.admin-discount-stat-content-withdrawal {
+  flex: 1;
+}
+.admin-discount-stat-icon-withdrawal {
+  flex-shrink: 0;
+}
+.instructor-payout-edit-btn-withdrawal {
+  flex-shrink: 0;
+}
+
+.admin-discount-action-buttons-withdrawal {
+  justify-content: flex-start;
+}
+
+.iw-instructor-link {
+  text-decoration: none;
+  color: inherit;
+}

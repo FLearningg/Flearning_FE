@@ -79,7 +79,7 @@ const GeminiChatBox = () => {
 
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/api/chatbot/query`,
+        `${API_BASE_URL}/chatbot/query`,
         {
           prompt: userMessageText,
         }

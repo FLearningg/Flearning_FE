@@ -141,24 +141,24 @@
   .modern-card-auto .modern-card-image-container {
     padding-bottom: 45%; /* Shorter aspect ratio for compact layout */
   }
-  
+
   .modern-card-auto .modern-card-title {
     -webkit-line-clamp: 2;
     font-size: 12px;
   }
-  
+
   .modern-card-auto .modern-card-footer {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
     font-size: 11px;
   }
-  
+
   .modern-card-auto .modern-category-badge {
     font-size: 9px;
     padding: 2px 6px;
   }
-  
+
   .modern-card-auto .modern-card-price {
     font-size: 14px;
   }
@@ -168,12 +168,12 @@
   .modern-card-auto .modern-card-image-container {
     padding-bottom: 50%; /* Medium aspect ratio */
   }
-  
+
   .modern-card-auto .modern-card-title {
     font-size: 14px;
     -webkit-line-clamp: 2;
   }
-  
+
   .modern-card-auto .modern-card-footer {
     font-size: 12px;
   }
@@ -183,7 +183,7 @@
   .modern-card-auto .modern-card-image-container {
     padding-bottom: 52%; /* Standard aspect ratio */
   }
-  
+
   .modern-card-auto .modern-card-title {
     font-size: 15px;
   }
@@ -193,7 +193,7 @@
   .modern-card-auto .modern-card-image-container {
     padding-bottom: 56.25%; /* Full 16:9 aspect ratio */
   }
-  
+
   .modern-card-auto .modern-card-title {
     font-size: 16px;
   }
@@ -263,7 +263,7 @@
 .modern-category-badge {
   padding: 4px 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -341,7 +341,7 @@
 }
 
 .modern-card-footer::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -16px;
@@ -587,9 +587,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg,
-      rgba(255, 122, 0, 0.1) 0%,
-      rgba(255, 122, 0, 0) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 122, 0, 0.1) 0%,
+    rgba(255, 122, 0, 0) 100%
+  );
 }
 
 .detailed-card-body {
@@ -950,7 +952,7 @@
   .popup-wrapper {
     width: 350px;
   }
-  
+
   .detailed-card-container {
     width: 350px;
   }
@@ -960,7 +962,7 @@
   .popup-wrapper {
     width: 320px;
   }
-  
+
   .detailed-card-container {
     width: 320px;
   }
@@ -970,7 +972,7 @@
   .card-wrapper {
     height: auto;
   }
-  
+
   .popup-wrapper {
     position: fixed;
     top: 50%;
@@ -980,16 +982,16 @@
     max-width: 400px;
     z-index: 9999;
   }
-  
+
   .popup-wrapper.visible {
     transform: translate(-50%, -50%);
   }
-  
+
   .popup-wrapper::before,
   .popup-wrapper::after {
     display: none;
   }
-  
+
   .pointer {
     display: none;
   }
@@ -1000,16 +1002,16 @@
   .modern-card-auto .modern-card-image-container {
     padding-bottom: 50%; /* Adjust aspect ratio for small screens */
   }
-  
+
   .modern-card-auto .modern-card-content {
     padding: 12px;
   }
-  
+
   .modern-card-auto .modern-card-title {
     font-size: 14px;
     -webkit-line-clamp: 3; /* Allow more lines on small screens */
   }
-  
+
   .modern-card-auto .modern-card-footer {
     flex-direction: column;
     align-items: flex-start;
@@ -1021,7 +1023,7 @@
   .modern-card-auto .modern-card-image-container {
     padding-bottom: 52%; /* Medium aspect ratio */
   }
-  
+
   .modern-card-auto .modern-card-title {
     font-size: 15px;
   }
@@ -1079,7 +1081,8 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   /* Position and z-index will be handled via inline styles when using portal */
 }
@@ -1129,4 +1132,21 @@
 
 .modern-card-admin .modern-card-header {
   margin-bottom: 12px;
+}
+
+.modern-card-header .modern-category-badge {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 45%;
+  text-align: center;
+}
+.modern-category-badge .modern-category-badge {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 45%;
+  text-align: center;
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Modal } from "antd";
 import "../../assets/WatchCourse/QuizContent.css";
 import "../../assets/WatchCourse/AIExplanationPanel.css";
 import apiClient, { getUserProfile } from "../../services/authService";
@@ -9,6 +10,12 @@ import {
 } from "../../services/quizService";
 import { toast } from "react-toastify";
 import AIExplanationPanel from "./AIExplanationPanel";
+import ProctorMonitor from "../Proctoring/ProctorMonitor";
+import {
+  startProctoringSession,
+  logViolation,
+  endProctoringSession
+} from "../../services/proctoringService";
 
 const QuizContent = ({
   lessonId,
@@ -44,6 +51,13 @@ const QuizContent = ({
   // Re-added state for managing the detail modal visibility
   const [showDetailModal, setShowDetailModal] = useState(false);
 
+  // Proctoring states
+  const [proctoringSessionId, setProctoringSessionId] = useState(null);
+  const [quizLocked, setQuizLocked] = useState(false);
+  const [lockReason, setLockReason] = useState("");
+  const [lockUntil, setLockUntil] = useState(null);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+
   const PASS_THRESHOLD = 80;
   const DEFAULT_TIME_LIMIT_MIN = 15;
 
@@ -75,14 +89,24 @@ const QuizContent = ({
           }
           setAllowRetake(true);
         } else if (propQuizId) {
-          const response = await getQuizById(propQuizId);
+          // Ensure propQuizId is a string, not an object
+          const actualQuizId = typeof propQuizId === 'object' ? propQuizId._id || propQuizId.id : propQuizId;
+          if (!actualQuizId) {
+            throw new Error('Invalid quiz ID provided');
+          }
+          const response = await getQuizById(actualQuizId);
           quiz = response.data;
           setAllowRetake(true);
-          fetchedQuizId = propQuizId;
+          fetchedQuizId = actualQuizId;
         } else if (lessonId) {
+          // Ensure lessonId is a string, not an object
+          const actualLessonId = typeof lessonId === 'object' ? lessonId._id || lessonId.id : lessonId;
+          if (!actualLessonId) {
+            throw new Error('Invalid lesson ID provided');
+          }
           try {
             const quizResponse = await apiClient.get(
-              `quiz/by-lesson/${lessonId}`
+              `quiz/by-lesson/${actualLessonId}`
             );
             if (quizResponse.data?.success && quizResponse.data?.data) {
               quiz = quizResponse.data.data;
@@ -112,7 +136,7 @@ const QuizContent = ({
           if (!quiz) {
             try {
               const lessonResponse = await apiClient.get(
-                `watch-course/lesson/${lessonId}`
+                `watch-course/lesson/${actualLessonId}`
               );
               if (lessonResponse.data && lessonResponse.data.quizData) {
                 quiz = lessonResponse.data.quizData;
@@ -164,6 +188,8 @@ const QuizContent = ({
             id: q._id || index + 1,
             question: q.question || q.content,
             explanation: q.explanation || "",
+            // CRITICAL: Store originalIndex from backend (used for randomization mapping)
+            originalIndex: q.originalIndex !== undefined ? q.originalIndex : index,
             options:
               (q.options &&
                 q.options.map((opt, i) => ({
@@ -220,6 +246,29 @@ const QuizContent = ({
 
     fetchQuizData();
   }, [lessonId, propQuizData, propQuizId, timeLimitSeconds]);
+
+  // Check if quiz is locked
+  useEffect(() => {
+    if (!quizId) return;
+
+    // Reset all lock-related states when quiz changes
+    setQuizLocked(false);
+    setLockUntil(null);
+    setLockReason('');
+
+    const savedLockTime = localStorage.getItem(`quiz_lock_${quizId}`);
+    if (savedLockTime) {
+      const lockTime = new Date(savedLockTime);
+      if (Date.now() < lockTime.getTime()) {
+        setQuizLocked(true);
+        setLockUntil(lockTime);
+        setLockReason(`Bạn đã bị khóa làm bài do vi phạm. Vui lòng thử lại sau ${lockTime.toLocaleTimeString('vi-VN')}`);
+      } else {
+        // Lock expired, clear it
+        localStorage.removeItem(`quiz_lock_${quizId}`);
+      }
+    }
+  }, [quizId]);
 
   useEffect(() => {
     const refetchResultIfNeeded = async () => {
@@ -333,10 +382,25 @@ const QuizContent = ({
           selectedAnswers: selectedAnswers, // Lưu selectedAnswers để dùng cho AI
         });
 
-        // Store selectedAnswers in sessionStorage for AI explanations
+        // Store selectedAnswers mapped by originalIndex for consistent AI explanations
+        // This ensures AI can always find the right answers even after quiz randomization
+        const answersMapByOriginalIndex = {};
+        quizData.questions.forEach((question, index) => {
+          const answerIndex = selectedAnswers[question.id];
+          if (answerIndex !== undefined && question.originalIndex !== undefined) {
+            answersMapByOriginalIndex[question.originalIndex] = answerIndex;
+          }
+        });
+        
         sessionStorage.setItem(
           `quiz_selected_answers_${quizId}`,
-          JSON.stringify(selectedAnswers)
+          JSON.stringify(answersMapByOriginalIndex)
+        );
+        
+        // Also store full quiz result for AI
+        sessionStorage.setItem(
+          `quiz_result_${quizId}`,
+          JSON.stringify(result)
         );
 
         if (result.passed) {
@@ -372,6 +436,50 @@ const QuizContent = ({
       setIsSubmitting(false);
     }
   }, [quizId, selectedAnswers, quizData, onQuizComplete, lessonId]);
+
+  // Handle proctoring violation
+  const handleViolation = async (sessionId, violationType, details) => {
+    try {
+      const result = await logViolation(sessionId, violationType, details);
+      
+      if (result.success && result.data.isLocked) {
+        setQuizLocked(true);
+        setLockReason(result.data.lockReason);
+        toast.error("Quiz locked due to violations!");
+        
+        // End proctoring
+        if (proctoringSessionId) {
+          await endProctoringSession(proctoringSessionId, 'locked');
+        }
+      }
+      
+      return result.data;
+    } catch (error) {
+      console.error("Failed to log violation:", error);
+    }
+  };
+
+  // Handle quiz locked
+  const handleLocked = (reason) => {
+    // ProctorMonitor already handles counting violations (3 times)
+    // When this callback is called, it means quiz should be locked immediately
+    const lockTime = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+    setLockUntil(lockTime);
+    setQuizLocked(true);
+    setLockReason(`Bạn đã bị khóa làm bài do vi phạm: ${reason}. Vui lòng thử lại sau ${lockTime.toLocaleTimeString('vi-VN')}`);
+
+    toast.error('Bạn đã bị khóa làm quiz 1 tiếng do vi phạm 3 lần!', { duration: 10000 });
+
+    // Save lock time to localStorage
+    localStorage.setItem(`quiz_lock_${quizId}`, lockTime.toISOString());
+
+    // End proctoring session if active
+    if (proctoringSessionId) {
+      endProctoringSession(proctoringSessionId, 'locked').catch(err => {
+        console.error('Failed to end proctoring session:', err);
+      });
+    }
+  };
 
   useEffect(() => {
     if (!hasStarted || quizResult) return;
@@ -507,60 +615,79 @@ const QuizContent = ({
         throw new Error("Invalid quiz result data");
       }
 
-      // Extract details from nested structure
+      // Extract details from nested structure or flat structure
       const details = apiResponse.details || {};
       const totalQuestions =
-        details.totalQuestions || quizData.questions.length;
-      const correctAnswers = details.correctAnswers || 0;
+        details.totalQuestions || apiResponse.totalQuestions || quizData.questions.length;
+      const correctAnswers = details.correctAnswers || apiResponse.correctAnswers || 0;
       const scorePercentage = details.scorePercentage || apiResponse.score || 0;
       const passed =
         details.passed !== undefined ? details.passed : apiResponse.passed;
 
 
-      // Build complete questionsForAI from quizData and selectedAnswers (no database needed)
+      // Use questionResults from backend (already has correct originalIndex mapping)
+      // This is more reliable than rebuilding from frontend state
+      // Try to get from details first (old format), then from root level (new format)
+      const questionResultsFromBackend = details.questionResults || apiResponse.questionResults || [];
       
-      // Get selectedAnswers from multiple sources (priority order)
-      let answersToUse = quizResult?.selectedAnswers || selectedAnswers;
-      
-      // If still empty, try to load from sessionStorage
-      if (!answersToUse || Object.keys(answersToUse).length === 0) {
-        try {
-          const storedAnswers = sessionStorage.getItem(`quiz_selected_answers_${quizId}`);
-          if (storedAnswers) {
-            answersToUse = JSON.parse(storedAnswers);
-          }
-        } catch (error) {
-        }
+      // If no questionResults from backend, we can't proceed
+      if (!questionResultsFromBackend || questionResultsFromBackend.length === 0) {
+        throw new Error("No question results available. Please retake the quiz.");
       }
       
-      const questionsForAI = quizData.questions.map((question, index) => {
-        // Get user answer from selectedAnswers (what student actually selected)
-        const userAnswerIndex = answersToUse[question.id];
+      // Fetch full quiz to get all answer options (backend questionResults only has user+correct answers)
+      let fullQuizData = null;
+      try {
+        const quizResponse = await apiClient.get(`quiz/${quizId}`);
+        if (quizResponse.data?.data) {
+          fullQuizData = quizResponse.data.data;
+        }
+      } catch (quizFetchError) {
+        console.error("Failed to fetch full quiz data for AI:", quizFetchError);
+        // Continue without full quiz - use limited data from questionResults
+      }
+      
+      // Build questionsForAI from backend questionResults (already mapped correctly)
+      const questionsForAI = questionResultsFromBackend.map((qResult) => {
+        // Try to get full options from fullQuizData using originalIndex
+        let allOptions = [];
+        if (fullQuizData && fullQuizData.questions && fullQuizData.questions[qResult.originalIndex]) {
+          const fullQuestion = fullQuizData.questions[qResult.originalIndex];
+          // Get all options from full quiz data
+          if (fullQuestion.answers && Array.isArray(fullQuestion.answers)) {
+            allOptions = fullQuestion.answers.map((answer, idx) => ({
+              index: idx,
+              content: answer.content
+            }));
+          }
+        }
         
-        // Determine if answer is correct
-        const isCorrect = userAnswerIndex !== undefined && userAnswerIndex === question.correctAnswer;
-
-
+        // Fallback: build options from questionResults (limited to user+correct answers)
+        if (allOptions.length === 0) {
+          allOptions = [
+            ...(qResult.userAnswers || []),
+            ...(qResult.correctAnswers || [])
+          ].reduce((unique, answer) => {
+            // Remove duplicates and build options array
+            if (!unique.find(u => u.index === answer.index)) {
+              unique.push({ index: answer.index, content: answer.content });
+            }
+            return unique;
+          }, []).sort((a, b) => a.index - b.index);
+        }
+        
         return {
-          questionIndex: index,
-          originalIndex: question.originalIndex, // Include originalIndex for reference
-          questionId: question._id || question.id,
-          questionText: question.question,
-          options: question.options.map((opt, optIndex) => ({
-            index: optIndex,
-            content: typeof opt === "string" ? opt : opt.content,
-          })),
-          correctAnswer: question.correctAnswer,
-          userAnswer: userAnswerIndex !== undefined ? userAnswerIndex : null,
-          isCorrect: isCorrect,
+          questionIndex: qResult.questionIndex, // Index in randomized array
+          originalIndex: qResult.originalIndex, // Index in original pool (correct mapping)
+          questionId: qResult.questionId || qResult.originalIndex,
+          questionText: qResult.questionContent,
+          options: allOptions,
+          correctAnswer: qResult.correctAnswers?.[0]?.index,
+          userAnswer: qResult.userAnswers?.[0]?.index !== undefined ? qResult.userAnswers[0].index : null,
+          isCorrect: qResult.isCorrect,
           // Add user answer text and correct answer text for AI
-          userAnswerText: userAnswerIndex !== undefined ? 
-            (typeof question.options[userAnswerIndex] === "string" ? 
-             question.options[userAnswerIndex] : 
-             question.options[userAnswerIndex]?.content || "Invalid answer") : "Not answered",
-          correctAnswerText: typeof question.options[question.correctAnswer] === "string" ? 
-            question.options[question.correctAnswer] : 
-            question.options[question.correctAnswer]?.content || "Invalid answer"
+          userAnswerText: qResult.userAnswers?.[0]?.content || "Not answered",
+          correctAnswerText: qResult.correctAnswers?.[0]?.content || "No correct answer"
         };
       });
 
@@ -690,44 +817,95 @@ const QuizContent = ({
   const currentQuestion = quizData.questions[currentQuestionIndex];
   // const resultDetail = quizResult ? getQuestionResultForIndex(currentQuestionIndex) : null;
 
+  // Show lock screen if locked
+  if (quizLocked && lockUntil) {
+    const timeRemaining = Math.ceil((lockUntil.getTime() - Date.now()) / 1000 / 60); // minutes
+    return (
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '60px 20px',
+        maxWidth: '600px',
+        margin: '0 auto'
+      }}>
+        <div style={{ fontSize: '80px', marginBottom: '24px' }}>🔒</div>
+        <h2 style={{ color: '#ff4d4f', marginBottom: '16px' }}>Quiz đã bị khóa</h2>
+        <p style={{ fontSize: '16px', color: '#595959', marginBottom: '8px' }}>
+          {lockReason}
+        </p>
+        <p style={{ fontSize: '14px', color: '#8c8c8c' }}>
+          Còn khoảng {timeRemaining} phút
+        </p>
+      </div>
+    );
+  }
+
   if (!hasStarted) {
     return (
-      <div className="quiz-intro">
-        <h2 className="intro-title">Quiz</h2>
-        <div className="intro-info">
-          <div className="intro-row">
-            <span>Total questions:</span>
-            <strong>{totalQuestions}</strong>
-          </div>
-          <div className="intro-row">
-            <span>Time limit:</span>
-            <strong>{Math.ceil(effectiveTimeLimitSeconds / 60)} minutes</strong>
-          </div>
-        </div>
+      <ProctorMonitor
+        sessionId={proctoringSessionId}
+        onViolation={handleViolation}
+        onLocked={handleLocked}
+        onIdentityVerified={(verified) => {
+          if (verified) {
+            // After verification, start the quiz automatically
+            setRemainingSeconds(effectiveTimeLimitSeconds);
+            setHasStarted(true);
+            setShowVerificationModal(false);
 
-        <div className="quiz-instructions">
-          <h3>Instructions</h3>
-          <ul>
-            <li>Answer all questions before submitting.</li>
-            <li>
-              Pass threshold: <strong>{PASS_THRESHOLD}%</strong>.
-            </li>
-            <li>Timer starts when you begin the quiz.</li>
-          </ul>
-        </div>
+            // Start proctoring session
+            startProctoringSession(quizId)
+              .then(result => {
+                if (result.success) {
+                  setProctoringSessionId(result.data.sessionId);
+                  toast.info("Anti-cheating system activated. Keep fullscreen and camera on!");
+                }
+              })
+              .catch(error => {
+                console.error("Failed to start proctoring:", error);
+                toast.warning("Quiz started but proctoring may not be active.");
+              });
+          }
+        }}
+        isActive={showVerificationModal}
+      >
+        <div className="quiz-intro">
+          <h2 className="intro-title">Quiz</h2>
+          <div className="intro-info">
+            <div className="intro-row">
+              <span>Total questions:</span>
+              <strong>{totalQuestions}</strong>
+            </div>
+            <div className="intro-row">
+              <span>Time limit:</span>
+              <strong>{Math.ceil(effectiveTimeLimitSeconds / 60)} minutes</strong>
+            </div>
+          </div>
 
-        <div className="quiz-actions">
-          <button
-            className="start-quiz-btn"
-            onClick={() => {
-              setRemainingSeconds(effectiveTimeLimitSeconds);
-              setHasStarted(true);
-            }}
-          >
-            Start Quiz
-          </button>
+          <div className="quiz-instructions">
+            <h3>Instructions</h3>
+            <ul>
+              <li>Answer all questions before submitting.</li>
+              <li>
+                Pass threshold: <strong>{PASS_THRESHOLD}%</strong>.
+              </li>
+              <li>Timer starts when you begin the quiz.</li>
+              <li><strong>⚠️ Identity verification required before starting</strong></li>
+            </ul>
+          </div>
+
+          <div className="quiz-actions">
+            <button
+              className="start-quiz-btn"
+              onClick={() => {
+                // Show verification modal when user clicks Start Quiz
+                setShowVerificationModal(true);
+              }}
+            >
+              Start Quiz
+            </button>
+          </div>
         </div>
-      </div>
+      </ProctorMonitor>
     );
   }
 
@@ -805,19 +983,23 @@ const QuizContent = ({
                     let freshQuiz = null;
                     
                     if (propQuizId) {
-                      const response = await apiClient.get(`quiz/${propQuizId}?t=${Date.now()}`);
+                      const actualQuizId = typeof propQuizId === 'object' ? propQuizId._id || propQuizId.id : propQuizId;
+                      const response = await apiClient.get(`quiz/${actualQuizId}?t=${Date.now()}`);
                       freshQuiz = response.data.data;
                     } else if (lessonId) {
-                      const response = await apiClient.get(`quiz/by-lesson/${lessonId}?t=${Date.now()}`);
+                      const actualLessonId = typeof lessonId === 'object' ? lessonId._id || lessonId.id : lessonId;
+                      const response = await apiClient.get(`quiz/by-lesson/${actualLessonId}?t=${Date.now()}`);
                       freshQuiz = response.data.data;
                     }
                     
                     if (freshQuiz) {
-                      // Process questions to ensure they have proper IDs
+                      // Process questions to ensure they have proper IDs and originalIndex
                       const processedQuestions = freshQuiz.questions.map((q, index) => ({
                         ...q,
                         id: q.id || `question_${index}`,
                         question: q.content || q.question,
+                        // CRITICAL: Preserve originalIndex from backend (for randomization)
+                        originalIndex: q.originalIndex !== undefined ? q.originalIndex : index,
                         options: q.answers
                           ? q.answers.map((a) => a.content)
                           : q.options || [],
@@ -883,8 +1065,14 @@ const QuizContent = ({
         </div>
       )}
 
-      {!quizResult && (
-        <div className="quiz-main-content">
+      {!quizResult && !quizLocked && (
+        <ProctorMonitor
+          sessionId={proctoringSessionId}
+          onViolation={handleViolation}
+          onLocked={handleLocked}
+          isActive={hasStarted && !quizResult}
+        >
+          <div className="quiz-main-content">
           {/* Header */}
           <div className="quiz-header-bar">
             <div className="quiz-progress">
@@ -1102,6 +1290,21 @@ const QuizContent = ({
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+        </ProctorMonitor>
+      )}
+
+      {quizLocked && (
+        <div className="quiz-locked-screen">
+          <div className="locked-content">
+            <div className="locked-icon">🔒</div>
+            <h2>Quiz Locked</h2>
+            <p>{lockReason}</p>
+            <div className="locked-message">
+              Your quiz has been locked due to violation of exam rules.
+              Please contact your instructor for assistance.
             </div>
           </div>
         </div>

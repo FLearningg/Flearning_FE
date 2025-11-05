@@ -63,7 +63,6 @@ const AIExplanationPanel = ({
                 <button
                   className="ai-refresh-btn"
                   onClick={() => {
-                    console.log("Refreshing AI explanations from modal...");
                     onRetry(true); // Pass skipCache = true
                   }}
                   title="Refresh AI explanations"
@@ -177,16 +176,24 @@ const AIExplanationPanel = ({
                   <p>No explanations available.</p>
                 </div>
               )
-            ) : /* If FAILED: Show only answers without status and explanation */
+            ) : /* If FAILED: Show answers with correct answer and status */
             quizResult &&
               quizResult.questionResults &&
               quizResult.questionResults.length > 0 ? (
               <div className="failed-answers-list">
                 {quizResult.questionResults.map((detail, idx) => (
-                  <div key={idx} className="failed-answer-item">
+                  <div 
+                    key={idx} 
+                    className={`failed-answer-item ${
+                      detail.isCorrect ? "correct" : "wrong"
+                    }`}
+                  >
                     <div className="failed-item-header">
                       <div className="ai-item-number">
                         Question {detail.questionIndex + 1}
+                      </div>
+                      <div className="ai-item-status">
+                        {detail.isCorrect ? "✓ Correct" : "✗ Incorrect"}
                       </div>
                     </div>
                     <div className="failed-item-body">
@@ -200,6 +207,16 @@ const AIExplanationPanel = ({
                           <div className="ai-answer-text">
                             {detail.userAnswers && detail.userAnswers.length > 0
                               ? detail.userAnswers
+                                  .map((a) => a.content)
+                                  .join(", ")
+                              : "—"}
+                          </div>
+                        </div>
+                        <div className="ai-answer-box correct-answer">
+                          <div className="ai-answer-label">Correct Answer</div>
+                          <div className="ai-answer-text">
+                            {detail.correctAnswers && detail.correctAnswers.length > 0
+                              ? detail.correctAnswers
                                   .map((a) => a.content)
                                   .join(", ")
                               : "—"}
