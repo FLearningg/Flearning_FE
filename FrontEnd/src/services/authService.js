@@ -125,6 +125,10 @@ export const googleLogin = (tokenId) =>
   apiClient.post("/auth/google", { tokenId });
 export const verifyEmail = (token) =>
   apiClient.get(`/auth/verify-email/${token}`);
+export const verifyInstructorEmail = (token) =>
+  apiClient.get(`/auth/verify-instructor-email/${token}`);
+export const verifyInstructorApplication = (token) =>
+  apiClient.get(`/auth/verify-instructor-application/${token}`);
 export const logoutUser = () => apiClient.post("/auth/logout");
 export const resendVerificationLink = (email) =>
   apiClient.post("/auth/resend-verification", { email });

@@ -133,12 +133,15 @@ export default function CensorInstructor() {
       }));
       
       // Separate applications and approved instructors
-      // Include AI-approved applications in the applications tab
+      // Applications tab: pending, emailNotVerified, rejected
+      // Instructors tab: approved (both manual and AI approved)
       const allApplications = transformedData.filter(app =>
-        app.status !== "approved" || app.aiReviewStatus === "approved"
+        app.status === "pending" || 
+        app.status === "emailNotVerified" || 
+        app.status === "rejected"
       );
       const approvedInstructors = transformedData.filter(app =>
-        app.status === "approved" && app.aiReviewStatus !== "approved"
+        app.status === "approved"
       );
       
       setApplications(allApplications);
@@ -457,6 +460,10 @@ export default function CensorInstructor() {
                     // Determine AI review status display
                     const getAIReviewStatus = (app) => {
                       if (!app.aiReviewStatus) {
+                        // If approved but no AI review, show "Manual Approval"
+                        if (app.status === "approved" || app.applicationStatus === "approved") {
+                          return { text: "Manual Approval", class: "ai-status-manual-approved" };
+                        }
                         return { text: "", class: "" }; // Leave empty when no AI review data
                       }
                       switch (app.aiReviewStatus) {
@@ -652,8 +659,13 @@ export default function CensorInstructor() {
                       <h3 className="ci-section-title">Documents</h3>
                       <div className="ci-documents-grid">
                         {selectedApplication.documents.map((doc, idx) => {
+                          // Handle both string URLs and document objects
+                          const docUrl = typeof doc === 'string' ? doc : (doc.url || doc.fileUrl || '');
+                          
+                          if (!docUrl) return null;
+                          
                           // Determine file type from URL or extension
-                          const fileExtension = doc.split('.').pop().toLowerCase().split('?')[0];
+                          const fileExtension = docUrl.split('.').pop().toLowerCase().split('?')[0];
                           const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExtension);
                           const isPdf = fileExtension === 'pdf';
                           const isDoc = ['doc', 'docx'].includes(fileExtension);
@@ -662,10 +674,10 @@ export default function CensorInstructor() {
                             <div key={idx} className="ci-document-item">
                               {isImage ? (
                                 <img
-                                  src={doc}
+                                  src={docUrl}
                                   alt={`Document ${idx + 1}`}
                                   className="ci-document-image"
-                                  onClick={() => openImageViewer(doc)}
+                                  onClick={() => openImageViewer(docUrl)}
                                   style={{ cursor: 'pointer' }}
                                 />
                               ) : (
@@ -687,7 +699,7 @@ export default function CensorInstructor() {
                                     transition: 'all 0.3s ease',
                                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                                   }}
-                                  onClick={() => window.open(doc, '_blank')}
+                                  onClick={() => window.open(docUrl, '_blank')}
                                   onMouseEnter={(e) => {
                                     e.currentTarget.style.transform = 'translateY(-4px)';
                                     e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
@@ -764,6 +776,14 @@ export default function CensorInstructor() {
                       <span className="ci-info-label">AI Review Status:</span>
                       {(() => {
                         if (!selectedApplication.aiReviewStatus) {
+                          // If approved but no AI review, show "Manual Approval"
+                          if (selectedApplication.status === "approved" || selectedApplication.applicationStatus === "approved") {
+                            return (
+                              <span className="ai-status-badge ai-status-manual-approved">
+                                Manual Approval
+                              </span>
+                            );
+                          }
                           return (
                             <span className="ci-info-value">
                               -
