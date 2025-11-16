@@ -1025,37 +1025,23 @@ const QuizContent = ({
                 <span className="btn-icon">🔄</span>
                 Retake Quiz
               </button>
-              {/* Only show AI explanation button if passed */}
-              {quizResult.passed && (
-                <button
-                  className="view-detail-btn"
-                  onClick={() => {
-                    setShowDetailModal(true);
-                    if (!aiExplanations) fetchAIExplanations();
-                  }}
-                  title={
-                    aiExplanations
-                      ? "View cached AI explanations"
-                      : "Fetch AI explanations"
-                  }
-                >
-                  AI Explanations
-                  {aiExplanations && <span className="cached-badge">📦</span>}
-                </button>
-              )}
-              {/* Show answers only button if failed */}
-              {!quizResult.passed && (
-                <button
-                  className="view-detail-btn"
-                  onClick={() => {
-                    setShowDetailModal(true);
-                  }}
-                  title="View correct answers"
-                >
-                  <span className="btn-icon">📝</span>
-                  View Answers
-                </button>
-              )}
+              {/* Always show AI explanation button */}
+              <button
+                className="view-detail-btn"
+                onClick={() => {
+                  setShowDetailModal(true);
+                  if (!aiExplanations) fetchAIExplanations();
+                }}
+                title={
+                  aiExplanations
+                    ? "View cached AI explanations"
+                    : "Fetch AI explanations"
+                }
+              >
+                <span className="btn-icon">🤖</span>
+                AI Explanations
+                {aiExplanations && <span className="cached-badge">📦</span>}
+              </button>
             </div>
           )}
         </div>
