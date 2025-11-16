@@ -865,7 +865,7 @@ const QuizContent = ({
             });
         }
       }}
-      isActive={showVerificationModal || (hasStarted && !quizResult)}
+      isActive={!quizResult && (showVerificationModal || hasStarted)}
     >
       {!hasStarted ? (
         <div className="quiz-intro">
