@@ -57,9 +57,27 @@ const QuizContent = ({
   const [lockReason, setLockReason] = useState("");
   const [lockUntil, setLockUntil] = useState(null);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [userId, setUserId] = useState(null);
 
   const PASS_THRESHOLD = 80;
   const DEFAULT_TIME_LIMIT_MIN = 15;
+
+  // Fetch userId on component mount
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const userProfile = await getUserProfile();
+        if (userProfile && userProfile.data) {
+          const id = userProfile.data._id || userProfile.data.userId || null;
+          setUserId(id);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user profile:", error);
+      }
+    };
+    
+    fetchUserId();
+  }, []);
 
   useEffect(() => {
     if (!lessonId && !propQuizId) return;
@@ -247,16 +265,17 @@ const QuizContent = ({
     fetchQuizData();
   }, [lessonId, propQuizData, propQuizId, timeLimitSeconds]);
 
-  // Check if quiz is locked
+  // Check if quiz is locked (user-specific)
   useEffect(() => {
-    if (!quizId) return;
+    if (!quizId || !userId) return;
 
     // Reset all lock-related states when quiz changes
     setQuizLocked(false);
     setLockUntil(null);
     setLockReason('');
 
-    const savedLockTime = localStorage.getItem(`quiz_lock_${quizId}`);
+    const lockKey = `quiz_lock_${userId}_${quizId}`;
+    const savedLockTime = localStorage.getItem(lockKey);
     if (savedLockTime) {
       const lockTime = new Date(savedLockTime);
       if (Date.now() < lockTime.getTime()) {
@@ -265,10 +284,10 @@ const QuizContent = ({
         setLockReason(`Bạn đã bị khóa làm bài do vi phạm. Vui lòng thử lại sau ${lockTime.toLocaleTimeString('vi-VN')}`);
       } else {
         // Lock expired, clear it
-        localStorage.removeItem(`quiz_lock_${quizId}`);
+        localStorage.removeItem(lockKey);
       }
     }
-  }, [quizId]);
+  }, [quizId, userId]);
 
   useEffect(() => {
     const refetchResultIfNeeded = async () => {
@@ -470,8 +489,11 @@ const QuizContent = ({
 
     toast.error('Bạn đã bị khóa làm quiz 1 tiếng do vi phạm 3 lần!', { duration: 10000 });
 
-    // Save lock time to localStorage
-    localStorage.setItem(`quiz_lock_${quizId}`, lockTime.toISOString());
+    // Save lock time to localStorage with user-specific key
+    if (userId) {
+      const lockKey = `quiz_lock_${userId}_${quizId}`;
+      localStorage.setItem(lockKey, lockTime.toISOString());
+    }
 
     // End proctoring session if active
     if (proctoringSessionId) {
