@@ -839,35 +839,35 @@ const QuizContent = ({
     );
   }
 
-  if (!hasStarted) {
-    return (
-      <ProctorMonitor
-        sessionId={proctoringSessionId}
-        onViolation={handleViolation}
-        onLocked={handleLocked}
-        onIdentityVerified={(verified) => {
-          if (verified) {
-            // After verification, start the quiz automatically
-            setRemainingSeconds(effectiveTimeLimitSeconds);
-            setHasStarted(true);
-            setShowVerificationModal(false);
+  return (
+    <ProctorMonitor
+      sessionId={proctoringSessionId}
+      onViolation={handleViolation}
+      onLocked={handleLocked}
+      onIdentityVerified={(verified) => {
+        if (verified) {
+          // After verification, start the quiz automatically
+          setRemainingSeconds(effectiveTimeLimitSeconds);
+          setHasStarted(true);
+          setShowVerificationModal(false);
 
-            // Start proctoring session
-            startProctoringSession(quizId)
-              .then(result => {
-                if (result.success) {
-                  setProctoringSessionId(result.data.sessionId);
-                  toast.info("Anti-cheating system activated. Keep fullscreen and camera on!");
-                }
-              })
-              .catch(error => {
-                console.error("Failed to start proctoring:", error);
-                toast.warning("Quiz started but proctoring may not be active.");
-              });
-          }
-        }}
-        isActive={showVerificationModal}
-      >
+          // Start proctoring session
+          startProctoringSession(quizId)
+            .then(result => {
+              if (result.success) {
+                setProctoringSessionId(result.data.sessionId);
+                toast.info("Anti-cheating system activated. Keep fullscreen and camera on!");
+              }
+            })
+            .catch(error => {
+              console.error("Failed to start proctoring:", error);
+              toast.warning("Quiz started but proctoring may not be active.");
+            });
+        }
+      }}
+      isActive={showVerificationModal || (hasStarted && !quizResult)}
+    >
+      {!hasStarted ? (
         <div className="quiz-intro">
           <h2 className="intro-title">Quiz</h2>
           <div className="intro-info">
@@ -905,12 +905,8 @@ const QuizContent = ({
             </button>
           </div>
         </div>
-      </ProctorMonitor>
-    );
-  }
-
-  return (
-    <div className="quiz-container">
+      ) : (
+        <div className="quiz-container">
       {quizResult && (
         <div className={`quiz-result ${quizResult.passed ? "pass" : "fail"}`}>
           <div className="result-header">
@@ -1066,13 +1062,7 @@ const QuizContent = ({
       )}
 
       {!quizResult && !quizLocked && (
-        <ProctorMonitor
-          sessionId={proctoringSessionId}
-          onViolation={handleViolation}
-          onLocked={handleLocked}
-          isActive={hasStarted && !quizResult}
-        >
-          <div className="quiz-main-content">
+        <div className="quiz-main-content">
           {/* Header */}
           <div className="quiz-header-bar">
             <div className="quiz-progress">
@@ -1293,7 +1283,6 @@ const QuizContent = ({
             </div>
           </div>
         </div>
-        </ProctorMonitor>
       )}
 
       {quizLocked && (
@@ -1326,7 +1315,9 @@ const QuizContent = ({
           }}
         />
       )}
-    </div>
+      </div>
+      )}
+    </ProctorMonitor>
   );
 };
 

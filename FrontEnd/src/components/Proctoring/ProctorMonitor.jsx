@@ -122,58 +122,65 @@ const ProctorMonitor = ({
       if (isActive && modelLoaded) {
         console.log('🚀 Initializing proctoring system...');
         
-        // Reset identity verification state for fresh quiz attempt
-        console.log('🔄 Resetting identity verification for new quiz...');
-        setIdentityVerified(false);
-        setIdentitySnapshot(null);
-        setVerificationAttempts(0);
-        referenceFaceDescriptorRef.current = null;
-        
-        requestFullscreen();
-        setupEventListeners();
-        
-        try {
-          // Start identity camera for verification modal
-          console.log('📷 Starting identity verification camera...');
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              width: { ideal: 640 },
-              height: { ideal: 480 },
-              facingMode: 'user'
-            },
-            audio: false
-          });
+        // Only reset and show modal if NOT already verified
+        // This prevents showing modal twice when quiz starts
+        if (!identityVerified) {
+          console.log('🔄 Resetting identity verification for new quiz...');
+          setIdentitySnapshot(null);
+          setVerificationAttempts(0);
+          referenceFaceDescriptorRef.current = null;
+          
+          requestFullscreen();
+          setupEventListeners();
+          
+          try {
+            // Start identity camera for verification modal
+            console.log('📷 Starting identity verification camera...');
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                width: { ideal: 640 },
+                height: { ideal: 480 },
+                facingMode: 'user'
+              },
+              audio: false
+            });
 
-          console.log('✅ Identity camera access granted');
-          streamRef.current = stream;
+            console.log('✅ Identity camera access granted');
+            streamRef.current = stream;
+            
+            // Show modal first so video element renders
+            console.log('📋 Showing identity modal first...');
+            setShowIdentityModal(true);
           
-          // Show modal first so video element renders
-          console.log('📋 Showing identity modal first...');
-          setShowIdentityModal(true);
-          
-          // Wait for modal to render, then attach stream
-          setTimeout(() => {
-            if (identityVideoRef.current) {
-              console.log('✅ identityVideoRef found, attaching stream');
-              identityVideoRef.current.srcObject = stream;
-              
-              identityVideoRef.current.onloadedmetadata = () => {
-                console.log('Identity video metadata loaded');
-                identityVideoRef.current.play()
-                  .then(() => {
-                    console.log('✅ Identity video is playing');
-                    setCameraActive(true);
-                  })
-                  .catch(err => {
-                    console.error('Failed to play identity video:', err);
-                  });
-              };
-            } else {
-              console.error('❌ identityVideoRef.current is still null after timeout');
-            }
-          }, 1000); // Increased timeout to ensure modal renders
-        } catch (err) {
-          console.error('Failed to start identity camera:', err);
+            // Wait for modal to render, then attach stream
+            setTimeout(() => {
+              if (identityVideoRef.current) {
+                console.log('✅ identityVideoRef found, attaching stream');
+                identityVideoRef.current.srcObject = stream;
+                
+                identityVideoRef.current.onloadedmetadata = () => {
+                  console.log('Identity video metadata loaded');
+                  identityVideoRef.current.play()
+                    .then(() => {
+                      console.log('✅ Identity video is playing');
+                      setCameraActive(true);
+                    })
+                    .catch(err => {
+                      console.error('Failed to play identity video:', err);
+                    });
+                };
+              } else {
+                console.error('❌ identityVideoRef.current is still null after timeout');
+              }
+            }, 1000); // Increased timeout to ensure modal renders
+          } catch (err) {
+            console.error('Failed to start identity camera:', err);
+          }
+        } else {
+          // Already verified - just enable monitoring without showing modal
+          console.log('✅ Already verified - enabling monitoring only');
+          requestFullscreen();
+          setupEventListeners();
         }
       }
     };
