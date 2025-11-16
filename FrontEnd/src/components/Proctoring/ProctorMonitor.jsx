@@ -182,6 +182,10 @@ const ProctorMonitor = ({
           requestFullscreen();
           setupEventListeners();
         }
+      } else if (!isActive) {
+        // When inactive (quiz finished), close modal
+        console.log('🔴 ProctorMonitor deactivated - closing modal');
+        setShowIdentityModal(false);
       }
     };
     
@@ -193,6 +197,16 @@ const ProctorMonitor = ({
       exitFullscreen();
     };
   }, [isActive, modelLoaded]);
+  
+  /**
+   * Close modal when not active
+   */
+  useEffect(() => {
+    if (!isActive && showIdentityModal) {
+      console.log('🔴 Closing identity modal because isActive=false');
+      setShowIdentityModal(false);
+    }
+  }, [isActive, showIdentityModal]);
   
   /**
    * Debug: Log camera state changes
