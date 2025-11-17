@@ -74,27 +74,99 @@ const SurveyModal = () => {
     });
   };
 
+  // Silent validation - check if step data is filled (no toast)
+  const isStepValid = (stepNumber) => {
+    // Step 3: Interested skills - REQUIRED
+    if (stepNumber === 3) {
+      return formData.interestedSkills && formData.interestedSkills.length > 0;
+    }
+    // Step 4: Current level - REQUIRED
+    if (stepNumber === 4) {
+      return !!formData.currentLevel;
+    }
+    // Step 5: Weekly study hours - REQUIRED
+    if (stepNumber === 5) {
+      return !!formData.weeklyStudyHours;
+    }
+    // Step 6: Target completion time - REQUIRED
+    if (stepNumber === 6) {
+      return !!formData.targetCompletionTime;
+    }
+    return true;
+  };
+
+  // Validation function with toast - use when user tries to proceed
+  const validateStepWithToast = (stepNumber) => {
+    // Step 3: Interested skills - REQUIRED
+    if (stepNumber === 3) {
+      if (!formData.interestedSkills || formData.interestedSkills.length === 0) {
+        toast.error("Please select at least one area you're interested in");
+        return false;
+      }
+    }
+    // Step 4: Current level - REQUIRED
+    if (stepNumber === 4) {
+      if (!formData.currentLevel) {
+        toast.error("Please select your current level");
+        return false;
+      }
+    }
+    // Step 5: Weekly study hours - REQUIRED
+    if (stepNumber === 5) {
+      if (!formData.weeklyStudyHours) {
+        toast.error("Please select weekly study hours");
+        return false;
+      }
+    }
+    // Step 6: Target completion time - REQUIRED
+    if (stepNumber === 6) {
+      if (!formData.targetCompletionTime) {
+        toast.error("Please select target completion time");
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Check if user can navigate to a step (silent - no toast)
+  const canNavigateToStep = (targetStep) => {
+    // Always allow going back
+    if (targetStep <= currentStep) {
+      return true;
+    }
+
+    // Check all required steps before the target step (silent)
+    for (let step = 3; step < targetStep; step++) {
+      if (!isStepValid(step)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Handle step navigation from progress bar
+  const handleStepClick = (targetStep) => {
+    // Check if can navigate (silent check for UI feedback)
+    if (targetStep <= currentStep) {
+      // Allow going back without validation
+      dispatch(setCurrentStep(targetStep));
+      return;
+    }
+
+    // For forward navigation, validate with toast
+    for (let step = 3; step < targetStep; step++) {
+      if (!validateStepWithToast(step)) {
+        return; // Toast shown, stop navigation
+      }
+    }
+
+    dispatch(setCurrentStep(targetStep));
+  };
+
   // Handle next
   const handleNext = () => {
-    // If current step is 3, require at least one interested skill
-    if (
-      currentStep === 3 &&
-      (!formData.interestedSkills || formData.interestedSkills.length === 0)
-    ) {
-      toast.error("Please select at least one area you're interested in");
-      return;
-    }
-    // Validate required fields for steps 4, 5, 6
-    if (currentStep === 4 && !formData.currentLevel) {
-      toast.error("Please select your current level");
-      return;
-    }
-    if (currentStep === 5 && !formData.weeklyStudyHours) {
-      toast.error("Please select weekly study hours");
-      return;
-    }
-    if (currentStep === 6 && !formData.targetCompletionTime) {
-      toast.error("Please select target completion time");
+    // Validate current step before proceeding (with toast)
+    if (!validateStepWithToast(currentStep)) {
       return;
     }
 
@@ -110,23 +182,12 @@ const SurveyModal = () => {
 
   // Handle submit
   const handleSubmit = async () => {
-    // Ensure interested skills was selected
-    if (!formData.interestedSkills || formData.interestedSkills.length === 0) {
-      toast.error("Please select at least one area you're interested in");
-      return;
-    }
-    // Validate required fields
-    if (!formData.currentLevel) {
-      toast.error("Please select your current level");
-      return;
-    }
-    if (!formData.weeklyStudyHours) {
-      toast.error("Please select weekly study hours");
-      return;
-    }
-    if (!formData.targetCompletionTime) {
-      toast.error("Please select target completion time");
-      return;
+    // Validate all required steps before submitting
+    const requiredSteps = [3, 4, 5, 6];
+    for (const step of requiredSteps) {
+      if (!validateStepWithToast(step)) {
+        return;
+      }
     }
 
     try {
@@ -178,7 +239,11 @@ const SurveyModal = () => {
                 className={`f-lp-survey-progress-step ${
                   step <= currentStep ? "active" : ""
                 } ${step === currentStep ? "current" : ""}`}
-                onClick={() => dispatch(setCurrentStep(step))}
+                onClick={() => handleStepClick(step)}
+                style={{
+                  cursor: step <= currentStep || canNavigateToStep(step) ? "pointer" : "not-allowed",
+                  opacity: step <= currentStep || canNavigateToStep(step) ? 1 : 0.5,
+                }}
               >
                 {step}
               </div>

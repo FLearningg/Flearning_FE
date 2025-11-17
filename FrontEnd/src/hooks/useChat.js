@@ -126,9 +126,29 @@ export const useChat = () => {
     socket.on("new_message", handleNewMessage);
 
     socket.on("conversation_updated", (conv) => {
-      setConversations((prev) =>
-        prev.map((c) => (c.id === conv.id ? { ...c, ...conv } : c))
-      );
+      console.log("🔍 DEBUG: conversation_updated received:", conv);
+
+      setConversations((prev) => {
+        // Format conversation data to match frontend structure
+        const formattedConv = {
+          id: conv._id,
+          lastMessage: conv.last_message,
+          status: conv.status,
+          updatedAt: conv.updatedAt,
+          createdAt: conv.createdAt,
+          // Extract otherParticipant from populated participants
+          otherParticipant: conv.participants?.find(
+            (p) => p._id.toString() !== currentUser?._id.toString()
+          ) || null,
+          participants: conv.participants,
+        };
+
+        console.log("🔍 DEBUG: formattedConv:", formattedConv);
+
+        return prev.map((c) =>
+          c.id === formattedConv.id ? { ...c, ...formattedConv } : c
+        );
+      });
     });
 
     socket.on("unread_count_updated", (count) => {
@@ -136,7 +156,25 @@ export const useChat = () => {
     });
 
     socket.on("conversation", (conv) => {
-      setConversations((prev) => [conv, ...prev]);
+      console.log("🔍 DEBUG: new conversation received:", conv);
+
+      // Format conversation data to match frontend structure
+      const formattedConv = {
+        id: conv._id,
+        lastMessage: conv.last_message,
+        status: conv.status,
+        updatedAt: conv.updatedAt,
+        createdAt: conv.createdAt,
+        // Extract otherParticipant from populated participants
+        otherParticipant: conv.participants?.find(
+          (p) => p._id.toString() !== currentUser?._id.toString()
+        ) || null,
+        participants: conv.participants,
+      };
+
+      console.log("🔍 DEBUG: formattedConv (new):", formattedConv);
+
+      setConversations((prev) => [formattedConv, ...prev]);
     });
 
     socket.on("connect_error", async (err) => {
@@ -387,12 +425,16 @@ export const useChat = () => {
               (conv) => conv.id === newConversationId
             );
 
+            // Use conversation data from backend response if available
+            const conversationData = response.data.data.conversation;
+
             if (existingConversation) {
               // Update existing conversation và đưa lên đầu
               const updated = prev.map((conv) => {
                 if (conv.id === newConversationId) {
                   return {
                     ...conv,
+                    ...(conversationData || {}), // Use backend data if available
                     lastMessage: message,
                     status: "sent",
                     updatedAt: new Date().toISOString(),
@@ -410,17 +452,31 @@ export const useChat = () => {
               }
               return updated;
             } else {
-              // Create new conversation object and add to list
-              const newConversation = {
-                id: newConversationId,
-                lastMessage: message,
-                status: "sent",
-                updatedAt: new Date().toISOString(),
-                otherParticipant: { _id: receiverId },
-                participants: [currentUser, { _id: receiverId }],
-                lastMessageSenderId: currentUser._id,
-              };
-              return [newConversation, ...prev];
+              // Use conversation from backend response
+              if (conversationData) {
+                return [
+                  {
+                    ...conversationData,
+                    lastMessageSenderId: currentUser._id,
+                  },
+                  ...prev,
+                ];
+              } else {
+                // Fallback: Create new conversation object (should not happen with updated backend)
+                console.warn(
+                  "⚠️ Backend did not return conversation data, using fallback"
+                );
+                const newConversation = {
+                  id: newConversationId,
+                  lastMessage: message,
+                  status: "sent",
+                  updatedAt: new Date().toISOString(),
+                  otherParticipant: { _id: receiverId },
+                  participants: [currentUser, { _id: receiverId }],
+                  lastMessageSenderId: currentUser._id,
+                };
+                return [newConversation, ...prev];
+              }
             }
           });
 
