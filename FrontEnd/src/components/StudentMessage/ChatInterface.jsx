@@ -284,22 +284,36 @@ export function ChatInterface({ chatListOpen, setChatListOpen }) {
     try {
       const result = await sendNewMessage(receiverId, message);
 
+      console.log("🔍 DEBUG: Compose message result:", result);
+
       // Always select the conversation where the message was sent
       if (result && result.conversationId) {
-        // Wait a bit for conversations to update, then find and select the conversation
-        setTimeout(() => {
-          const targetConversation = conversations.find(
-            (conv) => conv.id === result.conversationId
-          );
-          if (targetConversation) {
-            // Không mark as read khi tự động chọn conversation sau khi compose message
-            selectConversation(targetConversation, false);
-            // Auto close chat list on tablet when selecting conversation
-            if (isTablet) {
-              setChatListOpen(false);
-            }
+        // Use conversation from result if available (backend returns it now)
+        if (result.conversation) {
+          console.log("🔍 DEBUG: Selecting conversation from result:", result.conversation);
+          // Directly select the conversation from backend response
+          selectConversation(result.conversation, false);
+          // Auto close chat list on tablet when selecting conversation
+          if (isTablet) {
+            setChatListOpen(false);
           }
-        }, 100);
+        } else {
+          // Fallback: Wait for conversations state to update, then find and select
+          console.log("🔍 DEBUG: Waiting for conversation to appear in state...");
+          setTimeout(() => {
+            const targetConversation = conversations.find(
+              (conv) => conv.id === result.conversationId
+            );
+            console.log("🔍 DEBUG: Found conversation in state:", targetConversation);
+            if (targetConversation) {
+              selectConversation(targetConversation, false);
+              // Auto close chat list on tablet when selecting conversation
+              if (isTablet) {
+                setChatListOpen(false);
+              }
+            }
+          }, 300); // Increase timeout to 300ms to ensure state is updated
+        }
       }
     } catch (err) {
       console.error("Failed to send compose message:", err);

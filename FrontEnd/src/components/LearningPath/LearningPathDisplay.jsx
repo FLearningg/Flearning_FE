@@ -30,12 +30,57 @@ const LearningPathDisplay = () => {
     dispatch(openSurveyModal());
   };
 
-  // Loading state
+  // Loading state - Show skeleton
   if (pathLoading && !learningPath) {
     return (
-      <div className="f-lp-loading">
-        <div className="f-lp-spinner" />
-        <p>Loading learning path...</p>
+      <div className="f-lp-container">
+        {/* Skeleton Header */}
+        <div className="f-lp-header">
+          <div className="f-lp-header-content">
+            <div className="f-lp-skeleton f-lp-skeleton-title" />
+            <div className="f-lp-skeleton f-lp-skeleton-subtitle" />
+          </div>
+          <div className="f-lp-header-actions">
+            <div className="f-lp-skeleton f-lp-skeleton-button" />
+          </div>
+        </div>
+
+        {/* Skeleton Summary Cards */}
+        <div className="f-lp-summary-cards">
+          <div className="f-lp-summary-card">
+            <div className="f-lp-skeleton f-lp-skeleton-icon" />
+            <div className="f-lp-skeleton f-lp-skeleton-text" />
+            <div className="f-lp-skeleton f-lp-skeleton-label" />
+          </div>
+          <div className="f-lp-summary-card">
+            <div className="f-lp-skeleton f-lp-skeleton-icon" />
+            <div className="f-lp-skeleton f-lp-skeleton-text" />
+            <div className="f-lp-skeleton f-lp-skeleton-label" />
+          </div>
+          <div className="f-lp-summary-card">
+            <div className="f-lp-skeleton f-lp-skeleton-icon" />
+            <div className="f-lp-skeleton f-lp-skeleton-text" />
+            <div className="f-lp-skeleton f-lp-skeleton-label" />
+          </div>
+        </div>
+
+        {/* Skeleton Phases */}
+        <div className="f-lp-phases-container">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="f-lp-phase-card">
+              <div className="f-lp-phase-header">
+                <div className="f-lp-skeleton f-lp-skeleton-phase-number" />
+                <div className="f-lp-skeleton f-lp-skeleton-phase-title" />
+              </div>
+              <div className="f-lp-skeleton f-lp-skeleton-phase-description" />
+              <div className="f-lp-phase-meta">
+                <div className="f-lp-skeleton f-lp-skeleton-meta" />
+                <div className="f-lp-skeleton f-lp-skeleton-meta" />
+                <div className="f-lp-skeleton f-lp-skeleton-meta" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -115,8 +160,50 @@ const LearningPathDisplay = () => {
         </div>
       </div>
 
-      {/* Learning Path Phases */}
-      <LearningPathPhases learningPath={learningPath} />
+      {/* Show skeleton overlay when regenerating */}
+      {pathLoading && learningPath ? (
+        <div className="f-lp-skeleton-overlay">
+          {/* Skeleton Summary Cards */}
+          <div className="f-lp-summary-cards">
+            <div className="f-lp-summary-card">
+              <div className="f-lp-skeleton f-lp-skeleton-icon" />
+              <div className="f-lp-skeleton f-lp-skeleton-text" />
+              <div className="f-lp-skeleton f-lp-skeleton-label" />
+            </div>
+            <div className="f-lp-summary-card">
+              <div className="f-lp-skeleton f-lp-skeleton-icon" />
+              <div className="f-lp-skeleton f-lp-skeleton-text" />
+              <div className="f-lp-skeleton f-lp-skeleton-label" />
+            </div>
+            <div className="f-lp-summary-card">
+              <div className="f-lp-skeleton f-lp-skeleton-icon" />
+              <div className="f-lp-skeleton f-lp-skeleton-text" />
+              <div className="f-lp-skeleton f-lp-skeleton-label" />
+            </div>
+          </div>
+
+          {/* Skeleton Phases */}
+          <div className="f-lp-phases-container">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="f-lp-phase-card">
+                <div className="f-lp-phase-header">
+                  <div className="f-lp-skeleton f-lp-skeleton-phase-number" />
+                  <div className="f-lp-skeleton f-lp-skeleton-phase-title" />
+                </div>
+                <div className="f-lp-skeleton f-lp-skeleton-phase-description" />
+                <div className="f-lp-phase-meta">
+                  <div className="f-lp-skeleton f-lp-skeleton-meta" />
+                  <div className="f-lp-skeleton f-lp-skeleton-meta" />
+                  <div className="f-lp-skeleton f-lp-skeleton-meta" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        /* Learning Path Phases */
+        <LearningPathPhases learningPath={learningPath} />
+      )}
 
       {/* Survey Modal */}
       <SurveyModal />
