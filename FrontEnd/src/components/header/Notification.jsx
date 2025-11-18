@@ -1,290 +1,254 @@
-import React, { useEffect, useState } from "react";
-import "../../assets/header/header.css";
-import { NotificationCard } from "./NotificationCard";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBell } from "@fortawesome/free-regular-svg-icons";
-import InfiniteScroll from "react-infinite-scroll-component";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { markAllRead } from "../../store/notificationSlice";
+import { useNavigate } from "react-router-dom";
 import {
-  getNotifications,
-  markNotificationAsRead,
-} from "../../services/notificationService";
-import LoaddingComponent from "../common/Loadding/LoaddingComponent";
-const PAGE_SIZE = 10; // number of notifications to render at a time
-const RENDER_STEP = 5; // number of notifications to render on each scroll
+  MoreHorizontal,
+  MessageCircle,
+  Heart,
+  Bell,
+  Check,
+} from "lucide-react";
+
+// Import file CSS
+import "../../assets/Toast/CustomToast.css";
+
 function Notification() {
-  const notificationData =
-    useSelector(
-      (state) => state.notifications?.getNotifications?.notifications
-    ) || [];
-  const [isLoading, setIsLoading] = useState(true);
-  const currentUser = useSelector((state) => state.auth.currentUser);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { items: notifications, unreadCount } = useSelector(
+    (state) => state.notifications
+  );
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
+  const [showOptions, setShowOptions] = useState(false);
+
+  const wrapperRef = useRef(null);
+
+  // --- XỬ LÝ SỰ KIỆN ---
+
+  const handleToggle = () => {
+    setIsOpen(!isOpen);
+    if (isOpen) setShowOptions(false);
+  };
+
+  const handleOptionsToggle = (e) => {
+    e.stopPropagation();
+    setShowOptions(!showOptions);
+  };
+
+  // Gọi action markAllRead và Redux sẽ tự động cập nhật giao diện
+  const handleMarkAllRead = (e) => {
+    e.stopPropagation();
+    console.log("1. Đã bấm nút Đánh dấu tất cả đọc");
+    console.log("Unread Count hiện tại:", unreadCount);
+
+    if (unreadCount > 0) {
+      console.log("2. Đang dispatch action...");
+      dispatch(markAllRead())
+        .unwrap()
+        .then(() => {
+          console.log("3. Thành công! Redux đã cập nhật.");
+        })
+        .catch((err) => {
+          console.error("3. Thất bại! Lỗi API:", err);
+        });
+    } else {
+      console.log("2. Không có tin chưa đọc, không gọi API.");
+    }
+    setShowOptions(false);
+  };
+  const handleNotificationClick = (notification) => {
+    // Đóng dropdown
+    setIsOpen(false);
+    setShowOptions(false);
+
+    // Điều hướng
+    if (notification.link) {
+      navigate(notification.link);
+    } else {
+      navigate("/profile/message");
+    }
+  };
+
   useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        setIsLoading(true);
-        await getNotifications(dispatch, currentUser?._id, 1, PAGE_SIZE);
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-      } finally {
-        setIsLoading(false);
+    function handleClickOutside(event) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setIsOpen(false);
+        setShowOptions(false);
       }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-    fetchNotifications();
-  }, [dispatch, currentUser?._id]);
-  const [notifications, setNotifications] = useState([]);
-  const [page, setPage] = useState(1);
-  const [hasMoreApi, setHasMoreApi] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(RENDER_STEP);
-  const [showInfinite, setShowInfinite] = useState(false);
+  }, [wrapperRef]);
 
-  // Simulate fetching API: get each page from notificationData
-  const fetchNotifications = async (pageNum) => {
-    setLoading(true);
-    try {
-      // Get data for each page
-      const start = (pageNum - 1) * PAGE_SIZE;
-      const end = start + PAGE_SIZE;
-      const pageData = notificationData.slice(start, end);
-
-      if (pageData.length > 0) {
-        setNotifications((prev) => [...prev, ...pageData]);
-        if (end >= notificationData.length) setHasMoreApi(false);
-      } else {
-        setHasMoreApi(false);
-      }
-    } catch (e) {
-      setHasMoreApi(false);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    // Khi notificationData thay đổi và có dữ liệu, reset notifications
-    if (notificationData.length > 0) {
-      setNotifications([]);
-      setPage(1);
-      setHasMoreApi(true);
-      setVisibleCount(RENDER_STEP);
-      setShowInfinite(false);
-      fetchNotifications(1);
-    }
-  }, [notificationData]);
-
-  // Function called when scrolling for infinite scroll
-  const handleInfiniteScroll = () => {
-    // If all fetched notifications are displayed, fetch more
-    if (
-      visibleCount + RENDER_STEP > notifications.length &&
-      hasMoreApi &&
-      !loading
-    ) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetchNotifications(nextPage);
-    }
-    setVisibleCount((prev) => prev + RENDER_STEP);
-  };
-
-  // Function called when clicking "Show More" button
-  const handleShowMore = (event) => {
-    event.stopPropagation();
-    setVisibleCount(RENDER_STEP * 2); // Show 10 notifications
-    setShowInfinite(true); // Enable infinite scroll
-  };
-
-  function formatDateTime(isoString) {
-    const dateObj = new Date(isoString);
-    // Take date with format "Month Day, Year"
-    const date = dateObj.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-    // Take time with format "hh:mm AM/PM"
-    const time = dateObj.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-    return { date, time };
-  }
-  // when map notification:
-  const notificationsWithDateTime = notifications.map((n) => {
-    const { date, time } = formatDateTime(n.createdAt);
-    return { ...n, date, time };
-  });
-  const markAllAsRead = async () => {
-    try {
-      await markNotificationAsRead(currentUser?._id, dispatch);
-      await getNotifications(dispatch, currentUser?._id, 1, PAGE_SIZE);
-    } catch (error) {
-      console.error("Error marking notifications as read:", error);
+  // Render Icon
+  const renderIcon = (type) => {
+    const style = {
+      position: "absolute",
+      bottom: -2,
+      right: -2,
+      borderRadius: "50%",
+      padding: "3px",
+      backgroundColor: "white",
+      border: "1px solid #eee",
+      width: 22,
+      height: 22,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 2,
+    };
+    switch (type) {
+      case "like":
+        return (
+          <div style={{ ...style, backgroundColor: "#e41e3f" }}>
+            <Heart size={12} color="white" fill="white" />
+          </div>
+        );
+      case "comment":
+      case "chat_message":
+        return (
+          <div style={{ ...style, backgroundColor: "#45bd62" }}>
+            <MessageCircle size={12} color="white" fill="white" />
+          </div>
+        );
+      case "system":
+      default:
+        return (
+          <div style={{ ...style, backgroundColor: "#1877f2" }}>
+            <Bell size={12} color="white" fill="white" />
+          </div>
+        );
     }
   };
+
+  const displayedNotifications =
+    activeTab === "unread"
+      ? notifications.filter((n) => !n.isRead)
+      : notifications;
+
   return (
-    <>
-      <div className="dropdown">
-        <button
-          className="btn btn-light rounded-circle icon-btn"
-          type="button"
-          id="dropdownMenuButton1"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-          onClick={markAllAsRead}
-        >
-          <img src="/icons/bell.png" className="icon" alt="" />
-          {notificationData?.some((n) => n.readStatus === false) && (
-            <span className="notification-dot"></span>
-          )}
-        </button>
-        <ul
-          className="dropdown-menu dropdown-menu-end"
-          style={{ width: "350px" }}
-          aria-labelledby="dropdownMenuButton1"
-        >
-          <div
-            className="position-fixed bg-white p-2 px-3 border-3 border-bottom "
-            style={{ width: "348px", zIndex: 1000 }}
+    <div className="fb-dropdown-wrapper" ref={wrapperRef}>
+      <button
+        className="btn btn-light rounded-circle icon-btn position-relative"
+        type="button"
+        onClick={handleToggle}
+        aria-expanded={isOpen}
+      >
+        <img
+          src="/icons/bell.png"
+          className="icon"
+          alt="Notification"
+          style={{ width: "24px", height: "24px" }}
+        />
+        {unreadCount > 0 && (
+          <span
+            className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+            style={{ fontSize: "0.6rem" }}
           >
-            <div className="d-flex align-items-center">
-              <h5 className="text-start fw-bold mb-0">Notifications</h5>
-            </div>
-          </div>
-          <div>
-            <div className="dropdown-container" id="scrollableNotificationDiv">
-              {
-                notificationData.length === 0 ? (
-                  <div className="text-muted text-center p-3">
-                    <FontAwesomeIcon
-                      icon={faBell}
-                      style={{ fontSize: "24px" }}
-                    />
-                    <p className="mb-0 mt-2">No notifications yet</p>
+            {unreadCount > 99 ? "99+" : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="dropdown-menu-custom show">
+          <div className="dropdown-header-custom">
+            <h3 className="dropdown-title">Thông báo</h3>
+            <div className="options-container">
+              <div
+                className={`icon-btn small ${showOptions ? "active-bg" : ""}`}
+                onClick={handleOptionsToggle}
+                title="Tùy chọn"
+              >
+                <MoreHorizontal size={20} color="#65676b" />
+              </div>
+              {showOptions && (
+                <div className="noti-options-menu">
+                  <div className="noti-option-item" onClick={handleMarkAllRead}>
+                    <Check size={18} />
+                    <span>Đánh dấu tất cả là đã đọc</span>
                   </div>
-                ) : (
-                  <>
-                    {isLoading ? (
-                      <LoaddingComponent />
-                    ) : (
-                      <>
-                        {!showInfinite ? (
-                          <>
-                            {notificationsWithDateTime
-                              .slice(0, visibleCount)
-                              .map((notification, index) => (
-                                <NotificationCard
-                                  key={notification._id || index}
-                                  title={notification.message}
-                                  date={notification.date}
-                                  time={notification.time}
-                                  sender={notification.sender || "Admin"}
-                                  senderImage={
-                                    notification.senderImage ||
-                                    "/images/defaultImageUser.png"
-                                  }
-                                />
-                              ))}
-                            {visibleCount <
-                              notificationsWithDateTime.length && (
-                              <div className="text-center mt-2 px-2">
-                                <button
-                                  className="btn header-btn-show-more w-100"
-                                  onClick={handleShowMore}
-                                >
-                                  Show More Notifications
-                                </button>
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <InfiniteScroll
-                            dataLength={Math.min(
-                              visibleCount,
-                              notifications.length
-                            )}
-                            next={handleInfiniteScroll}
-                            hasMore={
-                              hasMoreApi || visibleCount < notifications.length
-                            }
-                            loader={
-                              <div class="spinner-border" role="status">
-                                <span class="sr-only">Loading...</span>
-                              </div>
-                            }
-                            scrollableTarget={"scrollableNotificationDiv"}
-                          >
-                            {notificationsWithDateTime
-                              .slice(0, visibleCount)
-                              .map((notification, index) => (
-                                <NotificationCard
-                                  key={notification._id || index}
-                                  title={notification.message}
-                                  date={notification.date}
-                                  time={notification.time}
-                                  sender={
-                                    notification.sender || "Unknown Sender"
-                                  }
-                                  senderImage={
-                                    notification.senderImage ||
-                                    "/images/defaultImageUser.png"
-                                  }
-                                />
-                              ))}
-                          </InfiniteScroll>
-                        )}
-                      </>
-                    )}
-                  </>
-                )
-                // {!showInfinite ? (
-                //     <>
-                //         {notifications.slice(0, visibleCount).map((notification, index) => (
-                //             <NotificationCard
-                //                 key={index}
-                //                 title={notification.title}
-                //                 date={notification.date}
-                //                 time={notification.time}
-                //                 sender={notification.sender}
-                //                 senderImage={notification.senderImage}
-                //             />
-                //         ))}
-                //         <div className='text-center mt-2 px-2'>
-                //             <button className='btn header-btn-show-more w-100' onClick={handleShowMore}>Show More Notifications</button>
-                //         </div>
-                //     </>
-                // ) : (
-                //     <InfiniteScroll
-                //         dataLength={Math.min(visibleCount, notifications.length)}
-                //         next={handleInfiniteScroll}
-                //         hasMore={hasMoreApi || visibleCount < notifications.length}
-                //         loader={
-                //             <div class="spinner-border" role="status">
-                //                 <span class="sr-only">Loading...</span>
-                //             </div>
-                //         }
-                //         scrollableTarget={"scrollableNotificationDiv"}
-                //     >
-                //         {notifications.slice(0, visibleCount).map((notification, index) => (
-                //             <NotificationCard
-                //                 key={index}
-                //                 title={notification.title}
-                //                 date={notification.date}
-                //                 time={notification.time}
-                //                 sender={notification.sender}
-                //                 senderImage={notification.senderImage}
-                //             />
-                //         ))}
-                //     </InfiniteScroll>
-                // )}
-              }
+                </div>
+              )}
             </div>
           </div>
-        </ul>
-      </div>
-    </>
+
+          <div className="dropdown-tabs">
+            <button
+              className={`tab-btn ${activeTab === "all" ? "active" : ""}`}
+              onClick={() => setActiveTab("all")}
+            >
+              Tất cả
+            </button>
+            <button
+              className={`tab-btn ${activeTab === "unread" ? "active" : ""}`}
+              onClick={() => setActiveTab("unread")}
+            >
+              Chưa đọc
+            </button>
+          </div>
+
+          <div className="dropdown-content">
+            <div className="section-header">
+              <span>{activeTab === "all" ? "Mới nhất" : "Chưa đọc"}</span>
+            </div>
+
+            <ul className="noti-list">
+              {displayedNotifications.length === 0 ? (
+                <li className="empty-state">Không có thông báo nào</li>
+              ) : (
+                displayedNotifications.map((n) => (
+                  <li
+                    key={n._id}
+                    className="noti-list-item"
+                    onClick={() => handleNotificationClick(n)}
+                  >
+                    <div className="noti-avatar-container">
+                      <img
+                        src={
+                          n.sender?.userImage || "/images/defaultImageUser.png"
+                        }
+                        alt="Avatar"
+                        className="noti-avatar-img"
+                      />
+                      {renderIcon(n.type)}
+                    </div>
+                    <div className="noti-content">
+                      <p className="noti-message">
+                        <strong>
+                          {n.sender?.firstName} {n.sender?.lastName}
+                        </strong>{" "}
+                        {n.content}
+                      </p>
+                      {/* LOGIC CSS: !n.isRead ? text-primary : text-muted */}
+                      <span
+                        className={`noti-timestamp ${
+                          !n.isRead ? "text-primary" : "text-muted"
+                        }`}
+                      >
+                        {new Date(n.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+
+                    {/* LOGIC HIỂN THỊ: Chỉ hiện chấm xanh nếu chưa đọc */}
+                    {!n.isRead && <div className="noti-unread-dot"></div>}
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
