@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import "../../assets/WatchCourse/SummaryModal.css";
 
 const SummaryModal = ({ 
@@ -10,8 +10,6 @@ const SummaryModal = ({
   lessonTitle,
   lessonType 
 }) => {
-  const [copySuccess, setCopySuccess] = useState(false);
-  
   if (!isOpen) return null;
 
   const getModalTitle = () => {
@@ -23,6 +21,20 @@ const SummaryModal = ({
     return lessonType === 'video' 
       ? 'Đang phân tích video và tạo tóm tắt...' 
       : 'Đang phân tích tài liệu và tạo tóm tắt...';
+  };
+
+  const getDownloadFileName = () => {
+    const now = new Date().toISOString().split('T')[0];
+    const lessonTypeSlug = lessonType === 'video' ? 'video' : 'tai-lieu';
+    const titleSlug = lessonTitle
+      ? lessonTitle
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+      : 'bai-hoc';
+    return `tom-tat-${lessonTypeSlug}-${titleSlug || 'bai-hoc'}-${now}.txt`;
   };
 
   // Enhanced summary formatting function
@@ -134,30 +146,25 @@ const SummaryModal = ({
     return <span dangerouslySetInnerHTML={{ __html: highlightedText }} />;
   };
 
-  // Copy to clipboard function
-  const handleCopyToClipboard = async () => {
+  const handleDownloadSummary = () => {
     if (!summary) return;
-    
-    try {
-      await navigator.clipboard.writeText(summary);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = summary;
-      document.body.appendChild(textArea);
-      textArea.select();
-      try {
-        document.execCommand('copy');
-        setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 2000);
-      } catch (fallbackErr) {
-        console.error('Fallback copy failed: ', fallbackErr);
-      }
-      document.body.removeChild(textArea);
-    }
+
+    const header = [
+      getModalTitle(),
+      `Loại bài học: ${lessonType === 'video' ? 'Video' : 'Tài liệu'}`,
+      `Ngày tải xuống: ${new Date().toLocaleString('vi-VN')}`
+    ].join('\n');
+
+    const fileContent = `${header}\n\n------------------------------\n\n${summary}`;
+    const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = getDownloadFileName();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -221,19 +228,11 @@ const SummaryModal = ({
         <div className="summary-modal-actions">
           {!loading && !error && summary && (
             <button 
-              className={`summary-copy-button ${copySuccess ? 'copied' : ''}`}
-              onClick={handleCopyToClipboard}
-              title="Sao chép nội dung tóm tắt"
+              className="summary-download-button"
+              onClick={handleDownloadSummary}
+              title="Tải bản tóm tắt dạng tệp TXT"
             >
-              {copySuccess ? (
-                <>
-                  ✅ Đã sao chép
-                </>
-              ) : (
-                <>
-                  📋 Sao chép
-                </>
-              )}
+              Tải xuống
             </button>
           )}
           <button className="summary-close-button" onClick={onClose}>

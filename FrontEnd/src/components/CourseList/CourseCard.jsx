@@ -18,11 +18,11 @@ const CourseCard = ({
   const getStatusColor = () => {
     switch (status) {
       case "completed":
-        return "course-status-completed";
+        return "course-list-card-status-completed";
       case "in-progress":
-        return "course-status-progress";
+        return "course-list-card-status-progress";
       default:
-        return "course-status-default";
+        return "course-list-card-status-default";
     }
   };
 
@@ -34,27 +34,27 @@ const CourseCard = ({
 
   return (
     <div
-      className="course-card"
+      className="course-list-card"
       role="article"
       onClick={onCardClick}
       style={{ cursor: onCardClick ? "pointer" : undefined }}
     >
-      <div className="course-thumbnail">
+      <div className="course-list-card-thumbnail">
         <img src={thumbnail} alt={`${title} course thumbnail`} loading="lazy" />
-        <div className={`course-status-badge ${getStatusColor()}`}>
+        <div className={`course-list-card-status-badge ${getStatusColor()}`}>
           {status.replace("-", " ")}
         </div>
       </div>
-      <div className="course-info">
-        <div className="course-meta">
-          <span className="course-category">{category}</span>
-          <span className="course-instructor">{instructor}</span>
+      <div className="course-list-card-info">
+        <div className="course-list-card-meta">
+          <span className="course-list-card-category">{category}</span>
+          <span className="course-list-card-instructor">{instructor}</span>
         </div>
         <h3 title={title}>{title}</h3>
-        <div className="course-footer">
+        <div className="course-list-card-footer">
           <button
-            className="course-watch-btn"
-            aria-label={`$${
+            className="course-list-card-watch-btn"
+            aria-label={`${
               status === "completed"
                 ? reviewMode
                   ? "Update Review"
@@ -76,17 +76,17 @@ const CourseCard = ({
                 : "Review Course"
               : "Continue Learning"}
           </button>
-          <div className="course-progress-status">
-            <div className="course-progress-wrapper">
+          <div className="course-list-card-progress-status">
+            <div className="course-list-card-progress-wrapper">
               <div
-                className="course-progress"
+                className="course-list-card-progress"
                 role="progressbar"
                 aria-valuenow={progress}
                 aria-valuemin="0"
                 aria-valuemax="100"
               >
                 <div
-                  className="course-progress-bar"
+                  className="course-list-card-progress-bar"
                   style={{
                     width: `${progress}%`,
                     backgroundColor: getProgressColor(),
@@ -94,7 +94,7 @@ const CourseCard = ({
                 />
               </div>
             </div>
-            <span className="course-completion-text">
+            <span className="course-list-card-completion-text">
               {progress}% Completed{" "}
               {totalLessons > 0 &&
                 `(${completedLessons}/${totalLessons} lessons)`}

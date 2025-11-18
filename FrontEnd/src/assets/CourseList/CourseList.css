@@ -195,8 +195,8 @@
   margin-bottom: 24px;
 }
 
-/* Course card */
-.course-card {
+/* Course card - với prefix để tránh bị đè CSS */
+.course-list-card {
   background-color: #fff;
   border-radius: 12px;
   overflow: hidden;
@@ -204,23 +204,23 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.course-card:hover {
+.course-list-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.course-thumbnail {
+.course-list-card-thumbnail {
   position: relative;
   aspect-ratio: 16/9;
 }
 
-.course-thumbnail img {
+.course-list-card-thumbnail img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.course-status-badge {
+.course-list-card-status-badge {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -232,64 +232,41 @@
   letter-spacing: 0.5px;
 }
 
-.course-status-completed {
+.course-list-card-status-completed {
   background: rgba(34, 197, 94, 0.9);
   color: white;
 }
 
-.course-status-progress {
+.course-list-card-status-progress {
   background: rgba(99, 102, 241, 0.9);
   color: white;
 }
 
-.course-status-default {
+.course-list-card-status-default {
   background: rgba(107, 114, 128, 0.9);
   color: white;
 }
 
-/* Status badge styles matching StudentDashboard */
-.status-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.status-badge.completed {
-  background: rgba(34, 197, 94, 0.9);
-  color: white;
-}
-
-.status-badge.in-progress {
-  background: rgba(99, 102, 241, 0.9);
-  color: white;
-}
-
-.course-info {
+.course-list-card-info {
   padding: 16px;
   display: flex;
   flex-direction: column;
   height: calc(100% - 9rem); /* 9rem là chiều cao của thumbnail (16/9 ratio) */
 }
 
-.course-meta {
+.course-list-card-meta {
   display: flex;
   gap: 12px;
   margin-bottom: 8px;
 }
 
-.course-category,
-.course-instructor {
+.course-list-card-category,
+.course-list-card-instructor {
   color: #6f767e;
   font-size: 0.75rem;
 }
 
-.course-info h3 {
+.course-list-card-info h3 {
   color: #1a1d1f;
   font-size: 1rem;
   font-weight: 500;
@@ -301,16 +278,14 @@
   line-height: 1.4;
 }
 
-
-
-.course-footer {
+.course-list-card-footer {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: auto;
 }
 
-.course-watch-btn {
+.course-list-card-watch-btn {
   width: 100%;
   padding: 12px;
   background-color: #ff6b38;
@@ -322,21 +297,21 @@
   transition: background-color 0.3s ease;
 }
 
-.course-watch-btn:hover {
+.course-list-card-watch-btn:hover {
   background-color: #e85a2c;
 }
 
-.course-progress-status {
+.course-list-card-progress-status {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.course-progress-wrapper {
+.course-list-card-progress-wrapper {
   flex: 1;
 }
 
-.course-progress {
+.course-list-card-progress {
   width: 100%;
   height: 8px;
   background-color: #f4f5f6;
@@ -344,13 +319,13 @@
   overflow: hidden;
 }
 
-.course-progress-bar {
+.course-list-card-progress-bar {
   height: 100%;
   border-radius: 4px;
   transition: width 0.3s ease;
 }
 
-.course-completion-text {
+.course-list-card-completion-text {
   color: #6f767e;
   font-size: 0.75rem;
   text-align: right;
