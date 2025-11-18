@@ -1,0 +1,99 @@
+/* src/components/WatchCourse/CourseCompletedModal.css */
+.course-complete {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.course-complete .modal-content {
+  background: white;
+  padding: 25px 30px;
+  border-radius: 8px;
+  text-align: center;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  height: 200px;
+}
+
+.course-complete .modal-content h2 {
+  color: #2a9d8f;
+  margin-top: 0;
+  font-size: 24px;
+}
+
+.course-complete .modal-content p {
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.course-complete .modal-loading p {
+  font-style: italic;
+  color: #555;
+}
+
+.course-complete .modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.course-complete .modal-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.course-complete .modal-button.primary {
+  background-color: #2a9d8f;
+  color: white;
+}
+.course-complete .modal-button.primary:hover {
+  background-color: #264653;
+}
+
+.course-complete .modal-button.secondary {
+  background-color: #e9ecef;
+  color: #333;
+}
+.course-complete .modal-button.secondary:hover {
+  background-color: #dee2e6;
+}
+
+.course-complete .modal-error p {
+  color: #e76f51;
+  font-weight: bold;
+}
+
+/* Spinner animation */
+.course-complete .spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #2a9d8f;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

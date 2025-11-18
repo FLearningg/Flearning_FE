@@ -9,6 +9,7 @@ import AdminDiscount from "../components/AdminDiscount/AdminDiscount";
 import AdminManageUser from "../components/AdminManageUser/AdminManageUser";
 import CensorInstructor from "../components/AdminManageUser/CensorInstructor";
 import CourseWizard from "../components/CRUDCourseAndLesson/CourseWizard";
+import AdminWithdrawal from "../components/Withdrawal/AdminWithdrawal";
 const adminRoutesContent = (
   <>
     <Route path="dashboard" element={<AdminDashboard />} />
@@ -20,6 +21,7 @@ const adminRoutesContent = (
     <Route path="courses/all" element={<AdminAllCourse />} />
     <Route path="courses/:id" element={<AdminMyCourse />} />
     <Route path="courses" element={<AdminMyCourse />} />
+    <Route path="withdrawals" element={<AdminWithdrawal />} />
   </>
 );
 export default adminRoutesContent;

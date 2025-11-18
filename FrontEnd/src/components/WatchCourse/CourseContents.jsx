@@ -67,8 +67,12 @@ const CourseContents = ({
                   >
                     <div
                       className={`watchcourse-lecture ${
-                        ((currentLesson?._id || currentLesson?.id) === lecture.id) ? "active" : ""
-                      } ${lecture.completed ? "completed" : ""} ${isLocked ? "locked" : ""}`}
+                        (currentLesson?._id || currentLesson?.id) === lecture.id
+                          ? "active"
+                          : ""
+                      } ${lecture.completed ? "completed" : ""} ${
+                        isLocked ? "locked" : ""
+                      }`}
                       onClick={() => !isLocked && onSelectLesson(lecture)}
                     >
                       <div className="watchcourse-lecture-info">
@@ -82,12 +86,16 @@ const CourseContents = ({
                             />
                             <span className="custom-checkbox"></span>
                           </label>
-                          <span className="watchcourse-lecture-title">{lecture.title}</span>
+                          <span className="watchcourse-lecture-title">
+                            {lecture.title}
+                          </span>
                         </div>
                         <div className={"watchcourse-lecture-duration"}>
                           {lecture.type !== "quiz" ? (
                             currentLesson?.id === lecture.id ? (
-                              <span className="watchcourse-now-playing">▐▐</span>
+                              <span className="watchcourse-now-playing">
+                                ▐▐
+                              </span>
                             ) : (
                               <span className="watchcourse-play-icon">▶</span>
                             )
@@ -96,11 +104,20 @@ const CourseContents = ({
                             if (lecture.type === "quiz") {
                               const count =
                                 lecture.questionsCount ||
-                                (Array.isArray(lecture.questions) ? lecture.questions.length : 0) ||
-                                (lecture.quizData?.questions?.length || 0) ||
-                                (lecture.quiz?.questionsCount || 0) ||
-                                (lecture.quizQuestionsCount || 0);
-                              return <span>{count > 0 ? `${count} questions` : ""}</span>;
+                                (Array.isArray(lecture.questions)
+                                  ? lecture.questions.length
+                                  : 0) ||
+                                lecture.quizData?.questions?.length ||
+                                0 ||
+                                lecture.quiz?.questionsCount ||
+                                0 ||
+                                lecture.quizQuestionsCount ||
+                                0;
+                              return (
+                                <span>
+                                  {count > 0 ? `${count} questions` : ""}
+                                </span>
+                              );
                             }
                             return <span>{lecture.duration || ""}</span>;
                           })()}

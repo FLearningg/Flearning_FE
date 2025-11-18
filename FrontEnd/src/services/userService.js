@@ -24,3 +24,11 @@ export const updateUserProfile = (profileData) =>
 
 // Get user statistics
 export const getUserStats = () => apiClient.get("/user/stats");
+
+// Lấy thông tin thanh toán (ngân hàng) của instructor
+export const getPayoutDetails = () =>
+  apiClient.get("/instructor/payout-details");
+
+// Cập nhật thông tin thanh toán
+export const updatePayoutDetails = (details) =>
+  apiClient.put("/instructor/payout-details", details);

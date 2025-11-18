@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaGlobe, FaLinkedin, FaTwitter, FaYoutube, FaFacebook, FaStar, FaUserFriends } from "react-icons/fa";
-import { getPublicProfile, getInstructorStats } from "../../services/instructorService";
+import { getPublicProfile, getInstructorStats, getInstructorFeedbacks } from "../../services/instructorService";
 import { getInstructorCourses } from "../../services/instructorService";
 import "../../assets/InstructorProfile/InstructorProfilePublic.css";
 
@@ -25,6 +25,14 @@ const InstructorProfilePublic = () => {
     totalReviews: 0,
   });
   const [courses, setCourses] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [feedbackPagination, setFeedbackPagination] = useState({
+    currentPage: 1,
+    totalPages: 0,
+    totalFeedbacks: 0,
+    hasMore: false,
+  });
+  const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
 
   useEffect(() => {
     console.log("📡 useEffect triggered, userId:", userId);
@@ -69,6 +77,35 @@ const InstructorProfilePublic = () => {
       setIsLoading(false);
     }
   };
+
+  const fetchFeedbacks = async (page = 1) => {
+    try {
+      setLoadingFeedbacks(true);
+      const response = await getInstructorFeedbacks(userId, page, 10);
+      console.log("📝 Feedbacks Response:", response.data);
+      
+      const { feedbacks: newFeedbacks, pagination } = response.data.data;
+      
+      if (page === 1) {
+        setFeedbacks(newFeedbacks);
+      } else {
+        setFeedbacks(prev => [...prev, ...newFeedbacks]);
+      }
+      
+      setFeedbackPagination(pagination);
+    } catch (error) {
+      console.error("❌ Error fetching feedbacks:", error);
+    } finally {
+      setLoadingFeedbacks(false);
+    }
+  };
+
+  // Fetch feedbacks when reviews tab is active
+  useEffect(() => {
+    if (activeTab === "reviews" && userId && feedbacks.length === 0) {
+      fetchFeedbacks(1);
+    }
+  }, [activeTab, userId]);
 
   if (isLoading) {
     return (
@@ -249,14 +286,14 @@ const InstructorProfilePublic = () => {
                       <div className="ipp-course-image">
                         <img src={course.thumbnail || "/images/default-course.png"} alt={course.title} />
                         <span className="ipp-course-category">
-                          {course.category?.name || 'General'}
+                          {course.categoryIds?.[0]?.name || 'General'}
                         </span>
                       </div>
                       <div className="ipp-course-content">
                         <h3 className="ipp-course-title">{course.title}</h3>
                         <div className="ipp-course-meta">
                           <div className="ipp-course-rating">
-                            <FaStar /> {course.averageRating ? course.averageRating.toFixed(1) : '0.0'}
+                            <FaStar /> {course.rating !== undefined ? course.rating.toFixed(1) : '0.0'}
                           </div>
                           <div className="ipp-course-students">
                             <FaUserFriends style={{ fontSize: '14px' }} /> 
@@ -281,9 +318,70 @@ const InstructorProfilePublic = () => {
           {activeTab === "reviews" && (
             <div className="ipp-reviews">
               <h2>Student Feedback</h2>
-              <div className="ipp-empty">
-                <p>Reviews will be displayed here.</p>
-              </div>
+              {loadingFeedbacks && feedbacks.length === 0 ? (
+                <div className="ipp-loading">
+                  <div className="ipp-spinner"></div>
+                  <p>Loading feedbacks...</p>
+                </div>
+              ) : feedbacks.length > 0 ? (
+                <>
+                  <div className="ipp-feedback-list">
+                    {feedbacks.map((feedback) => (
+                      <div key={feedback._id} className="ipp-feedback-card">
+                        <div className="ipp-feedback-header">
+                          <div className="ipp-feedback-user">
+                            <img
+                              src={feedback.userId?.userImage || DEFAULT_PROFILE_IMAGE}
+                              alt={`${feedback.userId?.firstName} ${feedback.userId?.lastName}`}
+                              className="ipp-feedback-avatar"
+                            />
+                            <div className="ipp-feedback-user-info">
+                              <h4>{`${feedback.userId?.firstName || 'Anonymous'} ${feedback.userId?.lastName || ''}`}</h4>
+                              <div className="ipp-feedback-rating">
+                                {[...Array(5)].map((_, i) => (
+                                  <FaStar
+                                    key={i}
+                                    className={i < feedback.rateStar ? "star-filled" : "star-empty"}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="ipp-feedback-course">
+                            <span>Course: {feedback.courseId?.title}</span>
+                          </div>
+                        </div>
+                        {feedback.content && (
+                          <p className="ipp-feedback-content">{feedback.content}</p>
+                        )}
+                        <div className="ipp-feedback-date">
+                          {new Date(feedback.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {feedbackPagination.hasMore && (
+                    <div className="ipp-load-more">
+                      <button
+                        onClick={() => fetchFeedbacks(feedbackPagination.currentPage + 1)}
+                        disabled={loadingFeedbacks}
+                        className="ipp-load-more-btn"
+                      >
+                        {loadingFeedbacks ? 'Loading...' : 'Load More Reviews'}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="ipp-empty">
+                  <p>No reviews yet.</p>
+                </div>
+              )}
             </div>
           )}
           </div>

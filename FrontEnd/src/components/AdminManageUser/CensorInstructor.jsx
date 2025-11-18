@@ -133,10 +133,18 @@ export default function CensorInstructor() {
       }));
       
       // Separate applications and approved instructors
-      const pendingApps = transformedData.filter(app => app.status === "pending" || app.status === "emailNotVerified");
-      const approvedInstructors = transformedData.filter(app => app.status === "approved");
+      // Applications tab: pending, emailNotVerified, rejected
+      // Instructors tab: approved (both manual and AI approved)
+      const allApplications = transformedData.filter(app =>
+        app.status === "pending" || 
+        app.status === "emailNotVerified" || 
+        app.status === "rejected"
+      );
+      const approvedInstructors = transformedData.filter(app =>
+        app.status === "approved"
+      );
       
-      setApplications(pendingApps);
+      setApplications(allApplications);
       setInstructors(approvedInstructors);
     } catch (err) {
       console.error("API Error:", err); // Log any API errors
@@ -439,6 +447,7 @@ export default function CensorInstructor() {
                     <th>{activeTab === "applications" ? "Applicant" : "Instructor"}</th>
                     <th>Email</th>
                     <th>Status</th>
+                    <th>AI Review</th>
                     <th>{activeTab === "applications" ? "Date Applied" : "Date Approved"}</th>
                     <th>Actions</th>
                   </tr>
@@ -447,6 +456,30 @@ export default function CensorInstructor() {
                   {paginatedData.map((app, index) => {
                     const rowNumber =
                       (currentPage - 1) * itemsPerPage + index + 1;
+                    
+                    // Determine AI review status display
+                    const getAIReviewStatus = (app) => {
+                      if (!app.aiReviewStatus) {
+                        // If approved but no AI review, show "Manual Approval"
+                        if (app.status === "approved" || app.applicationStatus === "approved") {
+                          return { text: "Manual Approval", class: "ai-status-manual-approved" };
+                        }
+                        return { text: "", class: "" }; // Leave empty when no AI review data
+                      }
+                      switch (app.aiReviewStatus) {
+                        case "approved":
+                          return { text: "AI Approved", class: "ai-status-approved" };
+                        case "rejected":
+                          return { text: "AI Rejected", class: "ai-status-rejected" };
+                        case "manual_review":
+                          return { text: "Manual Review", class: "ai-status-manual" };
+                        default:
+                          return { text: "", class: "" }; // Leave empty for unknown status
+                      }
+                    };
+                    
+                    const aiStatus = getAIReviewStatus(app);
+                    
                     return (
                       <tr key={app._id} className="amu-table-row">
                         <td className="amu-table-cell amu-row-number">
@@ -486,6 +519,18 @@ export default function CensorInstructor() {
                           >
                             {app.status}
                           </span>
+                        </td>
+                        <td className="amu-table-cell">
+                          {aiStatus.text && (
+                            <span className={`ai-status-badge ${aiStatus.class}`}>
+                              {aiStatus.text}
+                            </span>
+                          )}
+                          {app.aiReviewScore && (
+                            <div className="ai-score-info">
+                              Score: {app.aiReviewScore}/100
+                            </div>
+                          )}
                         </td>
                         <td className="amu-table-cell amu-date-joined">
                           {dayjs(app.createdAt).format("DD/MM/YYYY")}
@@ -614,8 +659,13 @@ export default function CensorInstructor() {
                       <h3 className="ci-section-title">Documents</h3>
                       <div className="ci-documents-grid">
                         {selectedApplication.documents.map((doc, idx) => {
+                          // Handle both string URLs and document objects
+                          const docUrl = typeof doc === 'string' ? doc : (doc.url || doc.fileUrl || '');
+                          
+                          if (!docUrl) return null;
+                          
                           // Determine file type from URL or extension
-                          const fileExtension = doc.split('.').pop().toLowerCase().split('?')[0];
+                          const fileExtension = docUrl.split('.').pop().toLowerCase().split('?')[0];
                           const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExtension);
                           const isPdf = fileExtension === 'pdf';
                           const isDoc = ['doc', 'docx'].includes(fileExtension);
@@ -624,10 +674,10 @@ export default function CensorInstructor() {
                             <div key={idx} className="ci-document-item">
                               {isImage ? (
                                 <img
-                                  src={doc}
+                                  src={docUrl}
                                   alt={`Document ${idx + 1}`}
                                   className="ci-document-image"
-                                  onClick={() => openImageViewer(doc)}
+                                  onClick={() => openImageViewer(docUrl)}
                                   style={{ cursor: 'pointer' }}
                                 />
                               ) : (
@@ -649,7 +699,7 @@ export default function CensorInstructor() {
                                     transition: 'all 0.3s ease',
                                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                                   }}
-                                  onClick={() => window.open(doc, '_blank')}
+                                  onClick={() => window.open(docUrl, '_blank')}
                                   onMouseEnter={(e) => {
                                     e.currentTarget.style.transform = 'translateY(-4px)';
                                     e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
@@ -722,6 +772,68 @@ export default function CensorInstructor() {
                         {selectedApplication.status}
                       </span>
                     </div>
+                    <div className="ci-info-item">
+                      <span className="ci-info-label">AI Review Status:</span>
+                      {(() => {
+                        if (!selectedApplication.aiReviewStatus) {
+                          // If approved but no AI review, show "Manual Approval"
+                          if (selectedApplication.status === "approved" || selectedApplication.applicationStatus === "approved") {
+                            return (
+                              <span className="ai-status-badge ai-status-manual-approved">
+                                Manual Approval
+                              </span>
+                            );
+                          }
+                          return (
+                            <span className="ci-info-value">
+                              -
+                            </span>
+                          );
+                        }
+                        switch (selectedApplication.aiReviewStatus) {
+                          case "approved":
+                            return (
+                              <span className="ai-status-badge ai-status-approved">
+                                AI Approved
+                              </span>
+                            );
+                          case "rejected":
+                            return (
+                              <span className="ai-status-badge ai-status-rejected">
+                                AI Rejected
+                              </span>
+                            );
+                          case "manual_review":
+                            return (
+                              <span className="ai-status-badge ai-status-manual">
+                                Manual Review Required
+                              </span>
+                            );
+                          default:
+                            return (
+                              <span className="ci-info-value">
+                                -
+                              </span>
+                            );
+                        }
+                      })()}
+                    </div>
+                    {selectedApplication.aiReviewScore && (
+                      <div className="ci-info-item">
+                        <span className="ci-info-label">AI Score:</span>
+                        <span className="ci-info-value">
+                          {selectedApplication.aiReviewScore}/100
+                        </span>
+                      </div>
+                    )}
+                    {selectedApplication.aiReviewDetails?.decision?.reason && (
+                      <div className="ci-info-item ci-info-item-full">
+                        <span className="ci-info-label">AI Review Reason:</span>
+                        <span className="ci-info-value">
+                          {selectedApplication.aiReviewDetails.decision.reason}
+                        </span>
+                      </div>
+                    )}
                     <b></b>
                     <div className="ci-info-item">
                       <span className="ci-info-label">Created At:</span>

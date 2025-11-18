@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Spin, Result, Button, Row, Col, Typography, Card } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, MailOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import { verifyEmail } from '../../services/authService';
+import { verifyInstructorEmail } from '../../services/authService';
 
 const { Title, Paragraph, Text } = Typography;
 const F_LEARNING_ORANGE = '#FF6B00';
@@ -24,7 +24,7 @@ const InstructorVerifyEmailPage = () => {
                 }
                 try {
                     // Gọi API để xác thực token
-                    await verifyEmail(token);
+                    await verifyInstructorEmail(token);
                     setStatus('success');
                 } catch (error) {
                     console.error("Lỗi xác thực email:", error);

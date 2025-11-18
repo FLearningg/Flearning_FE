@@ -132,7 +132,7 @@ export function Sidebar({ open, setOpen, isMobile }) {
             <NavItem
               href="/admin/users"
               icon="users"
-              label="Manage Users"
+              label="User Management"
               active={location.pathname.startsWith("/admin/users")}
               onClick={handleNavClick}
             />
@@ -141,6 +141,13 @@ export function Sidebar({ open, setOpen, isMobile }) {
               icon="user-check"
               label="Censor Instructor"
               active={location.pathname.startsWith("/admin/censor-instructor")}
+              onClick={handleNavClick}
+            />
+            <NavItem
+              href="/admin/withdrawals"
+              icon="withdrawals"
+              label="Withdrawals"
+              active={location.pathname.startsWith("/admin/withdrawals")}
               onClick={handleNavClick}
             />
           </ul>
@@ -323,6 +330,22 @@ function NavItem({ href, icon, label, active, badge, onClick }) {
             >
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
               <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          )}
+          {icon === "withdrawals" && (
+            <svg
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 10h12M3 14h12m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+              />
             </svg>
           )}
         </span>

@@ -1,55 +1,88 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+// Đảm bảo đường dẫn này đúng với project của bạn
+import apiClient from "../services/authService";
+
+// Async thunk để lấy danh sách thông báo từ API
+export const fetchNotifications = createAsyncThunk(
+  "notifications/fetchNotifications",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.get(`/notifications/`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Error fetching notifications"
+      );
+    }
+  }
+);
+
+// Async thunk để đánh dấu tất cả là đã đọc
+export const markAllRead = createAsyncThunk(
+  "notifications/markAllRead",
+  async (_, { rejectWithValue }) => {
+    try {
+      await apiClient.put("/notifications/read-all");
+      return true;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Error marking all read");
+    }
+  }
+);
+
 const notificationSlice = createSlice({
   name: "notifications",
   initialState: {
-    getNotifications: {
-      notifications: [],
-      isLoading: false,
-      error: false,
-      errorMsg: "",
-    },
-    updateNotification: {
-      isLoading: false,
-      error: false,
-      errorMsg: "",
-      success: false,
-    },
+    items: [],
+    unreadCount: 0,
+    loading: false,
+    error: null,
   },
   reducers: {
-    getNotificationStart: (state) => {
-      state.getNotifications.isLoading = true;
+    // Action này được gọi từ Socket
+    addNewNotification: (state, action) => {
+      const exists = state.items.find(
+        (item) => item._id === action.payload._id
+      );
+      if (!exists) {
+        state.items.unshift(action.payload);
+        state.unreadCount += 1;
+      }
     },
-    getNotificationSuccess: (state, action) => {
-      state.getNotifications.isLoading = false;
-      state.getNotifications.notifications = action.payload;
-      state.getNotifications.error = false;
-    },
-    getNotificationFailure: (state, action) => {
-      state.getNotifications.isLoading = false;
-      state.getNotifications.error = true;
-      state.getNotifications.errorMsg = action.payload;
-    },
-    updateNotificationStart: (state) => {
-      state.updateNotification.isLoading = true;
-    },
-    updateNotificationSuccess: (state) => {
-      state.updateNotification.isLoading = false;
-      state.updateNotification.success = true;
-      state.updateNotification.error = false;
-    },
-    updateNotificationFailure: (state, action) => {
-      state.updateNotification.isLoading = false;
-      state.updateNotification.error = true;
-      state.updateNotification.errorMsg = action.payload;
+    updateUnreadCount: (state, action) => {
+      state.unreadCount = action.payload;
     },
   },
+  extraReducers: (builder) => {
+    builder
+      // --- Fetch Notifications ---
+      .addCase(fetchNotifications.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchNotifications.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload.notifications;
+        state.unreadCount = action.payload.unreadCount;
+      })
+      .addCase(fetchNotifications.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // --- Mark All Read (ĐÃ SỬA LOGIC TẠI ĐÂY) ---
+      .addCase(markAllRead.fulfilled, (state) => {
+        // 1. Reset số lượng chưa đọc về 0
+        state.unreadCount = 0;
+
+        // 2. QUAN TRỌNG: Duyệt qua danh sách hiện tại và đánh dấu đã đọc
+        // Việc này giúp giao diện cập nhật ngay lập tức mà không cần gọi lại API fetch
+        state.items.forEach((item) => {
+          item.isRead = true;
+        });
+      });
+  },
 });
-export const {
-  getNotificationStart,
-  getNotificationSuccess,
-  getNotificationFailure,
-  updateNotificationStart,
-  updateNotificationSuccess,
-  updateNotificationFailure,
-} = notificationSlice.actions;
+
+export const { addNewNotification, updateUnreadCount } =
+  notificationSlice.actions;
 export default notificationSlice.reducer;

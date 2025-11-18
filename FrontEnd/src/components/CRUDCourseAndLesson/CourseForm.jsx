@@ -15,6 +15,7 @@ const durationUnitOptions = ["Hours"];
 const CourseForm = ({
   title = "Create New Course",
   onNext = () => {},
+  onSaveDraft = () => {},
   initialData = {},
   completedTabs = [],
   onTabClick = () => {},
@@ -243,28 +244,16 @@ const CourseForm = ({
     }, 50);
   }, [initialData]);
 
-  const handleSaveNext = (e) => {
-    if (e && e.preventDefault) e.preventDefault();
-
-    // Validate categories
-    if (!categoryMap || Object.keys(categoryMap).length === 0) {
-      toast.error("Categories not loaded. Please try again.");
-      return;
-    }
-
+  const buildCourseData = () => {
     // Collect all valid category IDs
     const categoryIds = [];
-    if (category && category !== "Select..." && categoryMap[category]) {
-      categoryIds.push(categoryMap[category]);
-    }
-    if (subCategory && subCategory !== "Select..." && categoryMap[subCategory]) {
-      categoryIds.push(categoryMap[subCategory]);
-    }
-
-    // Validate that we have at least one valid category
-    if (categoryIds.length === 0) {
-      toast.error("Please select at least one valid category");
-      return;
+    if (categoryMap && Object.keys(categoryMap).length > 0) {
+      if (category && category !== "Select..." && categoryMap[category]) {
+        categoryIds.push(categoryMap[category]);
+      }
+      if (subCategory && subCategory !== "Select..." && categoryMap[subCategory]) {
+        categoryIds.push(categoryMap[subCategory]);
+      }
     }
 
     const data = {
@@ -297,7 +286,48 @@ const CourseForm = ({
       subCategoryId: categoryIds[1] || null,
     };
 
+    return data;
+  };
+
+  const handleSaveNext = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+
+    // Validate categories
+    if (!categoryMap || Object.keys(categoryMap).length === 0) {
+      toast.error("Categories not loaded. Please try again.");
+      return;
+    }
+
+    // Collect all valid category IDs
+    const categoryIds = [];
+    if (category && category !== "Select..." && categoryMap[category]) {
+      categoryIds.push(categoryMap[category]);
+    }
+    if (subCategory && subCategory !== "Select..." && categoryMap[subCategory]) {
+      categoryIds.push(categoryMap[subCategory]);
+    }
+
+    // Validate that we have at least one valid category
+    if (categoryIds.length === 0) {
+      toast.error("Please select at least one valid category");
+      return;
+    }
+
+    const data = buildCourseData();
     onNext(data);
+  };
+
+  const handleSaveDraft = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+
+    // For draft, we only require title
+    if (!titleState || titleState.trim() === "") {
+      toast.error("At least a title is required to save as draft");
+      return;
+    }
+
+    const data = buildCourseData();
+    onSaveDraft(data);
   };
 
   const handleCancel = () => {
@@ -488,15 +518,26 @@ const CourseForm = ({
                 >
                   Cancel
                 </CustomButton>
-                <CustomButton
-                  color="primary"
-                  type="normal"
-                  size="large"
-                  onClick={handleSaveNext}
-                  disabled={!allFieldsFilled}
-                >
-                  Next
-                </CustomButton>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <CustomButton
+                    color="primary"
+                    type="normal"
+                    size="large"
+                    onClick={handleSaveDraft}
+                    disabled={!titleState || titleState.trim() === ""}
+                  >
+                    Save to Draft
+                  </CustomButton>
+                  <CustomButton
+                    color="primary"
+                    type="normal"
+                    size="large"
+                    onClick={handleSaveNext}
+                    disabled={!allFieldsFilled}
+                  >
+                    Next
+                  </CustomButton>
+                </div>
               </div>
             </form>
           </div>

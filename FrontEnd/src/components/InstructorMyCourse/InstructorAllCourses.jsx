@@ -17,6 +17,7 @@ const InstructorAllCourses = () => {
   const [sortBy, setSortBy] = useState("latest");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [ratingFilter, setRatingFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all"); // NEW: status filter
   const [coursesData, setCoursesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,6 +36,11 @@ const InstructorAllCourses = () => {
     fetchCourses();
     fetchCategories();
   }, []);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryFilter, ratingFilter, sortBy, statusFilter]);
 
   const fetchCourses = async () => {
     try {
@@ -69,6 +75,7 @@ const InstructorAllCourses = () => {
           course.enrolledStudents ||
           course.studentsEnrolled?.length ||
           0,
+        status: course.status || "draft", // NEW: include status
         actions: ["View Details", "Edit Course", "Delete Course"],
         originalData: course,
       }));
@@ -128,7 +135,13 @@ const InstructorAllCourses = () => {
       (ratingFilter === "4+" && course.rating >= 4) ||
       (ratingFilter === "3+" && course.rating >= 3);
 
-    return matchesCategory && matchesRating;
+    // NEW: Filter by status
+    const matchesStatus =
+      statusFilter === "all" ||
+      (course.status &&
+        course.status.toLowerCase() === statusFilter.toLowerCase());
+
+    return matchesCategory && matchesRating && matchesStatus;
   });
 
   const sortedCourses = [...filteredCourses].sort((a, b) => {
@@ -293,6 +306,45 @@ const InstructorAllCourses = () => {
             <option value="4+">4+ Stars</option>
             <option value="3+">3+ Stars</option>
           </select>
+
+          {/* NEW: Status Filter */}
+          <select
+            className="aac-filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="draft">Draft</option>
+            <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+
+        {/* Show filter info */}
+        <div className="aac-filter-info">
+          <span className="aac-filter-count">
+            Showing {indexOfFirstCourse + 1}-
+            {Math.min(indexOfLastCourse, totalCourses)} of {totalCourses}{" "}
+            courses
+            {totalCourses !== coursesData.length &&
+              ` (filtered from ${coursesData.length})`}
+          </span>
+          {(categoryFilter !== "all" ||
+            ratingFilter !== "all" ||
+            statusFilter !== "all") && (
+            <button
+              className="aac-clear-filters-btn"
+              onClick={() => {
+                setCategoryFilter("all");
+                setRatingFilter("all");
+                setStatusFilter("all");
+              }}
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
       </div>
 
@@ -328,6 +380,14 @@ const InstructorAllCourses = () => {
                   })
                 }
               >
+                {/* Status Badge */}
+                {course.status && (
+                  <div
+                    className={`admin-course-status-badge status-${course.status.toLowerCase()}`}
+                  >
+                    {course.status}
+                  </div>
+                )}
                 <Card
                   image={course.image}
                   category={course.category}

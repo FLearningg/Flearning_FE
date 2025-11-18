@@ -64,7 +64,7 @@ const InstructorInfoCard = ({ instructor }) => {
         </div>
       </div>
       
-      {(rating !== undefined || totalRatings !== undefined) && (
+      {instructorProfile && (rating > 0 || totalRatings > 0) && (
         <div className="instructor-rating">
           <div className="stars-container">
             {renderStars()}
