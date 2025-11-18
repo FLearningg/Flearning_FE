@@ -238,8 +238,7 @@ const ActionButtons = ({ course }) => {
     try {
       const paymentData = {
         description: `TT khoa hoc ${course._id.slice(-6)}`,
-        // price: course.currentPrice,
-        price: 2000, // <-- Tạm thời đặt 2000 để test PayOS
+        price: course.currentPrice,
         packageType: "COURSE_PURCHASE",
         courseIds: [course._id],
         cancelUrl: window.location.href,

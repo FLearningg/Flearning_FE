@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { FaBars, FaTimes } from "react-icons/fa";
-import { getProfile } from "../../services/profileService";
+import { useSelector } from "react-redux";
 import "../../assets/CourseList/ProfileSection.css";
 
 const DEFAULT_PROFILE_IMAGE = "/images/defaultImageUser.png";
@@ -17,8 +17,6 @@ const NAV_ITEMS = [
   { path: "/profile/settings", label: "Settings" },
 ];
 
-// Cache for profile data
-
 const ProfileSection = ({
   activePath,
   wrapperBackground = "#FFEEE8",
@@ -26,48 +24,15 @@ const ProfileSection = ({
   children,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [profileData, setProfileData] = useState({
-    firstName: "",
-    lastName: "",
-    biography: "",
-    userImage: DEFAULT_PROFILE_IMAGE,
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  // Fetch profile data
-  const fetchProfileData = async () => {
-    try {
-      setIsLoading(true);
-      setError("");
+  // Lấy trực tiếp currentUser từ Redux Store
+  const { currentUser } = useSelector((state) => state.auth);
 
-      const response = await getProfile();
-      const data = response.data.data;
-
-      const newProfileData = {
-        firstName: data.firstName || "",
-        lastName: data.lastName || "",
-        biography: data.biography || "",
-        userImage: data.userImage || DEFAULT_PROFILE_IMAGE,
-      };
-
-      setProfileData(newProfileData);
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-      setError("Failed to load profile data");
-      setProfileData((prev) => ({
-        ...prev,
-        userImage: DEFAULT_PROFILE_IMAGE,
-      }));
-    } finally {
-      setIsLoading(false);
-    }
+  // === 1. HÀM VIẾT HOA CHỮ CÁI ĐẦU ===
+  const capitalizeFirstLetter = (string) => {
+    if (!string) return "";
+    return string.charAt(0).toUpperCase() + string.slice(1);
   };
-
-  // Luôn fetch profile khi mount
-  useEffect(() => {
-    fetchProfileData();
-  }, []);
 
   // Get mobile header title
   const getMobileHeaderTitle = () => {
@@ -75,10 +40,23 @@ const ProfileSection = ({
     return currentItem ? currentItem.label : "Profile";
   };
 
-  const displayName =
-    profileData.firstName || profileData.lastName
-      ? `${profileData.firstName} ${profileData.lastName}`.trim()
-      : "User";
+  // Xử lý dữ liệu hiển thị từ currentUser
+  const displayName = currentUser
+    ? `${currentUser.firstName} ${currentUser.lastName}`.trim()
+    : "User";
+
+  const userImage = currentUser?.userImage || DEFAULT_PROFILE_IMAGE;
+  const userRole = currentUser?.role || "student";
+
+  // Logic lọc Menu: Nếu không phải student -> Chỉ hiện Message & Settings
+  const filteredNavItems =
+    userRole === "student"
+      ? NAV_ITEMS
+      : NAV_ITEMS.filter(
+          (item) =>
+            item.path === "/profile/message" ||
+            item.path === "/profile/settings"
+        );
 
   const profileContent = (
     <>
@@ -96,14 +74,10 @@ const ProfileSection = ({
       <div className="profile-section">
         <div className="profile-content">
           <div className="profile-info">
-            {isLoading ? (
-              <div className="profile-loading">Loading...</div>
-            ) : error ? (
-              <div className="profile-error">{error}</div>
-            ) : (
+            {currentUser ? (
               <>
                 <img
-                  src={profileData.userImage || DEFAULT_PROFILE_IMAGE}
+                  src={userImage}
                   alt={displayName}
                   className="profile-avatar"
                   loading="lazy"
@@ -115,9 +89,12 @@ const ProfileSection = ({
                 />
                 <div>
                   <h4>{displayName}</h4>
-                  <p>{profileData.biography || "Student"}</p>
+                  {/* === 2. ÁP DỤNG HÀM Ở ĐÂY === */}
+                  <p>{capitalizeFirstLetter(userRole)}</p>
                 </div>
               </>
+            ) : (
+              <div className="profile-loading">Please login...</div>
             )}
           </div>
         </div>
@@ -131,7 +108,7 @@ const ProfileSection = ({
           role="navigation"
           aria-label="Main navigation"
         >
-          {NAV_ITEMS.map((item) => (
+          {filteredNavItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}

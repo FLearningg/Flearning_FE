@@ -343,6 +343,43 @@
   background-color: #e9ecef;
 }
 
+.flearning-qr-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.flearning-qr-wrapper {
+  width: 100%;
+  max-width: 280px; /* Giới hạn chiều rộng QR */
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+}
+
+.flearning-qr-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.flearning-qr-note {
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+  margin-top: 15px;
+  margin-bottom: 0;
+  line-height: 1.5;
+  font-style: italic;
+}
+
 @media (max-width: 768px) {
   .flearning-purchase-details-grid {
     grid-template-columns: 1fr;
