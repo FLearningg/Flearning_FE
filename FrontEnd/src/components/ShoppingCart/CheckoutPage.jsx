@@ -166,13 +166,16 @@ export default function CheckoutPage() {
       if (selectedDiscount) {
         if (selectedDiscount.type === "percent") {
           // Percent discount applies to ORIGINAL price of each individual course
-          let courseDiscount = course.originalPrice * (selectedDiscount.value / 100);
+          let courseDiscount =
+            course.originalPrice * (selectedDiscount.value / 100);
 
           // Check if discount applies to this specific course
           const appliesToThisCourse =
             !selectedDiscount.applyCourses ||
             selectedDiscount.applyCourses.length === 0 ||
-            selectedDiscount.applyCourses.some((dc) => dc._id === course._id || dc === course._id);
+            selectedDiscount.applyCourses.some(
+              (dc) => dc._id === course._id || dc === course._id
+            );
 
           if (appliesToThisCourse) {
             discountAmount += courseDiscount;
@@ -188,7 +191,10 @@ export default function CheckoutPage() {
 
     // Apply maximum discount limit if set
     if (selectedDiscount && selectedDiscount.maximumDiscount > 0) {
-      discountAmount = Math.min(discountAmount, selectedDiscount.maximumDiscount);
+      discountAmount = Math.min(
+        discountAmount,
+        selectedDiscount.maximumDiscount
+      );
     }
 
     const total = Math.max(0, subtotal - discountAmount);
@@ -221,8 +227,7 @@ export default function CheckoutPage() {
       // 3. Tạo data gửi đi
       const paymentData = {
         description: `Thanh toan cho ${courseIds.length} khoa hoc`,
-        // price: totalPrice, // <-- Dùng tổng tiền đã tính
-        price: 2000, // <-- Tạm thời đặt 2000 để test PayOS
+        price: totalPrice, // <-- Dùng tổng tiền đã tính
         packageType: "COURSE_PURCHASE",
         courseIds: courseIds, // <-- Dùng mảng ID
         cancelUrl: `${window.location.origin}/cart`, // <-- URL khi huỷ

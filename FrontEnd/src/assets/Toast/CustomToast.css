@@ -246,11 +246,11 @@
 }
 
 /* ============================================================
-   Toast (React-Toastify)
+   Toast (Socket / Global Notification)
    ============================================================ */
 
-/* Toastify overrides */
-.Toastify__toast {
+/* Toastify overrides - Áp dụng cho wrapper mới */
+.socket-toast-wrapper .Toastify__toast {
   border-radius: var(--fb-radius) !important;
   box-shadow: var(--fb-shadow) !important;
   background: var(--fb-bg) !important;
@@ -265,7 +265,7 @@
   overflow: visible !important;
 }
 
-.Toastify__toast-body {
+.socket-toast-wrapper .Toastify__toast-body {
   padding: 0 !important;
   margin: 0 !important;
   width: 100%;
@@ -273,11 +273,11 @@
   align-items: flex-start;
 }
 
-.Toastify__close-button {
+.socket-toast-wrapper .Toastify__close-button {
   display: none !important;
 }
 
-.Toastify__progress-bar {
+.socket-toast-wrapper .Toastify__progress-bar {
   height: 3px !important;
   bottom: 0 !important;
   background-color: var(--fb-primary) !important;
@@ -287,7 +287,7 @@
 }
 
 /* Custom toast wrapper */
-.fb-toast-wrapper {
+.socket-toast-wrapper .fb-toast-wrapper {
   width: 100%;
   background: var(--fb-bg);
   padding: 12px 16px;
@@ -298,18 +298,18 @@
   position: relative;
 }
 
-.toast-header {
+.socket-toast-wrapper .toast-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 4px;
 }
-.toast-title {
+.socket-toast-wrapper .toast-title {
   font-size: 15px;
   font-weight: 600;
   color: var(--fb-muted);
 }
-.toast-close-btn {
+.socket-toast-wrapper .toast-close-btn {
   background: transparent;
   border: none;
   border-radius: 50%;
@@ -323,24 +323,24 @@
   transition: background-color var(--fb-transition);
   padding: 0;
 }
-.toast-close-btn:hover {
+.socket-toast-wrapper .toast-close-btn:hover {
   background-color: #e4e6eb;
   color: var(--fb-text);
 }
 
-.toast-content-wrapper {
+.socket-toast-wrapper .toast-content-wrapper {
   display: flex;
   align-items: center;
   gap: 12px;
   position: relative;
 }
-.toast-avatar-container {
+.socket-toast-wrapper .toast-avatar-container {
   position: relative;
   width: 56px;
   height: 56px;
   flex-shrink: 0;
 }
-.toast-avatar {
+.socket-toast-wrapper .toast-avatar {
   width: 100%;
   height: 100%;
   border-radius: 50%;
@@ -348,7 +348,7 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.toast-action-icon {
+.socket-toast-wrapper .toast-action-icon {
   position: absolute;
   bottom: -2px;
   right: -2px;
@@ -362,29 +362,29 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 2;
 }
-.toast-action-icon.like {
+.socket-toast-wrapper .toast-action-icon.like {
   background-color: var(--fb-danger);
 }
-.toast-action-icon.comment {
+.socket-toast-wrapper .toast-action-icon.comment {
   background-color: var(--fb-success);
 }
-.toast-action-icon.system {
+.socket-toast-wrapper .toast-action-icon.system {
   background-color: var(--fb-primary);
 }
-.toast-action-icon svg {
+.socket-toast-wrapper .toast-action-icon svg {
   width: 12px;
   height: 12px;
   color: #fff;
   fill: #fff;
 }
 
-.toast-text-content {
+.socket-toast-wrapper .toast-text-content {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   padding-right: 12px;
 }
-.toast-message {
+.socket-toast-wrapper .toast-message {
   margin: 0;
   font-size: 15px;
   line-height: 1.3333;
@@ -395,17 +395,17 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.toast-message strong {
+.socket-toast-wrapper .toast-message strong {
   font-weight: 600;
   color: var(--fb-text);
 }
-.toast-time {
+.socket-toast-wrapper .toast-time {
   font-size: 13px;
   color: var(--fb-primary);
   font-weight: 500;
   margin-top: 4px;
 }
-.toast-read-dot {
+.socket-toast-wrapper .toast-read-dot {
   width: 10px;
   height: 10px;
   background-color: var(--fb-primary);

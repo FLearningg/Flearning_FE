@@ -48,7 +48,7 @@
 }
 
 .ci-tab-button.ci-tab-active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -1px;
   left: 0;
@@ -148,7 +148,7 @@
 }
 
 .ci-notes-list li::before {
-  content: '•';
+  content: "•";
   position: absolute;
   left: 0;
   color: #ff6b6b;
@@ -169,7 +169,7 @@
 
 .ci-code-block code {
   color: #fff;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: 0.875rem;
   line-height: 1.5;
 }
@@ -284,7 +284,7 @@
   background: #fafbfc;
   border-radius: 8px;
   padding: 20px 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 .ci-comments-header {
   font-size: 1.3rem;
@@ -354,7 +354,8 @@
   font-weight: 500;
   color: #ff9800;
 }
-.ci-comment-pagination button.active, .ci-comment-pagination button:hover:not(:disabled) {
+.ci-comment-pagination button.active,
+.ci-comment-pagination button:hover:not(:disabled) {
   background: #ff9800;
   color: #fff;
   border: 1px solid #ff9800;
@@ -372,12 +373,12 @@
   border-radius: 12px;
   padding: 18px 22px 16px 22px;
   border: 1.5px solid #ff9800;
-  box-shadow: 0 2px 8px rgba(64,148,247,0.06);
+  box-shadow: 0 2px 8px rgba(64, 148, 247, 0.06);
   position: relative;
   transition: box-shadow 0.2s, border 0.2s;
 }
 .ci-comment-item:hover {
-  box-shadow: 0 4px 16px rgba(64,148,247,0.13);
+  box-shadow: 0 4px 16px rgba(64, 148, 247, 0.13);
   border: 1.5px solid #ff9800;
 }
 .ci-comment-avatar {
@@ -388,7 +389,7 @@
   background: #e6e6e6;
   flex-shrink: 0;
   border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
 }
 .ci-comment-main {
   flex: 1;
@@ -444,7 +445,7 @@
   border-radius: 6px;
   transition: background 0.18s, border 0.18s, color 0.18s;
   font-weight: 500;
-  box-shadow: 0 1px 2px rgba(64,148,247,0.04);
+  box-shadow: 0 1px 2px rgba(64, 148, 247, 0.04);
 }
 .ci-comment-actions button:hover {
   background: #ff9800;
@@ -796,43 +797,55 @@
   .objective-item {
     padding: 0.625rem;
   }
-} 
+}
 
-.ci-modal-overlay {
+.ci-modal-overlay-duc {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.3);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent dark background */
   display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2020;
+  align-items: center; /* Vertically center */
+  justify-content: center; /* Horizontally center */
+  z-index: 1000; /* Ensure it sits on top of everything */
+  backdrop-filter: blur(3px); /* Optional: blurs the content behind */
+  animation: fadeIn 0.2s ease-out;
 }
-.ci-modal {
+
+/* 2. The Modal Box */
+.ci-modal-overlay-duc .ci-modal {
+  position: relative;
+  display: block;
+  background-color: #fff;
+  padding: 24px;
+  border-radius: 12px;
   background: #fff;
-  padding: 24px 32px;
-  border-radius: 8px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
-  min-width: 300px;
-  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 90%; /* Responsive width for mobile */
+  max-width: 400px; /* Maximum width for desktop */
+  text-align: center; /* Center the text */
+  animation: slideUp 0.3s ease-out;
 }
-.ci-modal-actions {
+.ci-modal-overlay-duc .ci-modal-actions {
   margin-top: 16px;
   display: flex;
   justify-content: space-around;
   gap: 16px;
 }
-.ci-modal-actions button {
+.ci-modal-overlay-duc .ci-modal-actions button {
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
 }
-.ci-modal-actions button:first-child {
+.ci-modal-overlay-duc .ci-modal-actions button:first-child {
   background: #e74c3c;
   color: #fff;
 }
-.ci-modal-actions button:last-child {
+.ci-modal-overlay-duc .ci-modal-actions button:last-child {
   background: #ccc;
   color: #222;
-} 
+}

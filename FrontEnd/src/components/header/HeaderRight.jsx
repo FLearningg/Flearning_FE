@@ -1,6 +1,11 @@
-import { faCog, faSignOutAlt, faUser } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCog,
+  faSignOutAlt,
+  faUser,
+  faTachometerAlt,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTachometerAlt } from "@fortawesome/free-solid-svg-icons";
+import { MessageCircle } from "lucide-react";
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -21,6 +26,9 @@ function HeaderRight({ user: currentUser }) {
     navigate("/login");
   };
 
+  // Helper xác định có phải student không để code gọn hơn
+  const isStudent = currentUser?.role === "student";
+
   return (
     <>
       <div className="d-flex align-items-center gap-1">
@@ -29,16 +37,38 @@ function HeaderRight({ user: currentUser }) {
             <div className="d-none d-sm-block">
               <Notification />
             </div>
-            <WishList />
-            <Link to="/profile/cart">
-              <button className="btn btn-light rounded-circle icon-btn">
-                <img src="/icons/cart.png" className="icon" alt="" />
-              </button>
-            </Link>
+
+            {/* 2. Chỉ hiển thị WishList nếu là student */}
+            {isStudent && <WishList />}
+
+            {/* 3. Logic đổi Cart thành Chat */}
+            {isStudent ? (
+              // Nếu là Student -> Hiện giỏ hàng
+              <Link to="/profile/cart">
+                <button className="btn btn-light rounded-circle icon-btn">
+                  <img src="/icons/cart.png" className="icon" alt="Cart" />
+                </button>
+              </Link>
+            ) : (
+              // Nếu KHÔNG phải Student -> Hiện nút Chat
+              <Link to="/profile/message">
+                <button
+                  className="btn btn-light rounded-circle icon-btn d-flex align-items-center justify-content-center"
+                  title="Messages"
+                >
+                  <MessageCircle
+                    className="text-secondary"
+                    size={20} /* Lucide dùng prop size thay vì style fontSize */
+                  />
+                </button>
+              </Link>
+            )}
           </>
         ) : (
           <></>
         )}
+
+        {/* Phần Dropdown Avatar giữ nguyên */}
         {currentUser ? (
           <div className="ms-2 dropdown">
             <img
@@ -71,7 +101,7 @@ function HeaderRight({ user: currentUser }) {
                   </Link>
                 </li>
               )}
-              
+
               {/* Instructor sees Dashboard ONLY when NOT in instructor area */}
               {currentUser.role === "instructor" && !isInInstructorArea && (
                 <li>
@@ -84,7 +114,7 @@ function HeaderRight({ user: currentUser }) {
                   </Link>
                 </li>
               )}
-              
+
               {/* Student sees Profile and Settings */}
               {currentUser.role === "student" && (
                 <>
@@ -107,16 +137,16 @@ function HeaderRight({ user: currentUser }) {
                   </li>
                 </>
               )}
-              
+
               {/* Divider only if there are items above */}
-              {(currentUser.role === "admin" || 
-                currentUser.role === "student" || 
+              {(currentUser.role === "admin" ||
+                currentUser.role === "student" ||
                 (currentUser.role === "instructor" && !isInInstructorArea)) && (
                 <li>
                   <hr className="dropdown-divider" />
                 </li>
               )}
-              
+
               <li>
                 <button
                   onClick={handleLogout}
