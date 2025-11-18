@@ -311,7 +311,7 @@ const CourseInfo = ({
 
       <div className="ci-tab-content">{renderContent()}</div>
       {deleteModalOpen && (
-        <div className="ci-modal-overlay">
+        <div className="ci-modal-overlay-duc">
           <div className="ci-modal">
             <h4>Confirm Delete</h4>
             <p>Are you sure you want to delete this comment?</p>

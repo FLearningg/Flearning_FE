@@ -12,6 +12,7 @@ import {
   addNewNotification,
   updateUnreadCount,
 } from "../store/notificationSlice";
+import { logout } from "../store/authSlice";
 
 // === COMPONENT HIỂN THỊ NỘI DUNG TOAST ===
 const CustomToastContent = ({ data, closeToast }) => {
@@ -110,6 +111,7 @@ function NotificationSocketHandler() {
             <CustomToastContent data={data} closeToast={closeToast} />
           ),
           {
+            containerId: "socket-notification",
             // Xử lý khi click vào toàn bộ hộp thông báo
             onClick: () => {
               // Nếu backend có gửi kèm link thì ưu tiên dùng link đó
@@ -129,15 +131,40 @@ function NotificationSocketHandler() {
         dispatch(updateUnreadCount(count));
       };
 
+      const onAccountBanned = (data) => {
+        console.warn("⚠️ TÀI KHOẢN ĐÃ BỊ KHÓA:", data.reason);
+
+        // a. Hiển thị thông báo lỗi nghiêm trọng
+        toast.error(
+          `Tài khoản của bạn đã bị KHÓA vĩnh viễn. Lý do: ${data.reason}`,
+          {
+            position: "top-center", // Hiện ở giữa trên cùng cho dễ thấy
+            autoClose: 10000, // Hiện lâu (10s)
+            containerId: "global_toast", // Dùng container toàn cục
+          }
+        );
+
+        // b. Thực hiện đăng xuất (Xóa Redux state & LocalStorage)
+        dispatch(logout());
+
+        // c. Ngắt kết nối socket
+        socket.disconnect();
+
+        // d. Chuyển hướng về trang đăng nhập
+        navigate("/login");
+      };
+
       // Đăng ký lắng nghe sự kiện
       socket.on("new_notification", onNewNotification);
       socket.on("unread_notification_count", onUnreadCount);
+      socket.on("account_banned", onAccountBanned);
 
       // Cleanup khi unmount/logout
       return () => {
         console.log("Ngắt kết nối Socket Notification...");
         socket.off("new_notification", onNewNotification);
         socket.off("unread_notification_count", onUnreadCount);
+        socket.off("account_banned", onAccountBanned);
         socket.disconnect();
       };
     }
