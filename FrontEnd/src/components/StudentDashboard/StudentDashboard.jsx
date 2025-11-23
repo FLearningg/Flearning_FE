@@ -1,6 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { FaPlay, FaBook, FaTrophy, FaUsers } from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react";
+import { FaPlay, FaBook, FaTrophy, FaUsers, FaClock, FaFire } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
+import { 
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
 import ProfileSection from "../CourseList/ProfileSection";
 import {
   getEnrolledCourses,
@@ -12,7 +24,9 @@ import {
   updateCourseFeedback,
   getCourseAverageRating,
 } from "../../services/feedbackService";
+import { getStudentAnalytics } from "../../services/analyticsService";
 import "../../assets/StudentDashboard/StudentDashboard.css";
+import "../../assets/StudentDashboard/ModernStudentDashboard.css";
 import { useSelector, useDispatch } from "react-redux";
 import ReviewModal from "../WatchCourse/ReviewModal";
 import SurveyModal from "../LearningPath/SurveyModal";
@@ -22,6 +36,18 @@ import {
   checkSurveyCompletion,
   openSurveyModal,
 } from "../../store/learningPathSlice";
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const StatCard = ({ icon, count, label, color }) => (
   <div className="dashboard-stat-card">
@@ -106,19 +132,37 @@ const StudentDashboard = () => {
   const { surveyCompleted } = useSelector((state) => state.learningPath);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [coursesProgress, setCoursesProgress] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [availableYears, setAvailableYears] = useState([]);
   const coursesPerPage = 4;
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [feedbackByCourseId, setFeedbackByCourseId] = useState({});
+  const dashboardRef = useRef(null);
 
   useEffect(() => {
     fetchDashboardData();
     // Check survey completion status
     dispatch(checkSurveyCompletion());
+    
+    // Initialize available years (last 5 years)
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let i = 0; i < 5; i++) {
+      years.push(currentYear - i);
+    }
+    setAvailableYears(years);
   }, [dispatch]);
+
+  useEffect(() => {
+    if (selectedYear) {
+      fetchDashboardData();
+    }
+  }, [selectedYear]);
 
   useEffect(() => {
     // Khi đã có danh sách courses, fetch feedback cho từng course
@@ -158,14 +202,20 @@ const StudentDashboard = () => {
     try {
       setLoading(true);
 
-      // Fetch both enrolled courses and their progress data
-      const [enrolledResponse, progressResponse] = await Promise.all([
+      console.log('Fetching analytics with:', { year: selectedYear });
+
+      // Fetch enrolled courses, progress, and analytics data
+      const [enrolledResponse, progressResponse, analyticsResponse] = await Promise.all([
         getEnrolledCourses(),
         getAllCoursesProgress(),
+        getStudentAnalytics(selectedYear),
       ]);
+
+      console.log('Analytics API response:', analyticsResponse);
 
       setEnrolledCourses(enrolledResponse.data.data);
       setCoursesProgress(progressResponse.data.data);
+      setAnalytics(analyticsResponse.data);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch dashboard data");
     } finally {
@@ -217,7 +267,92 @@ const StudentDashboard = () => {
       label: "Completed Courses",
       color: "#22c55e",
     },
+    {
+      id: 4,
+      icon: <FaClock />,
+      count: analytics?.learningTime?.total || 0,
+      label: "Learning Hours",
+      color: "#f59e0b",
+    },
+    {
+      id: 5,
+      icon: <FaFire />,
+      count: analytics?.streak?.current || 0,
+      label: "Day Streak",
+      color: "#ef4444",
+    },
   ];
+
+  // Debug: Log analytics data
+  console.log('Analytics data:', analytics);
+  console.log('Weekly activity:', analytics?.weeklyActivity);
+  if (analytics?.weeklyActivity) {
+    console.log('First activity item:', analytics.weeklyActivity[0]);
+    console.log('Activity array length:', analytics.weeklyActivity.length);
+    console.log('All activity data:', JSON.stringify(analytics.weeklyActivity, null, 2));
+  }
+
+  // Weekly activity chart data
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const weeklyChartData = {
+    labels: analytics?.weeklyActivity?.map(d => monthNames[d.month - 1]) || [],
+    datasets: [{
+      label: 'Courses Completed',
+      data: analytics?.weeklyActivity?.map(d => d.courses) || [],
+      backgroundColor: 'rgba(102, 126, 234, 0.5)',
+      borderColor: 'rgb(102, 126, 234)',
+      borderWidth: 2,
+      borderRadius: 6,
+    }]
+  };
+
+  const weeklyChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { 
+        display: true,
+        position: 'top',
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        titleFont: { size: 14, weight: 'bold' },
+        bodyFont: { size: 13 },
+        callbacks: {
+          title: (context) => `Day ${context[0].label}`,
+          label: (context) => `Courses: ${context.parsed.y}`
+        }
+      },
+    },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Day of Month',
+          font: { size: 14, weight: 'bold' }
+        },
+        ticks: {
+          maxRotation: 0,
+          minRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 15
+        }
+      },
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Courses Completed',
+          font: { size: 14, weight: 'bold' }
+        },
+        ticks: { 
+          stepSize: 1,
+          precision: 0
+        },
+      },
+    },
+  };
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(0, prev - 1));
@@ -283,7 +418,7 @@ const StudentDashboard = () => {
     >
       <div className="dashboard-content">
         <div className="dashboard-header">
-          <h2>Dashboard</h2>
+          <h2>Learning Progress Dashboard</h2>
           <div className="dashboard-header-actions">
             <button
               className="learning-path-btn"
@@ -299,6 +434,37 @@ const StudentDashboard = () => {
             <StatCard key={stat.id} {...stat} />
           ))}
         </div>
+
+        {/* Weekly Activity Chart */}
+        {analytics?.weeklyActivity && (
+          <div className="sd-chart-section">
+            <div className="chart-header">
+              <h3>📅 Monthly Learning Activity</h3>
+              <div className="filter-group">
+                <select 
+                  className="sd-year-select"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                >
+                  {availableYears.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="sd-chart-container">
+              {analytics.weeklyActivity.length > 0 ? (
+                <Bar data={weeklyChartData} options={weeklyChartOptions} />
+              ) : (
+                <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
+                  No learning activity data for this period
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="learning-section">
           <div className="learning-section-header">

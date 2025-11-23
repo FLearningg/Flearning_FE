@@ -46,7 +46,8 @@
     "styled-components": "^6.1.18",
     "sweetalert2": "^11.22.2",
     "swiper": "^11.2.8",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",
